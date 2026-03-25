@@ -1,0 +1,48 @@
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, sans-serif; }
+body { background: #f4f7f6; color: #333; }
+.app-container { display: flex; min-height: 100vh; }
+.sidebar { width: 250px; background: #1f2937; color: white; padding: 20px; display: flex; flex-direction: column; }
+.sidebar h2 { font-size: 1.5rem; margin-bottom: 30px; color: #3b82f6; text-align: center; }
+.sidebar nav { display: flex; flex-direction: column; gap: 10px; }
+.sidebar nav a { color: #d1d5db; text-decoration: none; font-size: 1rem; padding: 12px 15px; border-radius: 8px; transition: 0.2s; }
+.sidebar nav a:hover { background: #374151; color: white; }
+.main-content { flex: 1; padding: 40px; overflow-y: auto; }
+.card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
+.btn { background: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; transition: 0.2s; font-weight: 500;}
+.btn:hover { background: #2563eb; }
+.form-group { margin-bottom: 20px; }
+.form-group label { display: block; margin-bottom: 8px; font-weight: 500; font-size: 0.95rem; color: #4b5563;}
+.form-group input, .form-group select { width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 1rem; transition: border-color 0.2s;}
+.form-group input:focus, .form-group select:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+table th { text-align: left; padding: 15px; border-bottom: 2px solid #e5e7eb; color: #6b7280; font-weight: 600; font-size: 0.9rem; text-transform: uppercase;}
+table td { padding: 15px; border-bottom: 1px solid #f3f4f6; color: #374151; }
+table tr:hover td { background-color: #f9fafb; }
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  width: 450px;
+  max-width: 90%;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.modal-content h2 {
+  margin-bottom: 20px;
+  font-size: 1.5rem;
+  color: #1f2937;
+}
