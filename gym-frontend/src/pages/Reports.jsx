@@ -12,11 +12,13 @@ export default function Reports() {
 
   const fetchReports = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/reports');
+      const token = localStorage.getItem('token');
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      const res = await axios.get('http://localhost:5000/api/reports', { headers });
       setData(res.data);
-      setLoading(false);
     } catch (err) {
       console.error(err);
+    } finally {
       setLoading(false);
     }
   };

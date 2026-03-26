@@ -1,33 +1,68 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
+const initialFormState = { 
+  member_id: '', 
+  check_in_time: new Date().toISOString().slice(0, 16), 
+  check_out_time: '',
+  date: new Date().toISOString().split('T')[0] 
+};
+
 export default function Attendance() {
   const [data, setData] = useState([]);
+  const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [formData, setFormData] = useState({ member_id: '', check_in_time: new Date().toISOString().slice(0, 16), date: new Date().toISOString().split('T')[0] });
+  const [formData, setFormData] = useState(initialFormState);
+  
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [modalError, setModalError] = useState('');
 
-  useEffect(() => { fetchData(); }, []);
   const fetchData = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/attendance');
-      setData(res.data);
+      const token = localStorage.getItem('token');
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      
+      const [attRes, memRes] = await Promise.all([
+        axios.get('http://localhost:5000/api/attendance', { headers }),
+        axios.get('http://localhost:5000/api/members', { headers })
+      ]);
+      
+      setData(attRes.data);
+      setMembers(memRes.data);
+    } catch (err) { 
+      console.error(err); 
+    } finally {
       setLoading(false);
-    } catch (err) { console.error(err); setLoading(false); }
+    }
   };
+
+  useEffect(() => { fetchData(); }, []);
 
   const handleLog = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
+    setModalError('');
     try {
+      const token = localStorage.getItem('token');
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      
       await axios.post('http://localhost:5000/api/attendance', { 
         member_id: formData.member_id, 
         check_in_time: formData.check_in_time.replace('T', ' ') + ':00', 
+        check_out_time: formData.check_out_time ? formData.check_out_time.replace('T', ' ') + ':00' : null,
         date: formData.date 
-      });
+      }, { headers });
+      
       setShowModal(false);
-      setFormData({ member_id: '', check_in_time: new Date().toISOString().slice(0, 16), date: new Date().toISOString().split('T')[0] });
+      setFormData(initialFormState);
       fetchData();
-    } catch(err) { alert('Failed to log attendance'); }
+    } catch(err) { 
+      console.error(err);
+      setModalError(err.response?.data?.message || 'Failed to log attendance. Please try again.'); 
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -41,22 +76,40 @@ export default function Attendance() {
         <div className="modal-overlay">
           <div className="modal-content">
             <h2>Log Member Visit</h2>
+            {modalError && (
+              <div style={{ padding: '10px', marginBottom: '15px', background: '#fee2e2', color: '#b91c1c', borderRadius: '4px' }}>
+                {modalError}
+              </div>
+            )}
             <form onSubmit={handleLog}>
               <div className="form-group">
-                <label>Member ID <span style={{color: '#ef4444'}}>*</span></label>
-                <input required type="number" value={formData.member_id} onChange={(e) => setFormData({...formData, member_id: e.target.value})} />
+                <label>Member <span style={{color: '#ef4444'}}>*</span></label>
+                <select required value={formData.member_id} onChange={(e) => setFormData({...formData, member_id: e.target.value})}>
+                  <option value="">-- Select Member --</option>
+                  {members.map(m => (
+                    <option key={m.member_id} value={m.member_id}>{m.name} (ID: {m.member_id})</option>
+                  ))}
+                </select>
               </div>
               <div className="form-group">
                 <label>Check-in Time <span style={{color: '#ef4444'}}>*</span></label>
                 <input required type="datetime-local" value={formData.check_in_time} onChange={(e) => setFormData({...formData, check_in_time: e.target.value})} />
               </div>
               <div className="form-group">
+                <label>Check-out Time</label>
+                <input type="datetime-local" value={formData.check_out_time} onChange={(e) => setFormData({...formData, check_out_time: e.target.value})} />
+              </div>
+              <div className="form-group">
                 <label>Date <span style={{color: '#ef4444'}}>*</span></label>
                 <input required type="date" value={formData.date} onChange={(e) => setFormData({...formData, date: e.target.value})} />
               </div>
               <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
-                <button type="submit" className="btn" style={{ flex: 1 }}>Save Check-in</button>
-                <button type="button" className="btn" style={{ flex: 1, background: '#6b7280' }} onClick={() => setShowModal(false)}>Cancel</button>
+                <button type="submit" className="btn" style={{ flex: 1 }} disabled={isSubmitting}>
+                  {isSubmitting ? 'Saving...' : 'Save Check-in'}
+                </button>
+                <button type="button" className="btn" style={{ flex: 1, background: '#6b7280' }} onClick={() => setShowModal(false)} disabled={isSubmitting}>
+                  Cancel
+                </button>
               </div>
             </form>
           </div>
@@ -64,7 +117,13 @@ export default function Attendance() {
       )}
 
       <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-        {loading ? <p style={{ padding: '20px' }}>Loading data...</p> : (
+        {loading ? (
+          <p style={{ padding: '20px' }}>Loading data...</p>
+        ) : data.length === 0 ? (
+          <p style={{ padding: '20px', textAlign: 'center', color: '#6b7280' }}>
+            No attendance records found. Click "+ Log Visit" to get started. 
+          </p>
+        ) : (
           <table>
             <thead>
               <tr>

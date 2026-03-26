@@ -1,29 +1,63 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
+// Abstracting initial form state outside the component
+const initialFormState = { 
+  name: '', 
+  specialization: '', 
+  salary: '', 
+  hire_date: new Date().toISOString().split('T')[0] 
+};
+
 export default function Trainers() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [formData, setFormData] = useState({ name: '', specialization: '', salary: '', hire_date: new Date().toISOString().split('T')[0] });
+  const [formData, setFormData] = useState(initialFormState);
 
-  useEffect(() => { fetchTrainers(); }, []);
+  // New states for better UX
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [modalError, setModalError] = useState('');
+
   const fetchTrainers = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/trainers');
+      // Preparation for JWT authentication if needed
+      const token = localStorage.getItem('token');
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+      const res = await axios.get('http://localhost:5000/api/trainers', { headers });
       setData(res.data);
+    } catch (err) {
+      console.error(err);
+    } finally {
       setLoading(false);
-    } catch (err) { console.error(err); setLoading(false); }
+    }
   };
+
+  useEffect(() => { 
+    fetchTrainers(); 
+  }, []);
 
   const handleAdd = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
+    setModalError('');
+
     try {
-      await axios.post('http://localhost:5000/api/trainers', formData);
+      const token = localStorage.getItem('token');
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+      await axios.post('http://localhost:5000/api/trainers', formData, { headers });
       setShowModal(false);
-      setFormData({ name: '', specialization: '', salary: '', hire_date: new Date().toISOString().split('T')[0] });
+      setFormData(initialFormState); // Reset to initial state
       fetchTrainers();
-    } catch(err) { alert('Failed to add trainer'); }
+    } catch(err) {
+      console.error(err);
+      // Better error handling instead of alert()
+      setModalError(err.response?.data?.message || 'Failed to add trainer. Please try again.');
+    } finally {
+      setIsSubmitting(false); // Make sure to stop loading state
+    }
   };
 
   return (
@@ -37,6 +71,14 @@ export default function Trainers() {
         <div className="modal-overlay">
           <div className="modal-content">
             <h2>Add New Trainer</h2>
+            
+            {/* Displaying inline errors gracefully */}
+            {modalError && (
+              <div style={{ padding: '10px', marginBottom: '15px', background: '#fee2e2', color: '#b91c1c', borderRadius: '4px' }}>
+                {modalError}
+              </div>
+            )}
+
             <form onSubmit={handleAdd}>
               <div className="form-group">
                 <label>Name <span style={{color: '#ef4444'}}>*</span></label>
@@ -48,15 +90,25 @@ export default function Trainers() {
               </div>
               <div className="form-group">
                 <label>Monthly Salary (₹) <span style={{color: '#ef4444'}}>*</span></label>
-                <input required type="number" value={formData.salary} onChange={(e) => setFormData({...formData, salary: e.target.value})} />
+                <input required min="0" type="number" value={formData.salary} onChange={(e) => setFormData({...formData, salary: e.target.value})} />
               </div>
               <div className="form-group">
                 <label>Hire Date <span style={{color: '#ef4444'}}>*</span></label>
                 <input required type="date" value={formData.hire_date} onChange={(e) => setFormData({...formData, hire_date: e.target.value})} />
               </div>
               <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
-                <button type="submit" className="btn" style={{ flex: 1 }}>Save</button>
-                <button type="button" className="btn" style={{ flex: 1, background: '#6b7280' }} onClick={() => setShowModal(false)}>Cancel</button>
+                <button type="submit" className="btn" style={{ flex: 1 }} disabled={isSubmitting}>
+                  {isSubmitting ? 'Saving...' : 'Save'}
+                </button>
+                <button 
+                  type="button" 
+                  className="btn" 
+                  style={{ flex: 1, background: '#6b7280' }} 
+                  onClick={() => setShowModal(false)}
+                  disabled={isSubmitting}
+                >
+                  Cancel
+                </button>
               </div>
             </form>
           </div>
@@ -64,7 +116,14 @@ export default function Trainers() {
       )}
 
       <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-        {loading ? <p style={{ padding: '20px' }}>Loading data...</p> : (
+        {loading ? (
+          <p style={{ padding: '20px' }}>Loading data...</p>
+        ) : data.length === 0 ? (
+          /* Proper empty state handling */
+          <p style={{ padding: '20px', textAlign: 'center', color: '#6b7280' }}>
+            No trainers found. Click "+ Add Trainer" to get started. 
+          </p>
+        ) : (
           <table>
             <thead>
               <tr>

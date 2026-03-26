@@ -5,14 +5,20 @@ export default function Equipment() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => { fetchData(); }, []);
   const fetchData = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/equipment');
+      const token = localStorage.getItem('token');
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      const res = await axios.get('http://localhost:5000/api/equipment', { headers });
       setData(res.data);
+    } catch (err) { 
+      console.error(err); 
+    } finally {
       setLoading(false);
-    } catch (err) { console.error(err); setLoading(false); }
+    }
   };
+
+  useEffect(() => { fetchData(); }, []);
 
   return (
     <div>
@@ -20,7 +26,13 @@ export default function Equipment() {
         <h1 style={{ fontSize: '2rem' }}>Equipment Info</h1>
       </div>
       <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-        {loading ? <p style={{ padding: '20px' }}>Loading data...</p> : (
+        {loading ? (
+          <p style={{ padding: '20px' }}>Loading data...</p>
+        ) : data.length === 0 ? (
+          <p style={{ padding: '20px', textAlign: 'center', color: '#6b7280' }}>
+            No equipment found. Add new equipment to see them listed here.
+          </p>
+        ) : (
           <table>
             <thead>
               <tr>
