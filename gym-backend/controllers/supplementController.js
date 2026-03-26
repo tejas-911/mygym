@@ -16,7 +16,7 @@ exports.getSales = async (req, res) => {
 
 exports.recordSale = async (req, res) => {
     try {
-        const { member_id, supplement_id, quantity, sale_date, total_amount } = req.body;
+        const { member_id, supplement_id, quantity, sale_date, payment_method, total_amount } = req.body;
         
         // Start transaction
         const connection = await db.getConnection();
@@ -37,10 +37,10 @@ exports.recordSale = async (req, res) => {
                 throw new Error('Insufficient stock!');
             }
 
-            // Record transaction in Payment DB (subscription_id is NULL for supplement sales)
+            // Record transaction in Payment DB (dynamic payment_method)
             await connection.query(
                 'INSERT INTO Payment (subscription_id, amount, payment_date, payment_method) VALUES (?, ?, ?, ?)',
-                [null, total_amount, sale_date, 'Supplement']
+                [null, total_amount, sale_date, payment_method || 'Cash']
             );
 
             await connection.commit();

@@ -1,29 +1,54 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
+const initialFormState = { 
+  name: '', 
+  email: '', 
+  phone: '', 
+  join_date: new Date().toISOString().split('T')[0] 
+};
+
 export default function Members() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [formData, setFormData] = useState({ name: '', email: '', phone: '', join_date: new Date().toISOString().split('T')[0] });
+  const [formData, setFormData] = useState(initialFormState);
 
-  useEffect(() => { fetchMembers(); }, []);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [modalError, setModalError] = useState('');
+
   const fetchMembers = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/members');
+      const token = localStorage.getItem('token');
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      const res = await axios.get('http://localhost:5000/api/members', { headers });
       setData(res.data);
+    } catch (err) { 
+      console.error(err); 
+    } finally {
       setLoading(false);
-    } catch (err) { console.error(err); setLoading(false); }
+    }
   };
+
+  useEffect(() => { fetchMembers(); }, []);
 
   const handleAdd = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
+    setModalError('');
     try {
-      await axios.post('http://localhost:5000/api/members', formData);
+      const token = localStorage.getItem('token');
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      await axios.post('http://localhost:5000/api/members', formData, { headers });
       setShowModal(false);
-      setFormData({ name: '', email: '', phone: '', join_date: new Date().toISOString().split('T')[0] });
+      setFormData(initialFormState);
       fetchMembers();
-    } catch(err) { alert('Failed to add member'); }
+    } catch(err) { 
+      console.error(err);
+      setModalError(err.response?.data?.message || 'Failed to add member. Please try again.'); 
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -37,6 +62,11 @@ export default function Members() {
         <div className="modal-overlay">
           <div className="modal-content">
             <h2>Add New Member</h2>
+            {modalError && (
+              <div style={{ padding: '10px', marginBottom: '15px', background: '#fee2e2', color: '#b91c1c', borderRadius: '4px' }}>
+                {modalError}
+              </div>
+            )}
             <form onSubmit={handleAdd}>
               <div className="form-group">
                 <label>Name <span style={{color: '#ef4444'}}>*</span></label>
@@ -55,8 +85,12 @@ export default function Members() {
                 <input required type="date" value={formData.join_date} onChange={(e) => setFormData({...formData, join_date: e.target.value})} />
               </div>
               <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
-                <button type="submit" className="btn" style={{ flex: 1 }}>Save</button>
-                <button type="button" className="btn" style={{ flex: 1, background: '#6b7280' }} onClick={() => setShowModal(false)}>Cancel</button>
+                <button type="submit" className="btn" style={{ flex: 1 }} disabled={isSubmitting}>
+                  {isSubmitting ? 'Saving...' : 'Save'}
+                </button>
+                <button type="button" className="btn" style={{ flex: 1, background: '#6b7280' }} onClick={() => setShowModal(false)} disabled={isSubmitting}>
+                  Cancel
+                </button>
               </div>
             </form>
           </div>
@@ -64,7 +98,13 @@ export default function Members() {
       )}
 
       <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-        {loading ? <p style={{ padding: '20px' }}>Loading data...</p> : (
+        {loading ? (
+          <p style={{ padding: '20px' }}>Loading data...</p>
+        ) : data.length === 0 ? (
+          <p style={{ padding: '20px', textAlign: 'center', color: '#6b7280' }}>
+            No members found. Click "+ Add Member" to get started. 
+          </p>
+        ) : (
           <table>
             <thead>
               <tr>
