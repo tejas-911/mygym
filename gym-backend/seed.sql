@@ -1,5 +1,27 @@
 USE gym_db;
 
+-- 0. Clear Existing Data and Reset Auto-Increments
+SET FOREIGN_KEY_CHECKS = 0;
+
+TRUNCATE TABLE Supplement_Sale;
+TRUNCATE TABLE Supplement;
+TRUNCATE TABLE Maintenance;
+TRUNCATE TABLE Equipment;
+TRUNCATE TABLE Member_Diet;
+TRUNCATE TABLE Diet_Plan;
+TRUNCATE TABLE Member_Workout;
+TRUNCATE TABLE Workout_Exercise;
+TRUNCATE TABLE Exercise;
+TRUNCATE TABLE Workout_Plan;
+TRUNCATE TABLE Attendance;
+TRUNCATE TABLE Payment;
+TRUNCATE TABLE Subscription;
+TRUNCATE TABLE Membership_Plan;
+TRUNCATE TABLE Trainer;
+TRUNCATE TABLE Member;
+
+SET FOREIGN_KEY_CHECKS = 1;
+
 -- 1. Member
 INSERT INTO Member (name, gender, phone, email, date_of_birth, join_date, status) VALUES
 ('John Doe', 'Male', '1234567890', 'john@example.com', '1990-05-15', '2023-01-10', 'Active'),
@@ -42,11 +64,11 @@ INSERT INTO Payment (subscription_id, amount, payment_date, payment_method) VALU
 
 -- 6. Attendance
 INSERT INTO Attendance (member_id, check_in_time, check_out_time, date) VALUES
-(1, '2023-06-01 08:00:00', '2023-06-01 09:30:00', '2023-06-01'),
-(2, '2023-06-01 09:00:00', '2023-06-01 10:00:00', '2023-06-01'),
-(4, '2023-06-01 17:00:00', '2023-06-01 18:30:00', '2023-06-01'),
-(5, '2023-06-02 07:30:00', '2023-06-02 08:45:00', '2023-06-02'),
-(1, '2023-06-02 18:00:00', '2023-06-02 19:30:00', '2023-06-02');
+(1, CONCAT(CURDATE(), ' 08:00:00'), CONCAT(CURDATE(), ' 09:30:00'), CURDATE()),
+(2, CONCAT(CURDATE(), ' 09:00:00'), CONCAT(CURDATE(), ' 10:00:00'), CURDATE()),
+(4, CONCAT(CURDATE(), ' 17:00:00'), CONCAT(CURDATE(), ' 18:30:00'), CURDATE()),
+(5, CONCAT(CURDATE(), ' 07:30:00'), NULL, CURDATE()),
+(1, CONCAT(DATE_SUB(CURDATE(), INTERVAL 1 DAY), ' 18:00:00'), CONCAT(DATE_SUB(CURDATE(), INTERVAL 1 DAY), ' 19:30:00'), DATE_SUB(CURDATE(), INTERVAL 1 DAY));
 
 -- 7. Workout_Plan
 INSERT INTO Workout_Plan (plan_name, goal, difficulty_level, duration_weeks) VALUES

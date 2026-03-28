@@ -20,6 +20,8 @@ const dietRoutes = require('./routes/dietRoutes');
 const equipmentRoutes = require('./routes/equipmentRoutes');
 const supplementRoutes = require('./routes/supplementRoutes');
 const reportsRoutes = require('./routes/reportsRoutes');
+const classRoutes  = require('./routes/classRoutes');
+const dbFeaturesRoutes = require('./routes/dbFeaturesRoutes');
 
 app.use('/api/members', memberRoutes);
 app.use('/api/trainers', trainerRoutes);
@@ -33,6 +35,8 @@ app.use('/api/diets', dietRoutes);
 app.use('/api/equipment', equipmentRoutes);
 app.use('/api/supplements', supplementRoutes);
 app.use('/api/reports', reportsRoutes);
+app.use('/api/classes', classRoutes);
+app.use('/api/db', dbFeaturesRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

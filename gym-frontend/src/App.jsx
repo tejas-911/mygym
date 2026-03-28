@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
@@ -14,14 +14,38 @@ import Supplements from './pages/Supplements';
 import Reports from './pages/Reports';
 import './index.css';
 
+import TopBar from './components/TopBar';
+
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem('token');
   if (!token) return <Navigate to="/login" replace />;
+  
+  // Simple titles based on path
+  const location = useLocation();
+  const getTitle = () => {
+    switch(location.pathname) {
+      case '/': return 'Performance Overview';
+      case '/members': return 'Members Management';
+      case '/attendance': return 'Attendance Records';
+      case '/payments': return 'Financial Transactions';
+      case '/trainers': return 'Trainer Directory';
+      case '/plans': return 'Class Schedules';
+      case '/equipment': return 'Equipment Inventory';
+      case '/reports': return 'Detailed Metrics';
+      case '/supplements': return 'Supplement Shop';
+      case '/assign': return 'Assign Plans';
+      default: return 'Gym Ecosystem';
+    }
+  };
+
   return (
     <div className="app-container">
       <Sidebar />
-      <div className="main-content">
-        {children}
+      <div className="main-wrapper">
+        <TopBar title={getTitle()} />
+        <div className="main-content">
+          {children}
+        </div>
       </div>
     </div>
   );

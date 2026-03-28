@@ -1,13 +1,34 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import {
+  ShoppingBag, Plus, X, Loader2, Search,
+  Package, AlertTriangle, CheckCircle, DollarSign, Tag
+} from 'lucide-react';
 
-const initialFormState = { 
-  member_id: '', 
-  supplement_id: '', 
-  quantity: 1, 
-  sale_date: new Date().toISOString().split('T')[0],
-  payment_method: 'Card'
+const API_SUPP = 'http://localhost:5000/api/supplements';
+const API_MEM = 'http://localhost:5000/api/members';
+
+function getHeaders() {
+  const token = localStorage.getItem('token');
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+const initialFormState = {
+  member_id: '', supplement_id: '', quantity: 1,
+  sale_date: new Date().toISOString().split('T')[0], payment_method: 'Card'
 };
+
+const STOCK_COLORS = {
+  high: 'text-emerald-400',
+  medium: 'text-amber-400',
+  low: 'text-red-400',
+};
+
+function stockLevel(qty) {
+  if (qty > 40) return 'high';
+  if (qty > 10) return 'medium';
+  return 'low';
+}
 
 export default function Supplements() {
   const [data, setData] = useState([]);
@@ -15,28 +36,22 @@ export default function Supplements() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState(initialFormState);
-
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [modalError, setModalError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const fetchData = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const headers = token ? { Authorization: `Bearer ${token}` } : {};
-      
       const [suppRes, memRes] = await Promise.all([
-        axios.get('http://localhost:5000/api/supplements', { headers }),
-        axios.get('http://localhost:5000/api/members', { headers })
+        axios.get(API_SUPP, { headers: getHeaders() }),
+        axios.get(API_MEM, { headers: getHeaders() })
       ]);
-      
-      setData(suppRes.data);
-      setMembers(memRes.data);
-    } catch (err) { 
-      console.error(err); 
-    } finally {
-      setLoading(false);
-    }
+      setData(Array.isArray(suppRes.data) ? suppRes.data : []);
+      const memData = Array.isArray(memRes.data) ? memRes.data : [];
+      setMembers(memData);
+    } catch (err) { console.error(err); }
+    finally { setLoading(false); }
   };
 
   useEffect(() => { fetchData(); }, []);
@@ -45,110 +60,224 @@ export default function Supplements() {
     e.preventDefault();
     setIsSubmitting(true);
     setModalError('');
-    setSuccessMsg('');
     try {
-      const token = localStorage.getItem('token');
-      const headers = token ? { Authorization: `Bearer ${token}` } : {};
-
       const selectedSupp = data.find(s => s.supplement_id === parseInt(formData.supplement_id));
-      if (!selectedSupp) {
-        setModalError('Please select a valid supplement.');
-        setIsSubmitting(false);
-        return;
-      }
-      
+      if (!selectedSupp) { setModalError('Please select a valid supplement.'); setIsSubmitting(false); return; }
+
       const total_amount = selectedSupp.price * formData.quantity;
-      await axios.post('http://localhost:5000/api/supplements/sale', { ...formData, total_amount }, { headers });
-      
+      await axios.post(`${API_SUPP}/sale`, { ...formData, total_amount }, { headers: getHeaders() });
       setShowModal(false);
       setFormData(initialFormState);
       fetchData();
-      
-      setSuccessMsg('Sale successful! Transaction added to Payments DB.');
+      setSuccessMsg('Sale recorded successfully! Stock updated via trigger.');
       setTimeout(() => setSuccessMsg(''), 5000);
-    } catch(err) { 
-      console.error(err);
-      setModalError(err.response?.data?.error || 'Failed to record sale. Insufficient stock?'); 
-    } finally {
-      setIsSubmitting(false);
-    }
+    } catch (err) {
+      setModalError(err.response?.data?.error || 'Failed to record sale. Insufficient stock?');
+    } finally { setIsSubmitting(false); }
   };
 
   const previewSupplement = data.find(s => s.supplement_id === parseInt(formData.supplement_id));
   const previewTotal = previewSupplement ? (previewSupplement.price * formData.quantity) : 0;
 
+  const filtered = data.filter(s =>
+    !searchQuery ||
+    s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (s.brand || '').toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const totalStock = data.reduce((sum, s) => sum + (s.stock_quantity || 0), 0);
+  const lowStockCount = data.filter(s => s.stock_quantity <= 10).length;
+
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
-        <h1 style={{ fontSize: '2rem' }}>Supplements Shop</h1>
-        <button className="btn" onClick={() => setShowModal(true)}>+ Record Sale</button>
+    <div className="space-y-6 pb-12 font-manrope">
+      {/* Header */}
+      <div className="flex items-start justify-between flex-wrap gap-4">
+        <div>
+          <h1 className="text-4xl font-space font-bold tracking-tighter text-white mb-2">Supplements</h1>
+          <p className="text-iron-text-secondary font-medium italic text-sm">{data.length} products · {totalStock} units in stock</p>
+        </div>
+        <button onClick={() => { setShowModal(true); setModalError(''); }} className="btn flex items-center gap-2">
+          <Plus size={14} /> Record Sale
+        </button>
       </div>
 
+      {/* Success banner */}
       {successMsg && (
-        <div style={{ padding: '15px', marginBottom: '20px', background: '#dcfce7', color: '#047857', borderRadius: '6px', fontWeight: '500' }}>
-          {successMsg}
+        <div className="flex items-center gap-3 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-400 text-xs font-medium">
+          <CheckCircle size={14} /> {successMsg}
         </div>
       )}
 
-      {showModal && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <h2>Record Supplement Sale</h2>
-            {modalError && (
-              <div style={{ padding: '10px', marginBottom: '15px', background: '#fee2e2', color: '#b91c1c', borderRadius: '4px' }}>
-                {modalError}
+      {/* Stats */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="stat-card">
+          <p className="text-[10px] font-space font-bold uppercase tracking-[0.2em] text-iron-text-secondary mb-3">Total Products</p>
+          <p className="text-4xl font-space font-black text-white">{data.length}</p>
+        </div>
+        <div className="stat-card">
+          <p className="text-[10px] font-space font-bold uppercase tracking-[0.2em] text-iron-text-secondary mb-3">Total Stock</p>
+          <div className="flex items-end gap-2">
+            <p className="text-4xl font-space font-black text-white">{totalStock}</p>
+            <span className="text-iron-text-secondary text-xs mb-1">units</span>
+          </div>
+        </div>
+        <div className="stat-card">
+          <p className="text-[10px] font-space font-bold uppercase tracking-[0.2em] text-iron-text-secondary mb-3">Low Stock Alerts</p>
+          <p className={`text-4xl font-space font-black ${lowStockCount > 0 ? 'text-red-400' : 'text-emerald-400'}`}>{lowStockCount}</p>
+        </div>
+        <div className="stat-card">
+          <p className="text-[10px] font-space font-bold uppercase tracking-[0.2em] text-iron-text-secondary mb-3">Avg Price</p>
+          <div className="flex items-end gap-1">
+            <p className="text-4xl font-space font-black text-white">
+              ${data.length > 0 ? (data.reduce((s, d) => s + parseFloat(d.price), 0) / data.length).toFixed(0) : '0'}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Search */}
+      <div className="card p-4">
+        <div className="relative group">
+          <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-iron-text-secondary group-focus-within:text-iron-lime transition-colors" />
+          <input type="text" placeholder="Search supplements by name or brand..."
+            className="w-full bg-white/[0.03] border border-white/5 rounded-xl py-3 pl-12 pr-4 text-sm text-white focus:outline-none focus:border-iron-lime/20 focus:bg-white/[0.05] transition-all"
+            value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
+        </div>
+      </div>
+
+      {/* Product grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        {loading ? (
+          <div className="col-span-full py-20 text-center">
+            <Loader2 size={20} className="animate-spin text-iron-lime mx-auto mb-3" />
+            <p className="text-iron-text-secondary text-xs font-space uppercase tracking-widest">Loading inventory...</p>
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="col-span-full py-20 text-center text-iron-text-secondary italic">No supplements found.</div>
+        ) : (
+          filtered.map(item => {
+            const level = stockLevel(item.stock_quantity);
+            const pct = Math.min((item.stock_quantity / 100) * 100, 100);
+            return (
+              <div key={item.supplement_id} className="card group hover:border-iron-lime/30 transition-all">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="w-12 h-12 rounded-xl bg-iron-lime/10 flex items-center justify-center text-iron-lime group-hover:scale-110 transition-transform">
+                    <Package size={20} />
+                  </div>
+                  <span className="text-iron-text-secondary text-[10px] font-black uppercase tracking-widest font-space">#{item.supplement_id}</span>
+                </div>
+                <h3 className="text-white font-bold text-sm mb-1 group-hover:text-iron-lime transition-colors">{item.name}</h3>
+                <p className="text-iron-text-secondary text-xs italic mb-4">{item.brand || 'Unknown Brand'}</p>
+
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-1.5">
+                    <DollarSign size={12} className="text-emerald-400" />
+                    <span className="text-white font-space font-bold text-lg">{parseFloat(item.price).toFixed(2)}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    {level === 'low' && <AlertTriangle size={12} className="text-red-400" />}
+                    <span className={`text-sm font-space font-bold ${STOCK_COLORS[level]}`}>{item.stock_quantity}</span>
+                    <span className="text-iron-text-secondary text-[10px]">units</span>
+                  </div>
+                </div>
+
+                {/* Stock bar */}
+                <div className="w-full bg-white/5 rounded-full h-1.5 overflow-hidden">
+                  <div className={`h-full rounded-full transition-all duration-700 ${
+                    level === 'high' ? 'bg-emerald-400' : level === 'medium' ? 'bg-amber-400' : 'bg-red-400'
+                  }`} style={{ width: `${pct}%` }} />
+                </div>
               </div>
-            )}
-            <form onSubmit={handleSale}>
-              <div className="form-group">
-                <label>Member <span style={{color: '#ef4444'}}>*</span></label>
-                <select required value={formData.member_id} onChange={(e) => setFormData({...formData, member_id: e.target.value})}>
-                  <option value="">-- Select Member --</option>
+            );
+          })
+        )}
+      </div>
+
+      {/* Record Sale Modal */}
+      {showModal && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-dark/80 backdrop-blur-md" onClick={() => setShowModal(false)} />
+          <div className="bg-surface border border-border rounded-xl w-full max-w-md relative z-[210] shadow-[0_30px_100px_rgba(0,0,0,0.5)] overflow-hidden">
+            <div className="p-6 pb-4 flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-bold text-white">Record Sale</h2>
+                <p className="text-iron-text-secondary text-xs italic mt-1">Stock auto-updated via trg_supplement_stock_update trigger</p>
+              </div>
+              <button onClick={() => setShowModal(false)} className="text-iron-text-secondary hover:text-white transition-colors">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="w-full h-px bg-white/5" />
+
+            <form onSubmit={handleSale} className="p-6 space-y-4">
+              {modalError && (
+                <div className="p-4 bg-red-500/10 border border-red-500/20 text-red-400 text-xs rounded-xl flex items-center gap-3">
+                  <AlertTriangle size={14} className="shrink-0" /> {modalError}
+                </div>
+              )}
+
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">Member <span className="text-red-400">*</span></label>
+                <select required value={formData.member_id} onChange={e => setFormData({ ...formData, member_id: e.target.value })}
+                  className="w-full bg-[#18181A] border border-white/5 rounded-xl py-3 px-4 text-sm text-white focus:outline-none focus:border-iron-lime/30">
+                  <option value="">Select member...</option>
                   {members.map(m => (
-                    <option key={m.member_id} value={m.member_id}>{m.name} (ID: {m.member_id})</option>
+                    <option key={m.member_id} value={m.member_id}>{m.member_name || m.name} (ID: {m.member_id})</option>
                   ))}
                 </select>
               </div>
-              <div className="form-group">
-                <label>Select Supplement <span style={{color: '#ef4444'}}>*</span></label>
-                <select required value={formData.supplement_id} onChange={(e) => setFormData({...formData, supplement_id: e.target.value})}>
-                  <option value="">-- Choose Supplement --</option>
+
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">Supplement <span className="text-red-400">*</span></label>
+                <select required value={formData.supplement_id} onChange={e => setFormData({ ...formData, supplement_id: e.target.value })}
+                  className="w-full bg-[#18181A] border border-white/5 rounded-xl py-3 px-4 text-sm text-white focus:outline-none focus:border-iron-lime/30">
+                  <option value="">Select supplement...</option>
                   {data.map(s => (
                     <option key={s.supplement_id} value={s.supplement_id}>
-                      {s.name} (₹{Number(s.price).toLocaleString('en-IN')} each) - {s.stock_quantity} left
+                      {s.name} (${parseFloat(s.price).toFixed(2)}) — {s.stock_quantity} left
                     </option>
                   ))}
                 </select>
               </div>
-              <div className="form-group">
-                <label>Quantity <span style={{color: '#ef4444'}}>*</span></label>
-                <input required type="number" min="1" max={previewSupplement ? previewSupplement.stock_quantity : 99} value={formData.quantity} onChange={(e) => setFormData({...formData, quantity: parseInt(e.target.value) || 1})} />
-              </div>
-              <div className="form-group">
-                <label>Calculated Total (₹)</label>
-                <input type="text" readOnly value={`₹${Number(previewTotal).toLocaleString('en-IN')}`} style={{ background: '#f3f4f6', fontWeight: 'bold', color: '#10b981' }} />
-              </div>
-              
-              <div className="form-group">
-                <label>Payment Method <span style={{color: '#ef4444'}}>*</span></label>
-                <select value={formData.payment_method} onChange={(e) => setFormData({...formData, payment_method: e.target.value})}>
-                  <option value="Card">Card</option>
-                  <option value="Cash">Cash</option>
-                  <option value="Bank Transfer">Bank Transfer</option>
-                  <option value="UPI">UPI</option>
-                </select>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">Quantity <span className="text-red-400">*</span></label>
+                  <input required type="number" min="1" max={previewSupplement ? previewSupplement.stock_quantity : 99}
+                    value={formData.quantity} onChange={e => setFormData({ ...formData, quantity: parseInt(e.target.value) || 1 })}
+                    className="w-full bg-[#18181A] border border-white/5 rounded-xl py-3 px-4 text-sm text-white focus:outline-none focus:border-iron-lime/30" />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">Payment</label>
+                  <select value={formData.payment_method} onChange={e => setFormData({ ...formData, payment_method: e.target.value })}
+                    className="w-full bg-[#18181A] border border-white/5 rounded-xl py-3 px-4 text-sm text-white focus:outline-none focus:border-iron-lime/30">
+                    <option>Card</option><option>Cash</option><option>UPI</option><option>Bank Transfer</option>
+                  </select>
+                </div>
               </div>
 
-              <div className="form-group">
-                <label>Sale Date <span style={{color: '#ef4444'}}>*</span></label>
-                <input required type="date" value={formData.sale_date} onChange={(e) => setFormData({...formData, sale_date: e.target.value})} />
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">Sale Date</label>
+                <input required type="date" value={formData.sale_date} onChange={e => setFormData({ ...formData, sale_date: e.target.value })}
+                  className="w-full bg-[#18181A] border border-white/5 rounded-xl py-3 px-4 text-sm text-white focus:outline-none focus:border-iron-lime/30 [color-scheme:dark]" />
               </div>
 
-              <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
-                <button type="submit" className="btn" style={{ flex: 1 }} disabled={isSubmitting}>
-                  {isSubmitting ? 'Saving...' : 'Save Sale'}
+              {/* Total preview */}
+              {previewSupplement && (
+                <div className="flex items-center justify-between p-4 bg-iron-lime/5 border border-iron-lime/20 rounded-xl">
+                  <span className="text-iron-text-secondary text-xs font-bold uppercase tracking-widest">Total</span>
+                  <span className="text-iron-lime font-space font-black text-xl">${previewTotal.toFixed(2)}</span>
+                </div>
+              )}
+
+              <div className="flex gap-3 pt-2">
+                <button type="submit" disabled={isSubmitting}
+                  className="flex-1 btn flex items-center justify-center gap-2">
+                  {isSubmitting ? <Loader2 size={14} className="animate-spin" /> : <ShoppingBag size={14} />}
+                  {isSubmitting ? 'Processing...' : 'Record Sale'}
                 </button>
-                <button type="button" className="btn" style={{ flex: 1, background: '#6b7280' }} onClick={() => setShowModal(false)} disabled={isSubmitting}>
+                <button type="button" onClick={() => setShowModal(false)}
+                  className="flex-1 py-3 px-6 bg-white/[0.03] border border-white/10 rounded text-white text-xs font-space font-semibold uppercase tracking-wider hover:bg-white/5 transition-colors">
                   Cancel
                 </button>
               </div>
@@ -156,39 +285,6 @@ export default function Supplements() {
           </div>
         </div>
       )}
-
-      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-        {loading ? (
-          <p style={{ padding: '20px' }}>Loading data...</p>
-        ) : data.length === 0 ? (
-          <p style={{ padding: '20px', textAlign: 'center', color: '#6b7280' }}>
-            No supplements found in the shop.
-          </p>
-        ) : (
-          <table>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Brand</th>
-                <th>Price</th>
-                <th>Stock Quantity</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.map(item => (
-                <tr key={item.supplement_id}>
-                  <td>{item.supplement_id}</td>
-                  <td style={{ fontWeight: 500 }}>{item.name}</td>
-                  <td>{item.brand}</td>
-                  <td>₹{Number(item.price).toLocaleString('en-IN')}</td>
-                  <td><span style={{ fontWeight: 500, color: item.stock_quantity > 10 ? '#10b981' : '#ef4444' }}>{item.stock_quantity}</span></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
     </div>
   );
 }
