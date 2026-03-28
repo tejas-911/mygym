@@ -13,6 +13,7 @@ exports.verifyToken = (req, res, next) => {
     }
 };
 
+
 exports.checkRole = (roles) => {
     return (req, res, next) => {
         if (!req.user || !roles.includes(req.user.role)) {
