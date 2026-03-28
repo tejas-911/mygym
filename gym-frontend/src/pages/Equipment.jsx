@@ -1,62 +1,511 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import axios from 'axios';
+import {
+  Package, Zap, AlertTriangle, Search, Plus, X,
+  Loader2, AlertCircle, CheckCircle, CalendarClock,
+  Dumbbell, Bike, Heart, LayoutGrid, Wrench,
+  ChevronRight, Clock, ShieldAlert
+} from 'lucide-react';
 
-export default function Equipment() {
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
+const API = 'http://localhost:5000/api/equipment';
 
-  const fetchData = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const headers = token ? { Authorization: `Bearer ${token}` } : {};
-      const res = await axios.get('http://localhost:5000/api/equipment', { headers });
-      setData(res.data);
-    } catch (err) { 
-      console.error(err); 
-    } finally {
-      setLoading(false);
-    }
-  };
+function getHeaders() {
+  const token = localStorage.getItem('token');
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
 
-  useEffect(() => { fetchData(); }, []);
+function formatDate(d) {
+  if (!d) return '—';
+  return new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+function formatShortDate(d) {
+  if (!d) return '—';
+  return new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+// ── Category badge config ───────────────────────────────────────
+const CATEGORY_CFG = {
+  Strength: { cls: 'bg-iron-lime/15 text-iron-lime border-iron-lime/20',  Icon: Dumbbell },
+  Cardio:   { cls: 'bg-iron-blue/15 text-blue-400  border-iron-blue/20',  Icon: Bike     },
+  Recovery: { cls: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/20', Icon: Heart },
+  General:  { cls: 'bg-white/5 text-iron-text-secondary border-white/10',  Icon: LayoutGrid },
+};
+
+function CategoryBadge({ category }) {
+  const cfg = CATEGORY_CFG[category] || CATEGORY_CFG.General;
+  const Icon = cfg.Icon;
+  return (
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-[10px] font-black uppercase tracking-widest border ${cfg.cls}`}>
+      <Icon size={10} /> {category}
+    </span>
+  );
+}
+
+// ── Condition text colour ───────────────────────────────────────
+const CONDITION_COLOR = {
+  New:           'text-iron-lime font-bold',
+  Good:          'text-white font-semibold',
+  'Needs Repair':'text-amber-400 font-bold',
+  'Out of Order':'text-red-400 font-bold',
+};
+
+// ── Status dot ─────────────────────────────────────────────────
+const STATUS_CFG = {
+  'Available':    { dot: 'bg-emerald-400', label: 'Available'   },
+  'In-Use':       { dot: 'bg-white',       label: 'In-Use'      },
+  'Out of Order': { dot: 'bg-red-500',     label: 'Out of Order'},
+};
+
+function StatusDot({ status }) {
+  const cfg = STATUS_CFG[status] || STATUS_CFG['Available'];
+  return (
+    <div className="flex items-center gap-2">
+      <span className={`w-2 h-2 rounded-full ${cfg.dot} ${cfg.dot === 'bg-emerald-400' ? 'shadow-[0_0_6px_rgba(52,211,153,0.6)]' : ''}`} />
+      <span className="text-xs text-white/80 font-medium">{cfg.label}</span>
+    </div>
+  );
+}
+
+// ── Equipment icon per category ─────────────────────────────────
+const EQUIP_ICONS = {
+  Strength: '🏋️',
+  Cardio:   '🚴',
+  Recovery: '💆',
+  General:  '⚙️',
+};
+
+// ── Maintenance item ────────────────────────────────────────────
+function MaintenanceItem({ item }) {
+  const isPast   = item.days_diff < 0;
+  const isSoon   = item.days_diff >= 0 && item.days_diff <= 3;
+  const borderCls = isPast ? 'border-red-500' : isSoon ? 'border-iron-lime' : 'border-border';
+  const labelCls  = isPast ? 'text-red-400' : 'text-iron-text-secondary';
 
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
-        <h1 style={{ fontSize: '2rem' }}>Equipment Info</h1>
-      </div>
-      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-        {loading ? (
-          <p style={{ padding: '20px' }}>Loading data...</p>
-        ) : data.length === 0 ? (
-          <p style={{ padding: '20px', textAlign: 'center', color: '#6b7280' }}>
-            No equipment found. Add new equipment to see them listed here.
+    <div className={`pl-4 border-l-2 ${borderCls} py-1 space-y-1`}>
+      <p className={`text-[10px] font-black uppercase tracking-widest ${labelCls}`}>
+        {item.date_label}
+        {isPast && <span className="ml-1 text-red-400">(Overdue)</span>}
+      </p>
+      <p className="text-white text-sm font-bold">{item.equipment_name}</p>
+      {item.description && (
+        <p className="text-iron-text-secondary text-xs leading-relaxed line-clamp-2">{item.description}</p>
+      )}
+      <p className="text-[10px] uppercase tracking-widest font-bold">
+        <span className="text-iron-text-secondary">Assigned: </span>
+        <span className={isPast ? 'text-red-400' : isSoon ? 'text-iron-lime' : 'text-iron-text-secondary'}>
+          Unassigned
+        </span>
+      </p>
+    </div>
+  );
+}
+
+const CONDITION_OPTIONS = ['New', 'Good', 'Needs Repair', 'Out of Order'];
+const initialForm = { equipment_name: '', purchase_date: '', condition_status: 'Good', location: '' };
+
+export default function Equipment() {
+  const [stats, setStats]         = useState(null);
+  const [equipment, setEquipment] = useState([]);
+  const [maintenance, setMaintenance] = useState([]);
+  const [loadingEq, setLoadingEq] = useState(true);
+  const [search, setSearch]       = useState('');
+  const [searchInput, setSearchInput] = useState('');
+
+  // Modal
+  const [showModal, setShowModal] = useState(false);
+  const [formData, setFormData]   = useState(initialForm);
+  const [submitting, setSubmitting] = useState(false);
+  const [formError, setFormError] = useState('');
+  const [formSuccess, setFormSuccess] = useState(false);
+
+  const fetchStats = useCallback(async () => {
+    try {
+      const { data } = await axios.get(`${API}/stats`, { headers: getHeaders() });
+      setStats(data);
+    } catch (e) { console.error(e); }
+  }, []);
+
+  const fetchEquipment = useCallback(async (q = '') => {
+    setLoadingEq(true);
+    try {
+      const { data } = await axios.get(API, { headers: getHeaders(), params: { search: q } });
+      setEquipment(Array.isArray(data) ? data : []);
+    } catch (e) { console.error(e); setEquipment([]); }
+    finally { setLoadingEq(false); }
+  }, []);
+
+  const fetchMaintenance = useCallback(async () => {
+    try {
+      const { data } = await axios.get(`${API}/maintenance`, { headers: getHeaders() });
+      setMaintenance(Array.isArray(data) ? data : []);
+    } catch (e) { console.error(e); }
+  }, []);
+
+  useEffect(() => { fetchStats(); fetchEquipment(); fetchMaintenance(); }, []);
+  useEffect(() => { fetchEquipment(search); }, [search]);
+
+  const handleSearch = (e) => { e.preventDefault(); setSearch(searchInput); };
+  const clearSearch  = () => { setSearchInput(''); setSearch(''); };
+
+  const openModal = () => {
+    setFormData(initialForm); setFormError(''); setFormSuccess(false);
+    setShowModal(true);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSubmitting(true); setFormError('');
+    try {
+      await axios.post(API, formData, { headers: getHeaders() });
+      setFormSuccess(true);
+      fetchStats(); fetchEquipment(search);
+      setTimeout(() => { setShowModal(false); setFormSuccess(false); }, 1200);
+    } catch (err) {
+      setFormError(err.response?.data?.message || 'Failed to add equipment.');
+    } finally { setSubmitting(false); }
+  };
+
+  // upcoming / overdue split for maintenance panel
+  const overdue   = maintenance.filter(m => m.days_diff < 0).slice(0, 3);
+  const upcoming  = maintenance.filter(m => m.days_diff >= 0).slice(0, 3);
+  const panelItems = [...upcoming, ...overdue].slice(0, 4);
+  const urgentCount = overdue.length;
+
+  return (
+    <div className="space-y-6 pb-10 font-manrope">
+
+      {/* ── Stats Row ─────────────────────────────────────────── */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+
+        {/* Total Assets */}
+        <div className="stat-card">
+          <div className="flex items-start justify-between mb-4">
+            <p className="text-[10px] font-space font-bold uppercase tracking-[0.2em] text-iron-text-secondary">Total Assets</p>
+            <div className="w-9 h-9 rounded-lg bg-iron-lime/10 flex items-center justify-center text-iron-lime">
+              <Package size={16} />
+            </div>
+          </div>
+          <div className="flex items-end gap-3">
+            <p className="text-5xl font-space font-black text-white tracking-tighter">
+              {stats?.total ?? '—'}
+            </p>
+            {stats?.this_month > 0 && (
+              <span className="text-emerald-400 text-xs font-bold mb-2">+{stats.this_month} this month</span>
+            )}
+          </div>
+        </div>
+
+        {/* Active / In-Use */}
+        <div className="stat-card border-iron-blue/20">
+          <div className="flex items-start justify-between mb-4">
+            <p className="text-[10px] font-space font-bold uppercase tracking-[0.2em] text-iron-text-secondary">Active / In-Use</p>
+            <div className="w-9 h-9 rounded-lg bg-iron-blue/10 flex items-center justify-center text-iron-blue">
+              <Zap size={16} />
+            </div>
+          </div>
+          <p className="text-5xl font-space font-black text-white tracking-tighter mb-2">
+            {stats?.active ?? '—'}
           </p>
-        ) : (
-          <table>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Purchase Date</th>
-                <th>Condition</th>
-                <th>Location</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.map(item => (
-                <tr key={item.equipment_id}>
-                  <td>{item.equipment_id}</td>
-                  <td style={{ fontWeight: 500 }}>{item.equipment_name}</td>
-                  <td>{new Date(item.purchase_date).toLocaleDateString('en-IN')}</td>
-                  <td><span style={{ padding: '4px 10px', borderRadius: '12px', fontSize: '0.85rem', background: item.condition_status === 'Good' || item.condition_status === 'New' ? '#dcfce7' : '#fef08a', color: '#374151' }}>{item.condition_status}</span></td>
-                  <td>{item.location}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+          <p className="text-iron-text-secondary text-xs italic">
+            <span className="text-white font-semibold">{stats?.utilization ?? '—'}%</span> Utilization
+          </p>
+        </div>
+
+        {/* Maintenance Due */}
+        <div className="stat-card border-red-500/20">
+          <div className="flex items-start justify-between mb-4">
+            <p className="text-[10px] font-space font-bold uppercase tracking-[0.2em] text-iron-text-secondary">Maintenance Due</p>
+            <div className="w-9 h-9 rounded-lg bg-red-500/10 flex items-center justify-center text-red-400">
+              <AlertTriangle size={16} />
+            </div>
+          </div>
+          <p className="text-5xl font-space font-black text-red-400 tracking-tighter mb-2">
+            {stats?.maintenance_due !== undefined ? String(stats.maintenance_due).padStart(2, '0') : '—'}
+          </p>
+          <p className="text-red-400/70 text-xs font-bold uppercase tracking-wider">Critical priority</p>
+        </div>
       </div>
+
+      {/* ── Main Two-Column Layout ─────────────────────────────── */}
+      <div className="grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-6">
+
+        {/* ── LEFT: Gym Inventory ───────────────────────────────── */}
+        <div className="card !p-0 overflow-hidden flex flex-col">
+          {/* Panel header */}
+          <div className="px-6 py-5 border-b border-border">
+            <div className="flex items-start justify-between gap-4 flex-wrap">
+              <div>
+                <h2 className="text-white font-space font-black text-lg italic uppercase tracking-tight">Gym Inventory</h2>
+                <p className="text-iron-text-secondary text-xs italic mt-0.5">Real-time equipment performance and status</p>
+              </div>
+              <div className="flex items-center gap-3">
+                {/* Search */}
+                <form onSubmit={handleSearch} className="relative flex items-center">
+                  <Search size={13} className="absolute left-3 text-iron-text-secondary pointer-events-none" />
+                  <input
+                    type="text"
+                    placeholder="Search machine or ID..."
+                    value={searchInput}
+                    onChange={e => setSearchInput(e.target.value)}
+                    className="bg-[#18181A] border border-border rounded-lg pl-8 pr-8 py-2 text-xs text-white placeholder:text-iron-text-secondary/60 outline-none focus:border-iron-lime/40 transition-colors w-48"
+                  />
+                  {searchInput && (
+                    <button type="button" onClick={clearSearch} className="absolute right-2 text-iron-text-secondary hover:text-white">
+                      <X size={12} />
+                    </button>
+                  )}
+                </form>
+                {/* Add button */}
+                <button onClick={openModal} className="btn flex items-center gap-2 whitespace-nowrap !py-2">
+                  <Plus size={13} /> Add Equipment
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Table */}
+          <div className="overflow-x-auto flex-1">
+            <table className="iron-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Item Name</th>
+                  <th>Category</th>
+                  <th>Condition</th>
+                  <th>Last Serviced</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {loadingEq ? (
+                  <tr>
+                    <td colSpan={6} className="py-16 text-center">
+                      <div className="flex justify-center items-center gap-3 text-iron-text-secondary text-xs font-space uppercase tracking-widest">
+                        <Loader2 size={15} className="animate-spin text-iron-lime" /> Loading inventory...
+                      </div>
+                    </td>
+                  </tr>
+                ) : equipment.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="py-16 text-center text-iron-text-secondary italic text-sm">
+                      No equipment found. Click "+ Add Equipment" to get started.
+                    </td>
+                  </tr>
+                ) : (
+                  equipment.map(item => (
+                    <tr key={item.equipment_id} className="group">
+                      <td>
+                        <span className="text-iron-text-secondary text-[10px] font-black uppercase tracking-widest font-space">
+                          #{item.equipment_id.toString().padStart(3, '0')}
+                        </span>
+                      </td>
+                      <td>
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-white/[0.04] border border-white/5 flex items-center justify-center text-sm flex-shrink-0">
+                            {EQUIP_ICONS[item.category] || '⚙️'}
+                          </div>
+                          <span className="text-white font-semibold text-sm group-hover:text-iron-lime transition-colors">
+                            {item.equipment_name}
+                          </span>
+                        </div>
+                      </td>
+                      <td><CategoryBadge category={item.category} /></td>
+                      <td>
+                        <span className={`text-sm ${CONDITION_COLOR[item.condition_status] || 'text-white'}`}>
+                          {item.condition_status}
+                        </span>
+                      </td>
+                      <td>
+                        <span className="text-iron-text-secondary text-xs">{formatShortDate(item.last_serviced)}</span>
+                      </td>
+                      <td><StatusDot status={item.display_status} /></td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Table footer */}
+          {equipment.length > 0 && (
+            <div className="px-6 py-3 border-t border-border bg-white/[0.01]">
+              <p className="text-iron-text-secondary text-xs italic">
+                Showing <span className="text-white font-semibold">{equipment.length}</span> items
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* ── RIGHT: Maintenance Panel ──────────────────────────── */}
+        <div className="flex flex-col gap-5">
+
+          {/* Maintenance Schedule */}
+          <div className="card !p-0 overflow-hidden flex flex-col">
+            <div className="px-5 py-4 border-b border-border flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <CalendarClock size={15} className="text-iron-text-secondary" />
+                <h3 className="text-white font-space font-black uppercase tracking-widest text-sm italic">Maintenance</h3>
+              </div>
+              {urgentCount > 0 && (
+                <span className="px-2.5 py-1 bg-red-500 text-white text-[9px] font-black uppercase tracking-widest rounded">
+                  Urgent
+                </span>
+              )}
+            </div>
+
+            <div className="px-5 py-4 space-y-5 flex-1">
+              {panelItems.length === 0 ? (
+                <p className="text-iron-text-secondary text-xs italic text-center py-4">
+                  No upcoming maintenance scheduled.
+                </p>
+              ) : (
+                panelItems.map(item => (
+                  <MaintenanceItem key={item.maintenance_id} item={item} />
+                ))
+              )}
+            </div>
+
+            {/* Equipment Health */}
+            <div className="mx-5 mb-4 bg-white/[0.03] border border-white/5 rounded-xl px-4 py-3 space-y-2">
+              <div className="flex items-center gap-2 mb-2">
+                <ShieldAlert size={13} className="text-iron-lime" />
+                <p className="text-[10px] font-black uppercase tracking-widest text-white font-space">Equipment Health</p>
+              </div>
+              <div className="flex justify-between items-center">
+                <p className="text-[10px] uppercase tracking-widest text-iron-text-secondary font-bold">Reliability Score</p>
+                <p className="text-iron-lime font-black font-space text-sm">{stats?.reliability_score ?? '—'}</p>
+              </div>
+              <div className="w-full bg-white/5 rounded-full h-1.5 overflow-hidden">
+                <div
+                  className="h-full bg-iron-lime rounded-full transition-all duration-700"
+                  style={{ width: `${Math.min((stats?.reliability_score ?? 0) / 10, 100)}%` }}
+                />
+              </div>
+            </div>
+
+            {/* View full schedule */}
+            <button
+              onClick={fetchMaintenance}
+              className="mx-5 mb-5 flex items-center justify-center gap-2 py-2.5 bg-white/[0.03] border border-white/5 rounded-xl text-[10px] font-black uppercase tracking-widest text-iron-text-secondary hover:text-white hover:border-white/20 transition-all"
+            >
+              <Clock size={12} /> View Full Schedule
+            </button>
+          </div>
+
+          {/* Quick stats card */}
+          <div className="card space-y-3">
+            <p className="text-[10px] font-space font-black uppercase tracking-widest text-iron-text-secondary mb-3">Condition Breakdown</p>
+            {[
+              { label: 'New',          color: 'bg-iron-lime',    key: 'New'           },
+              { label: 'Good',         color: 'bg-emerald-400',  key: 'Good'          },
+              { label: 'Needs Repair', color: 'bg-amber-400',    key: 'Needs Repair'  },
+              { label: 'Out of Order', color: 'bg-red-500',      key: 'Out of Order'  },
+            ].map(({ label, color, key }) => {
+              const count = equipment.filter(e => e.condition_status === key).length;
+              const pct   = equipment.length > 0 ? Math.round((count / equipment.length) * 100) : 0;
+              return (
+                <div key={key} className="space-y-1">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-iron-text-secondary font-medium">{label}</span>
+                    <span className="text-xs font-bold text-white font-space">{count}</span>
+                  </div>
+                  <div className="w-full bg-white/5 rounded-full h-1 overflow-hidden">
+                    <div className={`h-full ${color} rounded-full transition-all duration-700`} style={{ width: `${pct}%` }} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Add Equipment Modal ────────────────────────────────── */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-surface border border-border rounded-2xl w-full max-w-md shadow-2xl">
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-5 border-b border-border">
+              <div>
+                <h2 className="text-white font-space font-bold text-base tracking-wide">Add Equipment</h2>
+                <p className="text-iron-text-secondary text-xs italic mt-0.5">Register a new asset to the inventory</p>
+              </div>
+              <button onClick={() => setShowModal(false)}
+                className="w-8 h-8 rounded-lg bg-white/[0.03] border border-white/5 flex items-center justify-center text-iron-text-secondary hover:text-white transition-colors">
+                <X size={15} />
+              </button>
+            </div>
+
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4">
+              {formError && (
+                <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 text-red-400 text-xs">
+                  <AlertCircle size={14} className="flex-shrink-0" />{formError}
+                </div>
+              )}
+              {formSuccess && (
+                <div className="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 rounded-xl px-4 py-3 text-emerald-400 text-xs">
+                  <CheckCircle size={14} className="flex-shrink-0" />Equipment added successfully!
+                </div>
+              )}
+
+              <div className="space-y-1">
+                <label className="text-iron-text-secondary text-[10px] uppercase tracking-widest font-space font-semibold">
+                  Equipment Name <span className="text-red-400">*</span>
+                </label>
+                <input required type="text" placeholder="e.g. SteelForce Power Rack"
+                  value={formData.equipment_name}
+                  onChange={e => setFormData({ ...formData, equipment_name: e.target.value })}
+                  className="w-full bg-[#18181A] border border-border rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-iron-lime/50 transition-colors placeholder:text-iron-text-secondary/50" />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-iron-text-secondary text-[10px] uppercase tracking-widest font-space font-semibold">
+                    Purchase Date
+                  </label>
+                  <input type="date"
+                    value={formData.purchase_date}
+                    onChange={e => setFormData({ ...formData, purchase_date: e.target.value })}
+                    className="w-full bg-[#18181A] border border-border rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-iron-lime/50 transition-colors" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-iron-text-secondary text-[10px] uppercase tracking-widest font-space font-semibold">
+                    Condition <span className="text-red-400">*</span>
+                  </label>
+                  <select value={formData.condition_status}
+                    onChange={e => setFormData({ ...formData, condition_status: e.target.value })}
+                    className="w-full bg-[#18181A] border border-border rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-iron-lime/50 transition-colors">
+                    {CONDITION_OPTIONS.map(c => <option key={c}>{c}</option>)}
+                  </select>
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-iron-text-secondary text-[10px] uppercase tracking-widest font-space font-semibold">
+                  Location / Zone
+                </label>
+                <input type="text" placeholder="e.g. Main Floor, Zone A"
+                  value={formData.location}
+                  onChange={e => setFormData({ ...formData, location: e.target.value })}
+                  className="w-full bg-[#18181A] border border-border rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-iron-lime/50 transition-colors placeholder:text-iron-text-secondary/50" />
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button type="submit" disabled={submitting}
+                  className="flex-1 btn flex items-center justify-center gap-2">
+                  {submitting ? <><Loader2 size={14} className="animate-spin" /> Saving...</> : <><Plus size={13} /> Add Equipment</>}
+                </button>
+                <button type="button" onClick={() => setShowModal(false)}
+                  className="flex-1 py-3 px-6 bg-white/[0.03] border border-white/10 rounded text-white text-xs font-space font-semibold uppercase tracking-wider hover:bg-white/5 transition-colors">
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

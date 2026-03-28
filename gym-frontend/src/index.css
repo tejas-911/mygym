@@ -1,48 +1,120 @@
-* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, sans-serif; }
-body { background: #f4f7f6; color: #333; }
-.app-container { display: flex; min-height: 100vh; }
-.sidebar { width: 250px; background: #1f2937; color: white; padding: 20px; display: flex; flex-direction: column; }
-.sidebar h2 { font-size: 1.5rem; margin-bottom: 30px; color: #3b82f6; text-align: center; }
-.sidebar nav { display: flex; flex-direction: column; gap: 10px; }
-.sidebar nav a { color: #d1d5db; text-decoration: none; font-size: 1rem; padding: 12px 15px; border-radius: 8px; transition: 0.2s; }
-.sidebar nav a:hover { background: #374151; color: white; }
-.main-content { flex: 1; padding: 40px; overflow-y: auto; }
-.card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
-.btn { background: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; transition: 0.2s; font-weight: 500;}
-.btn:hover { background: #2563eb; }
-.form-group { margin-bottom: 20px; }
-.form-group label { display: block; margin-bottom: 8px; font-weight: 500; font-size: 0.95rem; color: #4b5563;}
-.form-group input, .form-group select { width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 1rem; transition: border-color 0.2s;}
-.form-group input:focus, .form-group select:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-table th { text-align: left; padding: 15px; border-bottom: 2px solid #e5e7eb; color: #6b7280; font-weight: 600; font-size: 0.9rem; text-transform: uppercase;}
-table td { padding: 15px; border-bottom: 1px solid #f3f4f6; color: #374151; }
-table tr:hover td { background-color: #f9fafb; }
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
 
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
+@theme {
+  --color-dark: #0A0A0E;
+  --color-surface: #111116;
+  --color-border: #1F1F26;
+  --color-iron-lime: #DFFF00;
+  --color-iron-blue: #1A3AFF;
+  --color-iron-text-primary: #FFFFFF;
+  --color-iron-text-secondary: #71717A;
+  
+  --font-space: "Space Grotesk", sans-serif;
+  --font-manrope: "Manrope", sans-serif;
+
+  --sidebar-width: 240px;
 }
 
-.modal-content {
-  background: white;
-  padding: 30px;
-  border-radius: 12px;
-  width: 450px;
-  max-width: 90%;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+@layer base {
+  * {
+    @apply box-border m-0 p-0;
+  }
+
+  html, body {
+    @apply bg-dark text-white font-manrope h-full;
+    overflow: hidden;
+  }
+
+  #root {
+    @apply h-full;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-space font-bold text-white;
+  }
 }
 
-.modal-content h2 {
-  margin-bottom: 20px;
-  font-size: 1.5rem;
-  color: #1f2937;
+/* Layout components */
+.app-container {
+  @apply flex min-h-screen w-full bg-dark;
+}
+
+.sidebar {
+  @apply fixed left-0 top-0 w-(--sidebar-width) h-screen bg-dark border-r border-border flex flex-col py-8 z-50;
+}
+
+.top-bar {
+  @apply fixed top-0 left-(--sidebar-width) right-0 h-[72px] bg-dark border-b border-border flex items-center justify-between px-8 z-40;
+}
+
+.main-wrapper {
+  @apply flex-1 flex flex-col pl-(--sidebar-width);
+}
+
+.main-content {
+  @apply ml-0 mt-[72px] p-8 bg-[#0D0D12];
+  height: calc(100vh - 72px);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Dashboard components */
+.stat-card {
+  @apply bg-surface border border-border rounded-lg p-6 relative transition-all duration-300 hover:border-iron-lime/30 hover:-translate-y-1;
+}
+
+.card {
+  @apply bg-surface border border-border rounded-lg p-6 transition-all duration-300 hover:border-iron-lime/20;
+}
+
+.btn {
+  @apply bg-iron-lime text-dark border border-iron-lime px-6 py-3 rounded font-space font-semibold text-[0.75rem] uppercase tracking-wider transition-all duration-200 hover:shadow-[0_0_20px_rgba(223,255,0,0.3)] hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+/* Badges */
+.badge {
+  @apply inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border;
+}
+
+.badge-active {
+  @apply bg-emerald-500/10 text-emerald-400 border-emerald-500/20;
+}
+
+.badge-inactive, .badge-expired {
+  @apply bg-red-500/10 text-red-400 border-red-500/20;
+}
+
+.badge-pending {
+  @apply bg-amber-500/10 text-amber-400 border-amber-500/20;
+}
+
+/* Table styling */
+.iron-table {
+  @apply w-full border-collapse;
+}
+
+.iron-table th {
+  @apply text-left px-4 py-3 border-b border-border text-iron-text-secondary font-space font-semibold text-[0.625rem] uppercase tracking-wider;
+}
+
+.iron-table td {
+  @apply px-4 py-4 border-b border-border/50 text-white text-sm;
+}
+
+.iron-table tr:hover {
+  @apply bg-white/[0.02];
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  @apply w-1.5;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-dark;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-border rounded-full hover:bg-iron-lime transition-colors;
 }
