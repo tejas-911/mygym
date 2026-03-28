@@ -1,11 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import {
+  Search, Filter, Plus, X, ChevronLeft, ChevronRight,
+  Dumbbell, MoreHorizontal, Loader2, Clock, DollarSign, UserCheck
+} from 'lucide-react';
 
-const initialFormState = { 
-  name: '', 
-  email: '', 
-  phone: '', 
-  join_date: new Date().toISOString().split('T')[0] 
+const API = 'http://localhost:5000/api/members';
+
+function getHeaders() {
+  const token = localStorage.getItem('token');
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+const initialFormState = {
+  name: '', email: '', phone: '', gender: 'Male', date_of_birth: ''
 };
 
 export default function Members() {
@@ -13,122 +21,317 @@ export default function Members() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState(initialFormState);
-
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [modalError, setModalError] = useState('');
+  const [modalSuccess, setModalSuccess] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
 
   const fetchMembers = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const headers = token ? { Authorization: `Bearer ${token}` } : {};
-      const res = await axios.get('http://localhost:5000/api/members', { headers });
-      setData(res.data);
-    } catch (err) { 
-      console.error(err); 
-    } finally {
-      setLoading(false);
-    }
+      const res = await axios.get(API, { headers: getHeaders() });
+      setData(Array.isArray(res.data) ? res.data : []);
+    } catch (err) { console.error(err); }
+    finally { setLoading(false); }
   };
 
   useEffect(() => { fetchMembers(); }, []);
 
+  // Uses sp_register_member STORED PROCEDURE via backend
   const handleAdd = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     setModalError('');
+    setModalSuccess('');
     try {
-      const token = localStorage.getItem('token');
-      const headers = token ? { Authorization: `Bearer ${token}` } : {};
-      await axios.post('http://localhost:5000/api/members', formData, { headers });
-      setShowModal(false);
-      setFormData(initialFormState);
+      const res = await axios.post(API, formData, { headers: getHeaders() });
+      setModalSuccess(res.data.message || 'Member registered successfully!');
       fetchMembers();
-    } catch(err) { 
-      console.error(err);
-      setModalError(err.response?.data?.message || 'Failed to add member. Please try again.'); 
-    } finally {
-      setIsSubmitting(false);
-    }
+      setTimeout(() => { setShowModal(false); setModalSuccess(''); setFormData(initialFormState); }, 1500);
+    } catch (err) {
+      // Error message comes from stored procedure validation
+      setModalError(err.response?.data?.message || 'Failed to add member.');
+    } finally { setIsSubmitting(false); }
   };
 
+  const getInitials = (name) => name?.split(' ').map(n => n[0]).join('').toUpperCase() || '??';
+
+  // Filter + search
+  const filtered = data.filter(m => {
+    const matchesSearch = !searchQuery ||
+      (m.member_name || m.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (m.email || '').toLowerCase().includes(searchQuery.toLowerCase());
+    const status = (m.member_status || m.status || '').toLowerCase();
+    const matchesStatus = statusFilter === 'all' || status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
+
+  const activeCount = data.filter(m => (m.member_status || m.status || '').toLowerCase() === 'active').length;
+
+  // Check if enriched data is available (view + functions ran)
+  const hasEnrichedData = data.length > 0 && data[0].subscription_status_label !== undefined;
+
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
-        <h1 style={{ fontSize: '2rem' }}>Members</h1>
-        <button className="btn" onClick={() => setShowModal(true)}>+ Add Member</button>
+    <div className="space-y-8 pb-12 font-manrope">
+      {/* Page Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-4xl font-space font-bold tracking-tighter text-white mb-2">Members</h1>
+          <p className="text-iron-text-secondary font-medium italic text-sm">
+            {data.length} total · {activeCount} active
+            {hasEnrichedData && <span className="ml-2 px-2 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded text-[9px] font-black uppercase tracking-widest">View + Functions Active</span>}
+          </p>
+        </div>
+        <button className="btn flex items-center gap-2 group" onClick={() => { setShowModal(true); setModalError(''); setModalSuccess(''); }}>
+          <Dumbbell size={18} className="group-hover:rotate-12 transition-transform" />
+          <span>Register Member</span>
+        </button>
       </div>
-      
+
+      {/* Filters */}
+      <div className="card p-4 flex flex-col md:flex-row gap-4">
+        <div className="flex-1 relative group">
+          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-iron-text-secondary group-focus-within:text-iron-lime transition-colors">
+            <Search size={18} />
+          </div>
+          <input type="text" placeholder="Search by name or email..."
+            className="w-full bg-white/[0.03] border border-white/5 rounded-xl py-3 pl-12 pr-4 text-sm text-white focus:outline-none focus:border-iron-lime/20 focus:bg-white/[0.05] transition-all"
+            value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
+        </div>
+        <div className="flex gap-4">
+          <select className="bg-white/[0.03] border border-white/5 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-iron-lime/20 appearance-none min-w-[140px] cursor-pointer"
+            value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
+            <option value="all">All Status</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Members Table */}
+      <div className="card !p-0 overflow-hidden shadow-2xl">
+        <div className="overflow-x-auto">
+          <table className="iron-table">
+            <thead>
+              <tr className="bg-white/[0.01]">
+                <th>MEMBER</th>
+                <th>CONTACT</th>
+                {hasEnrichedData && <th>AGE</th>}
+                {hasEnrichedData && <th>PLAN & STATUS</th>}
+                {hasEnrichedData && <th>REVENUE</th>}
+                {hasEnrichedData && <th>VISITS</th>}
+                {!hasEnrichedData && <th>JOIN DATE</th>}
+                <th>STATUS</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-white/[0.03]">
+              {loading ? (
+                <tr>
+                  <td colSpan={hasEnrichedData ? 7 : 5} className="py-20 text-center text-iron-text-secondary font-space uppercase tracking-widest text-xs animate-pulse italic">
+                    Retrieving member directory...
+                  </td>
+                </tr>
+              ) : filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={hasEnrichedData ? 7 : 5} className="py-20 text-center text-iron-text-secondary italic">
+                    No members found matching your criteria.
+                  </td>
+                </tr>
+              ) : (
+                filtered.map(member => {
+                  const name = member.member_name || member.name;
+                  const status = (member.member_status || member.status || 'Active').toLowerCase();
+                  const isActive = status === 'active';
+
+                  return (
+                    <tr key={member.member_id} className="group hover:bg-white/[0.02] transition-colors">
+                      <td>
+                        <div className="flex items-center gap-4">
+                          <div className="w-10 h-10 rounded-xl bg-white/[0.03] border border-white/5 flex items-center justify-center font-bold text-xs text-iron-lime group-hover:border-iron-lime/30 transition-all">
+                            {getInitials(name)}
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="font-bold text-white group-hover:text-iron-lime transition-colors">{name}</span>
+                            <span className="text-[10px] font-bold text-iron-text-secondary uppercase tracking-tighter">ID: IC-{member.member_id}</span>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <div className="flex flex-col gap-0.5">
+                          <span className="text-xs text-white/80">{member.email}</span>
+                          <span className="text-[10px] font-medium text-iron-text-secondary tracking-tighter italic">{member.phone || '—'}</span>
+                        </div>
+                      </td>
+
+                      {/* ── Enriched columns from VIEW + FUNCTIONS ── */}
+                      {hasEnrichedData && (
+                        <>
+                          {/* fn_member_age() */}
+                          <td>
+                            <span className="text-sm text-white font-space font-bold">
+                              {member.age != null ? member.age : '—'}
+                            </span>
+                            {member.age != null && <span className="text-iron-text-secondary text-[10px] ml-1">yrs</span>}
+                          </td>
+
+                          {/* vw_member_dashboard plan + fn_subscription_status_label() */}
+                          <td>
+                            <div className="flex flex-col gap-1.5">
+                              {member.plan_name ? (
+                                <span className="px-2.5 py-0.5 bg-iron-blue/10 text-iron-blue border border-iron-blue/20 rounded text-[9px] font-black uppercase tracking-widest w-fit">
+                                  {member.plan_name}
+                                </span>
+                              ) : (
+                                <span className="text-iron-text-secondary text-[10px] italic">No plan</span>
+                              )}
+                              <span className={`text-[10px] font-bold italic ${
+                                (member.subscription_status_label || '').includes('Expiring') ? 'text-amber-400' :
+                                (member.subscription_status_label || '').includes('Expired') ? 'text-red-400' :
+                                (member.subscription_status_label || '').includes('Active') ? 'text-emerald-400' :
+                                'text-iron-text-secondary'
+                              }`}>
+                                {member.subscription_status_label || '—'}
+                              </span>
+                              {member.days_remaining != null && member.days_remaining > 0 && member.days_remaining <= 7 && (
+                                <span className="flex items-center gap-1 text-amber-400 text-[9px] font-black uppercase tracking-widest">
+                                  <Clock size={10} /> Renew Soon
+                                </span>
+                              )}
+                            </div>
+                          </td>
+
+                          {/* fn_total_revenue_by_member() */}
+                          <td>
+                            <div className="flex items-center gap-1.5">
+                              <DollarSign size={12} className="text-emerald-400" />
+                              <span className="text-white font-space font-bold text-sm">
+                                {member.lifetime_revenue != null ? parseFloat(member.lifetime_revenue).toFixed(2) : '0.00'}
+                              </span>
+                            </div>
+                          </td>
+
+                          {/* vw_member_dashboard total_visits */}
+                          <td>
+                            <span className="px-2.5 py-1 bg-white/[0.03] border border-white/5 rounded text-[10px] font-black text-white font-space">
+                              {member.total_visits || 0}
+                            </span>
+                          </td>
+                        </>
+                      )}
+
+                      {!hasEnrichedData && (
+                        <td>
+                          <span className="text-xs text-iron-text-secondary font-medium">
+                            {member.join_date ? new Date(member.join_date).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }) : '—'}
+                          </span>
+                        </td>
+                      )}
+
+                      <td>
+                        <div className="flex items-center gap-2">
+                          <div className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-iron-lime shadow-[0_0_8px_rgba(223,255,0,0.5)]' : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]'}`} />
+                          <span className={`text-[10px] font-black uppercase tracking-widest ${isActive ? 'text-iron-lime' : 'text-red-400'}`}>
+                            {isActive ? 'Active' : 'Inactive'}
+                          </span>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="p-6 bg-white/[0.01] border-t border-white/[0.03] flex items-center justify-between">
+          <p className="text-[10px] font-bold text-iron-text-secondary uppercase tracking-widest italic">
+            Showing {filtered.length} of {data.length} members
+          </p>
+        </div>
+      </div>
+
+      {/* Register Modal — calls sp_register_member STORED PROCEDURE */}
       {showModal && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <h2>Add New Member</h2>
-            {modalError && (
-              <div style={{ padding: '10px', marginBottom: '15px', background: '#fee2e2', color: '#b91c1c', borderRadius: '4px' }}>
-                {modalError}
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-dark/80 backdrop-blur-md" onClick={() => setShowModal(false)} />
+          <div className="bg-surface border border-border rounded-xl w-full max-w-[640px] relative z-[210] shadow-[0_30px_100px_rgba(0,0,0,0.5)] overflow-hidden">
+            <div className="p-6 pb-4 flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-bold text-white">Register Member</h2>
+                <p className="text-iron-text-secondary text-xs italic mt-1">Uses sp_register_member stored procedure</p>
               </div>
-            )}
-            <form onSubmit={handleAdd}>
-              <div className="form-group">
-                <label>Name <span style={{color: '#ef4444'}}>*</span></label>
-                <input required type="text" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} />
+              <button onClick={() => setShowModal(false)} className="text-iron-text-secondary hover:text-white transition-colors">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="w-full h-px bg-white/5" />
+
+            <form onSubmit={handleAdd} className="p-6 space-y-6">
+              {modalError && (
+                <div className="p-4 bg-red-500/10 border border-red-500/20 text-red-400 text-xs rounded-xl flex items-center gap-3 italic">
+                  <div className="w-1 h-1 bg-red-400 rounded-full animate-pulse" />
+                  {modalError}
+                </div>
+              )}
+              {modalSuccess && (
+                <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs rounded-xl flex items-center gap-3">
+                  <UserCheck size={14} />
+                  <span className="font-bold">{modalSuccess}</span>
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">Full Name <span className="text-red-400">*</span></label>
+                  <input required type="text" placeholder="e.g. Arjun Sharma"
+                    className="w-full bg-[#18181A] border border-white/5 rounded py-3 px-4 text-sm text-white focus:outline-none focus:border-iron-lime/30 transition-all placeholder:text-iron-text-secondary"
+                    value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">Email Address <span className="text-red-400">*</span></label>
+                  <input required type="email" placeholder="email@example.com"
+                    className="w-full bg-[#18181A] border border-white/5 rounded py-3 px-4 text-sm text-white focus:outline-none focus:border-iron-lime/30 transition-all placeholder:text-iron-text-secondary"
+                    value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">Phone Number</label>
+                  <input type="text" placeholder="+91 00000 00000"
+                    className="w-full bg-[#18181A] border border-white/5 rounded py-3 px-4 text-sm text-white focus:outline-none focus:border-iron-lime/30 transition-all placeholder:text-iron-text-secondary"
+                    value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">DOB</label>
+                    <input type="date"
+                      className="w-full bg-[#18181A] border border-white/5 rounded py-3 px-4 text-sm text-white focus:outline-none focus:border-iron-lime/30 transition-all [color-scheme:dark]"
+                      value={formData.date_of_birth} onChange={e => setFormData({ ...formData, date_of_birth: e.target.value })} />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">Gender</label>
+                    <select className="w-full bg-[#18181A] border border-white/5 rounded py-3 px-4 text-sm text-white focus:outline-none focus:border-iron-lime/30 cursor-pointer"
+                      value={formData.gender} onChange={e => setFormData({ ...formData, gender: e.target.value })}>
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+                </div>
               </div>
-              <div className="form-group">
-                <label>Email <span style={{color: '#ef4444'}}>*</span></label>
-                <input required type="email" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} />
-              </div>
-              <div className="form-group">
-                <label>Phone</label>
-                <input type="text" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} />
-              </div>
-              <div className="form-group">
-                <label>Join Date <span style={{color: '#ef4444'}}>*</span></label>
-                <input required type="date" value={formData.join_date} onChange={(e) => setFormData({...formData, join_date: e.target.value})} />
-              </div>
-              <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
-                <button type="submit" className="btn" style={{ flex: 1 }} disabled={isSubmitting}>
-                  {isSubmitting ? 'Saving...' : 'Save'}
-                </button>
-                <button type="button" className="btn" style={{ flex: 1, background: '#6b7280' }} onClick={() => setShowModal(false)} disabled={isSubmitting}>
+
+              <div className="flex justify-end gap-3 pt-4 border-t border-white/5">
+                <button type="button" onClick={() => setShowModal(false)}
+                  className="px-6 py-3 rounded-lg border border-white/10 text-xs font-bold tracking-widest uppercase text-white hover:bg-white/5 transition-all">
                   Cancel
+                </button>
+                <button type="submit" disabled={isSubmitting}
+                  className="px-6 py-3 rounded-lg bg-iron-lime text-dark text-xs font-black tracking-widest uppercase hover:shadow-[0_0_20px_rgba(223,255,0,0.3)] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                  {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : <span>Register Member</span>}
                 </button>
               </div>
             </form>
           </div>
         </div>
       )}
-
-      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-        {loading ? (
-          <p style={{ padding: '20px' }}>Loading data...</p>
-        ) : data.length === 0 ? (
-          <p style={{ padding: '20px', textAlign: 'center', color: '#6b7280' }}>
-            No members found. Click "+ Add Member" to get started. 
-          </p>
-        ) : (
-          <table>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Join Date</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.map(item => (
-                <tr key={item.member_id}>
-                  <td>{item.member_id}</td>
-                  <td style={{ fontWeight: 500 }}>{item.name}</td>
-                  <td>{item.email}</td>
-                  <td>{new Date(item.join_date).toLocaleDateString('en-IN')}</td>
-                  <td><span style={{ padding: '4px 10px', borderRadius: '12px', fontSize: '0.85rem', background: item.status === 'Active' ? '#dcfce7' : '#fee2e2', color: '#374151' }}>{item.status}</span></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
     </div>
   );
 }

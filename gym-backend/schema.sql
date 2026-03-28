@@ -166,3 +166,17 @@ CREATE TABLE IF NOT EXISTS Supplement_Sale (
     FOREIGN KEY (member_id) REFERENCES Member(member_id) ON DELETE CASCADE,
     FOREIGN KEY (supplement_id) REFERENCES Supplement(supplement_id) ON DELETE CASCADE
 );
+
+-- 17. Class_Schedule
+CREATE TABLE IF NOT EXISTS Class_Schedule (
+    class_id INT AUTO_INCREMENT PRIMARY KEY,
+    class_name VARCHAR(100) NOT NULL,
+    trainer_name VARCHAR(100) DEFAULT 'Unassigned',
+    scheduled_date DATE NOT NULL,
+    scheduled_time TIME NOT NULL,
+    duration_minutes INT DEFAULT 60,
+    capacity INT DEFAULT 20,
+    registered INT DEFAULT 0,
+    color VARCHAR(30) DEFAULT 'lime',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

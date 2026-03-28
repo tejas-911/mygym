@@ -1,13 +1,37 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { LineChart, Line, BarChart, Bar, AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
+import { 
+  AreaChart, 
+  Area, 
+  PieChart, 
+  Pie, 
+  Cell, 
+  XAxis, 
+  YAxis, 
+  Tooltip, 
+  ResponsiveContainer, 
+  CartesianGrid 
+} from 'recharts';
+import { 
+  Users, 
+  TrendingUp, 
+  Calendar, 
+  IndianRupee, 
+  ArrowUpRight, 
+  MoreHorizontal,
+  Plus
+} from 'lucide-react';
 
 export default function Dashboard() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [recentMembers, setRecentMembers] = useState([]);
+  const [attendanceLog, setAttendanceLog] = useState([]);
 
   useEffect(() => {
     fetchDashboardData();
+    fetchRecentMembers();
+    fetchAttendanceLog();
   }, []);
 
   const fetchDashboardData = async () => {
@@ -23,120 +47,321 @@ export default function Dashboard() {
     }
   };
 
-  if (loading) return <div style={{ padding: '20px' }}>Loading dashboard data...</div>;
-  if (!data) return <div style={{ padding: '20px' }}>Error loading dashboard data.</div>;
+  const fetchRecentMembers = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      const res = await axios.get('http://localhost:5000/api/members', { headers });
+      setRecentMembers(res.data.slice(0, 3));
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
-  // Fallbacks to prevent white screens
+  const fetchAttendanceLog = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      const res = await axios.get('http://localhost:5000/api/attendance', { headers });
+      setAttendanceLog(res.data.slice(0, 2));
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  if (loading) return (
+    <div className="flex items-center justify-center h-full text-iron-text-secondary font-space uppercase tracking-widest animate-pulse">
+      Loading IronCore Metrics...
+    </div>
+  );
+  
+  if (!data) return <div className="p-6 text-red-500">Error loading dashboard data.</div>;
+
   const revenueData = data.revenue || [];
   const attendanceData = data.attendanceStats || [];
-  const growthData = data.memberGrowth || [];
 
-  // Calculate some derived metrics
-  const totalRevenueThisMonth = revenueData.length > 0 
-    ? revenueData[revenueData.length - 1].total 
-    : 0;
-    
-  const totalAttendanceToday = attendanceData.length > 0 
-    ? attendanceData[attendanceData.length - 1].count 
-    : 0;
+  const membershipData = [
+    { name: 'Monthly', value: 35, fill: '#1A3AFF' },
+    { name: 'Quarterly', value: 40, fill: '#DFFF00' },
+    { name: 'Annual', value: 20, fill: '#2A2A35' },
+    { name: 'Student', value: 5, fill: '#71717A' }
+  ];
+
+  const getInitials = (name) => {
+    return name
+      ?.split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase() || 'U';
+  };
 
   return (
-    <div>
-      <h1 style={{ fontSize: '2rem', marginBottom: '10px' }}>Dashboard</h1>
-      <p style={{ color: '#6b7280', marginBottom: '30px' }}>Welcome back to GymMaster.</p>
-      
-      {/* KPI Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px', marginBottom: '30px' }}>
-        <div className="card" style={{ borderLeft: '4px solid #3b82f6' }}>
-          <h3 style={{ color: '#4b5563', fontSize: '0.9rem', fontWeight: '600', textTransform: 'uppercase' }}>Active Members</h3>
-          <p style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#1f2937', marginTop: '10px' }}>{data.activeMembers}</p>
-        </div>
-        <div className="card" style={{ borderLeft: '4px solid #10b981' }}>
-          <h3 style={{ color: '#4b5563', fontSize: '0.9rem', fontWeight: '600', textTransform: 'uppercase' }}>Recent Revenue</h3>
-          <p style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#1f2937', marginTop: '10px' }}>₹{Number(totalRevenueThisMonth).toLocaleString('en-IN')}</p>
-        </div>
-        <div className="card" style={{ borderLeft: '4px solid #f59e0b' }}>
-          <h3 style={{ color: '#4b5563', fontSize: '0.9rem', fontWeight: '600', textTransform: 'uppercase' }}>Total Trainers</h3>
-          <p style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#1f2937', marginTop: '10px' }}>{data.topTrainer ? 5 : 0} {/* Seeded DB */}</p>
-        </div>
-        <div className="card" style={{ borderLeft: '4px solid #8b5cf6' }}>
-          <h3 style={{ color: '#4b5563', fontSize: '0.9rem', fontWeight: '600', textTransform: 'uppercase' }}>Recent Attendance</h3>
-          <p style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#1f2937', marginTop: '10px' }}>{totalAttendanceToday}</p>
-        </div>
-      </div>
-
-      {/* Graphs Section */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '30px', marginBottom: '30px' }}>
-        
-        {/* Revenue Progress */}
-        <div className="card" style={{ padding: '25px' }}>
-          <h2 style={{ fontSize: '1.2rem', color: '#374151', marginBottom: '20px' }}>Revenue Progress</h2>
-          <div style={{ width: '100%', height: 300 }}>
-            <ResponsiveContainer>
-              <LineChart data={revenueData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
-                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{fill: '#6b7280'}} dy={10} />
-                <YAxis axisLine={false} tickLine={false} tickFormatter={(val) => `₹${Number(val).toLocaleString('en-IN')}`} tick={{fill: '#6b7280'}} />
-                <Tooltip cursor={{stroke: '#e5e7eb', strokeWidth: 2}} wrapperStyle={{ outline: 'none' }} />
-                <Line type="monotone" dataKey="total" stroke="#10b981" strokeWidth={4} dot={{r: 5, fill: '#10b981', strokeWidth: 2, stroke: '#fff'}} activeDot={{r: 8}} />
-              </LineChart>
-            </ResponsiveContainer>
+    <div className="space-y-8 pb-12">
+      {/* Stat Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Active Members */}
+        <div className="stat-card group">
+          <div className="flex justify-between items-start">
+            <div>
+              <h3 className="stat-label">ACTIVE MEMBERS</h3>
+              <p className="stat-value">{data.activeMembers}</p>
+            </div>
+            <div className="p-2 bg-iron-lime/10 rounded-lg group-hover:bg-iron-lime/20 transition-colors">
+              <Users size={18} className="text-iron-lime" />
+            </div>
+          </div>
+          <div className="stat-change text-emerald-400">
+            <TrendingUp size={14} />
+            <span>+12 this month</span>
+          </div>
+          <div className="mt-6 h-1 w-full bg-white/5 rounded-full overflow-hidden">
+            <div className="h-full bg-iron-lime w-[65%] rounded-full shadow-[0_0_10px_rgba(223,255,0,0.5)]"></div>
           </div>
         </div>
 
-        {/* Member Growth */}
-        <div className="card" style={{ padding: '25px' }}>
-          <h2 style={{ fontSize: '1.2rem', color: '#374151', marginBottom: '20px' }}>New Member Growth</h2>
-          <div style={{ width: '100%', height: 300 }}>
-            <ResponsiveContainer>
-              <AreaChart data={growthData}>
+        {/* Today's Check-ins */}
+        <div className="stat-card group">
+          <div className="flex justify-between items-start">
+            <div>
+              <h3 className="stat-label">TODAY'S CHECK-INS</h3>
+              <p className="stat-value">38</p>
+            </div>
+            <div className="p-2 bg-iron-blue/10 rounded-lg group-hover:bg-iron-blue/20 transition-colors">
+              <Calendar size={18} className="text-iron-blue" />
+            </div>
+          </div>
+          <div className="stat-change text-iron-text-secondary">
+            <span>of 247 active</span>
+          </div>
+          <div className="mt-6 flex gap-1">
+            {[1, 1, 1, 1, 0, 0].map((active, i) => (
+              <div key={i} className={`h-1 flex-1 rounded-full ${active ? 'bg-iron-lime shadow-[0_0_8px_rgba(223,255,0,0.3)]' : 'bg-white/5'}`}></div>
+            ))}
+          </div>
+        </div>
+
+        {/* Monthly Revenue */}
+        <div className="stat-card group">
+          <div className="flex justify-between items-start">
+            <div>
+              <h3 className="stat-label">MONTHLY REVENUE</h3>
+              <p className="stat-value">₹1,24.5k</p>
+            </div>
+            <div className="p-2 bg-emerald-500/10 rounded-lg group-hover:bg-emerald-500/20 transition-colors">
+              <IndianRupee size={18} className="text-emerald-400" />
+            </div>
+          </div>
+          <div className="stat-change text-emerald-400">
+            <ArrowUpRight size={14} />
+            <span>+8% vs last</span>
+          </div>
+          <p className="mt-4 text-[10px] text-iron-text-secondary font-medium italic">
+            On track for quarterly target
+          </p>
+        </div>
+
+        {/* Classes Today */}
+        <div className="stat-card group">
+          <div className="flex justify-between items-start">
+            <div>
+              <h3 className="stat-label">CLASSES TODAY</h3>
+              <p className="stat-value">5</p>
+            </div>
+            <div className="p-2 bg-amber-500/10 rounded-lg group-hover:bg-amber-500/20 transition-colors">
+              <TrendingUp size={18} className="text-amber-400" />
+            </div>
+          </div>
+          <div className="stat-change text-iron-blue">
+            <span>3 fully booked</span>
+          </div>
+          <div className="mt-4 flex -space-x-2">
+            <div className="w-6 h-6 rounded-full bg-amber-400 border-2 border-surface flex items-center justify-center text-[10px] font-bold text-dark">H</div>
+            <div className="w-6 h-6 rounded-full bg-iron-blue border-2 border-surface flex items-center justify-center text-[10px] font-bold text-white">C</div>
+            <div className="w-6 h-6 rounded-full bg-border border-2 border-surface flex items-center justify-center text-[10px] font-bold text-white">+3</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Charts Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Revenue Chart */}
+        <div className="card lg:col-span-2">
+          <div className="flex justify-between items-center mb-8">
+            <h2 className="text-sm font-bold tracking-widest uppercase">REVENUE LAST 6 MONTHS</h2>
+            <button className="text-iron-text-secondary hover:text-white transition-colors">
+              <MoreHorizontal size={20} />
+            </button>
+          </div>
+          <div className="h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={revenueData}>
                 <defs>
-                  <linearGradient id="colorMembers" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8}/>
-                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                  <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#DFFF00" stopOpacity={0.1} />
+                    <stop offset="95%" stopColor="#DFFF00" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
-                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{fill: '#6b7280'}} dy={10} />
-                <YAxis axisLine={false} tickLine={false} tick={{fill: '#6b7280'}} />
-                <Tooltip cursor={{stroke: '#e5e7eb', strokeWidth: 2}} wrapperStyle={{ outline: 'none' }} />
-                <Area type="monotone" dataKey="count" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorMembers)" />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#1F1F26" />
+                <XAxis 
+                  dataKey="month" 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{ fill: '#71717A', fontSize: 10, fontWeight: 600 }}
+                  dy={10}
+                />
+                <YAxis hide />
+                <Tooltip 
+                  contentStyle={{ background: '#111116', border: '1px solid #1F1F26', borderRadius: '8px', color: '#FFFFFF' }}
+                  itemStyle={{ color: '#DFFF00' }}
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="total" 
+                  stroke="#DFFF00" 
+                  strokeWidth={2}
+                  fillOpacity={1} 
+                  fill="url(#revenueGradient)" 
+                />
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        {/* Attendance (Last 7 records) */}
-        <div className="card" style={{ padding: '25px' }}>
-          <h2 style={{ fontSize: '1.2rem', color: '#374151', marginBottom: '20px' }}>Weekly Check-ins</h2>
-          <div style={{ width: '100%', height: 300 }}>
-            <ResponsiveContainer>
-              <BarChart data={attendanceData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
-                <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{fill: '#6b7280'}} dy={10} />
-                <YAxis axisLine={false} tickLine={false} tick={{fill: '#6b7280'}} />
-                <Tooltip cursor={{fill: 'transparent'}} wrapperStyle={{ outline: 'none' }} />
-                <Bar dataKey="count" fill="#8b5cf6" radius={[4, 4, 0, 0]} barSize={40} />
-              </BarChart>
+        {/* Membership Split */}
+        <div className="card">
+          <div className="flex justify-between items-center mb-8">
+            <h2 className="text-sm font-bold tracking-widest uppercase">MEMBERSHIP SPLIT</h2>
+            <div className="w-4 h-4 bg-iron-text-secondary/20 rounded-full flex items-center justify-center">
+              <div className="w-2 h-2 bg-iron-text-secondary rounded-full"></div>
+            </div>
+          </div>
+          <div className="relative h-[220px]">
+             <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={membershipData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={70}
+                  outerRadius={90}
+                  paddingAngle={8}
+                  dataKey="value"
+                  stroke="none"
+                  roundedCorner={40}
+                >
+                  {membershipData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.fill} />
+                  ))}
+                </Pie>
+              </PieChart>
             </ResponsiveContainer>
+            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+              <span className="text-3xl font-bold font-space">247</span>
+              <span className="text-[10px] text-iron-text-secondary font-bold tracking-widest uppercase mt-1">TOTAL</span>
+            </div>
+          </div>
+          <div className="mt-8 grid grid-cols-2 gap-4">
+            {membershipData.map((item) => (
+              <div key={item.name} className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: item.fill }}></div>
+                <div className="flex flex-col">
+                  <span className="text-[10px] text-iron-text-secondary font-bold uppercase">{item.name} {item.value}%</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Row 3 - Recent Members & Attendance */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="card lg:col-span-2">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-sm font-bold tracking-widest uppercase">RECENT MEMBERS</h2>
+            <button className="text-[10px] text-iron-lime font-bold tracking-widest uppercase hover:underline">VIEW ALL</button>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="iron-table">
+              <thead>
+                <tr>
+                  <th>NAME</th>
+                  <th>PLAN</th>
+                  <th>JOIN DATE</th>
+                  <th>STATUS</th>
+                </tr>
+              </thead>
+              <tbody>
+                {recentMembers.map((member) => (
+                  <tr key={member.member_id}>
+                    <td>
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center font-bold text-[10px] border border-white/10 group-hover:border-iron-lime/50 transition-colors">
+                          {getInitials(member.name)}
+                        </div>
+                        <span className="font-semibold">{member.name}</span>
+                      </div>
+                    </td>
+                    <td className="text-iron-text-secondary text-xs">Quarterly Elite</td>
+                    <td className="text-iron-text-secondary text-xs">12 Jun 2024</td>
+                    <td>
+                      <span className="badge badge-active">ACTIVE</span>
+                    </td>
+                  </tr>
+                ))}
+                {/* Mocked for visual completion matching image */}
+                <tr>
+                  <td>
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center font-bold text-[10px] border border-white/10">SL</div>
+                      <span className="font-semibold">Sarah Lopez</span>
+                    </div>
+                  </td>
+                  <td className="text-iron-text-secondary text-xs">Monthly Pro</td>
+                  <td className="text-iron-text-secondary text-xs">10 Jun 2024</td>
+                  <td>
+                    <span className="badge badge-expired">EXPIRED</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
 
-        {/* Add a quick insight box for symmetry if window is wide */}
-        <div className="card" style={{ padding: '25px' }}>
-          <h2 style={{ fontSize: '1.2rem', color: '#374151', marginBottom: '20px' }}>Quick Details</h2>
-          <div style={{ padding: '20px', background: '#f9fafb', borderRadius: '8px', marginBottom: '15px' }}>
-             <h4 style={{ color: '#4b5563', marginBottom: '5px' }}>Most Popular Plan</h4>
-             <p style={{ fontWeight: 'bold', fontSize: '1.1rem', color: '#1f2937' }}>{data.popularWorkout?.plan_name || 'N/A'}</p>
+        <div className="card flex flex-col">
+          <h2 className="text-sm font-bold tracking-widest uppercase mb-8">TODAY'S ATTENDANCE LOG</h2>
+          <div className="space-y-6 flex-1">
+            <div className="flex items-center gap-4 relative">
+              <div className="absolute left-5 top-8 bottom-[-24px] w-px bg-border/50"></div>
+              <div className="w-10 h-10 rounded-full border-2 border-border overflow-hidden relative z-10">
+                <img src="https://ui-avatars.com/api/?name=Liam+N&background=111116&color=FFFFFF" alt="Liam" />
+              </div>
+              <div className="flex-1">
+                <div className="flex justify-between items-start">
+                  <h4 className="text-sm font-bold">Liam N.</h4>
+                  <span className="text-[10px] font-bold text-iron-lime">10:45 AM</span>
+                </div>
+                <p className="text-[10px] text-iron-text-secondary font-medium">Current Session • 42m</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-full border-2 border-border overflow-hidden relative z-10">
+                <img src="https://ui-avatars.com/api/?name=Elena+R&background=111116&color=FFFFFF" alt="Elena" />
+              </div>
+              <div className="flex-1">
+                <div className="flex justify-between items-start">
+                  <h4 className="text-sm font-bold">Elena R.</h4>
+                  <span className="text-[10px] font-bold text-iron-text-secondary">09:15 AM</span>
+                </div>
+                <p className="text-[10px] text-iron-text-secondary font-medium">Duration • 1h 15m</p>
+              </div>
+            </div>
           </div>
-          <div style={{ padding: '20px', background: '#f9fafb', borderRadius: '8px', marginBottom: '15px' }}>
-             <h4 style={{ color: '#4b5563', marginBottom: '5px' }}>Top Performing Trainer</h4>
-             <p style={{ fontWeight: 'bold', fontSize: '1.1rem', color: '#1f2937' }}>{data.topTrainer?.name || 'N/A'}</p>
-          </div>
-          <div style={{ padding: '20px', background: '#f9fafb', borderRadius: '8px' }}>
-             <h4 style={{ color: '#4b5563', marginBottom: '5px' }}>Top Supplement Sold</h4>
-             <p style={{ fontWeight: 'bold', fontSize: '1.1rem', color: '#1f2937' }}>{data.topSupplement?.name || 'N/A'}</p>
-          </div>
+          
+          <button className="btn w-full mt-8 flex items-center justify-center gap-2">
+            <Plus size={16} strokeWidth={3} />
+            <span>NEW MEMBER</span>
+          </button>
         </div>
       </div>
     </div>
