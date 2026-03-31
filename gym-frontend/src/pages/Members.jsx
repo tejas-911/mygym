@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import {
   Search, Filter, Plus, X, ChevronLeft, ChevronRight,
-  Dumbbell, MoreHorizontal, Loader2, Clock, DollarSign, UserCheck
+  Dumbbell, MoreHorizontal, Loader2, Clock, IndianRupee, UserCheck
 } from 'lucide-react';
 
 const API = 'http://localhost:5000/api/members';
@@ -79,7 +79,7 @@ export default function Members() {
           <h1 className="text-4xl font-space font-bold tracking-tighter text-white mb-2">Members</h1>
           <p className="text-iron-text-secondary font-medium italic text-sm">
             {data.length} total · {activeCount} active
-            {hasEnrichedData && <span className="ml-2 px-2 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded text-[9px] font-black uppercase tracking-widest">View + Functions Active</span>}
+            {hasEnrichedData && <span className="ml-2 px-2 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded text-[11px] font-black uppercase tracking-widest">View + Functions Active</span>}
           </p>
         </div>
         <button className="btn flex items-center gap-2 group" onClick={() => { setShowModal(true); setModalError(''); setModalSuccess(''); }}>
@@ -152,14 +152,14 @@ export default function Members() {
                           </div>
                           <div className="flex flex-col">
                             <span className="font-bold text-white group-hover:text-iron-lime transition-colors">{name}</span>
-                            <span className="text-[10px] font-bold text-iron-text-secondary uppercase tracking-tighter">ID: IC-{member.member_id}</span>
+                            <span className="text-xs font-bold text-iron-text-secondary uppercase tracking-tighter">ID: IC-{member.member_id}</span>
                           </div>
                         </div>
                       </td>
                       <td>
                         <div className="flex flex-col gap-0.5">
                           <span className="text-xs text-white/80">{member.email}</span>
-                          <span className="text-[10px] font-medium text-iron-text-secondary tracking-tighter italic">{member.phone || '—'}</span>
+                          <span className="text-xs font-medium text-iron-text-secondary tracking-tighter italic">{member.phone || '—'}</span>
                         </div>
                       </td>
 
@@ -171,20 +171,20 @@ export default function Members() {
                             <span className="text-sm text-white font-space font-bold">
                               {member.age != null ? member.age : '—'}
                             </span>
-                            {member.age != null && <span className="text-iron-text-secondary text-[10px] ml-1">yrs</span>}
+                            {member.age != null && <span className="text-iron-text-secondary text-xs ml-1">yrs</span>}
                           </td>
 
                           {/* vw_member_dashboard plan + fn_subscription_status_label() */}
                           <td>
                             <div className="flex flex-col gap-1.5">
                               {member.plan_name ? (
-                                <span className="px-2.5 py-0.5 bg-iron-blue/10 text-iron-blue border border-iron-blue/20 rounded text-[9px] font-black uppercase tracking-widest w-fit">
+                                <span className="px-2.5 py-0.5 bg-iron-blue/10 text-iron-blue border border-iron-blue/20 rounded text-[11px] font-black uppercase tracking-widest w-fit">
                                   {member.plan_name}
                                 </span>
                               ) : (
-                                <span className="text-iron-text-secondary text-[10px] italic">No plan</span>
+                                <span className="text-iron-text-secondary text-xs italic">No plan</span>
                               )}
-                              <span className={`text-[10px] font-bold italic ${
+                              <span className={`text-xs font-bold italic ${
                                 (member.subscription_status_label || '').includes('Expiring') ? 'text-amber-400' :
                                 (member.subscription_status_label || '').includes('Expired') ? 'text-red-400' :
                                 (member.subscription_status_label || '').includes('Active') ? 'text-emerald-400' :
@@ -193,7 +193,7 @@ export default function Members() {
                                 {member.subscription_status_label || '—'}
                               </span>
                               {member.days_remaining != null && member.days_remaining > 0 && member.days_remaining <= 7 && (
-                                <span className="flex items-center gap-1 text-amber-400 text-[9px] font-black uppercase tracking-widest">
+                                <span className="flex items-center gap-1 text-amber-400 text-[11px] font-black uppercase tracking-widest">
                                   <Clock size={10} /> Renew Soon
                                 </span>
                               )}
@@ -203,7 +203,7 @@ export default function Members() {
                           {/* fn_total_revenue_by_member() */}
                           <td>
                             <div className="flex items-center gap-1.5">
-                              <DollarSign size={12} className="text-emerald-400" />
+                              <IndianRupee size={12} className="text-emerald-400" />
                               <span className="text-white font-space font-bold text-sm">
                                 {member.lifetime_revenue != null ? parseFloat(member.lifetime_revenue).toFixed(2) : '0.00'}
                               </span>
@@ -212,7 +212,7 @@ export default function Members() {
 
                           {/* vw_member_dashboard total_visits */}
                           <td>
-                            <span className="px-2.5 py-1 bg-white/[0.03] border border-white/5 rounded text-[10px] font-black text-white font-space">
+                            <span className="px-2.5 py-1 bg-white/[0.03] border border-white/5 rounded text-xs font-black text-white font-space">
                               {member.total_visits || 0}
                             </span>
                           </td>
@@ -230,7 +230,7 @@ export default function Members() {
                       <td>
                         <div className="flex items-center gap-2">
                           <div className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-iron-lime shadow-[0_0_8px_rgba(223,255,0,0.5)]' : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]'}`} />
-                          <span className={`text-[10px] font-black uppercase tracking-widest ${isActive ? 'text-iron-lime' : 'text-red-400'}`}>
+                          <span className={`text-xs font-black uppercase tracking-widest ${isActive ? 'text-iron-lime' : 'text-red-400'}`}>
                             {isActive ? 'Active' : 'Inactive'}
                           </span>
                         </div>
@@ -244,7 +244,7 @@ export default function Members() {
         </div>
 
         <div className="p-6 bg-white/[0.01] border-t border-white/[0.03] flex items-center justify-between">
-          <p className="text-[10px] font-bold text-iron-text-secondary uppercase tracking-widest italic">
+          <p className="text-xs font-bold text-iron-text-secondary uppercase tracking-widest italic">
             Showing {filtered.length} of {data.length} members
           </p>
         </div>
@@ -282,32 +282,32 @@ export default function Members() {
 
               <div className="grid grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">Full Name <span className="text-red-400">*</span></label>
+                  <label className="text-xs font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">Full Name <span className="text-red-400">*</span></label>
                   <input required type="text" placeholder="e.g. Arjun Sharma"
                     className="w-full bg-[#18181A] border border-white/5 rounded py-3 px-4 text-sm text-white focus:outline-none focus:border-iron-lime/30 transition-all placeholder:text-iron-text-secondary"
                     value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">Email Address <span className="text-red-400">*</span></label>
+                  <label className="text-xs font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">Email Address <span className="text-red-400">*</span></label>
                   <input required type="email" placeholder="email@example.com"
                     className="w-full bg-[#18181A] border border-white/5 rounded py-3 px-4 text-sm text-white focus:outline-none focus:border-iron-lime/30 transition-all placeholder:text-iron-text-secondary"
                     value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">Phone Number</label>
+                  <label className="text-xs font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">Phone Number</label>
                   <input type="text" placeholder="+91 00000 00000"
                     className="w-full bg-[#18181A] border border-white/5 rounded py-3 px-4 text-sm text-white focus:outline-none focus:border-iron-lime/30 transition-all placeholder:text-iron-text-secondary"
                     value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">DOB</label>
+                    <label className="text-xs font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">DOB</label>
                     <input type="date"
                       className="w-full bg-[#18181A] border border-white/5 rounded py-3 px-4 text-sm text-white focus:outline-none focus:border-iron-lime/30 transition-all [color-scheme:dark]"
                       value={formData.date_of_birth} onChange={e => setFormData({ ...formData, date_of_birth: e.target.value })} />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">Gender</label>
+                    <label className="text-xs font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">Gender</label>
                     <select className="w-full bg-[#18181A] border border-white/5 rounded py-3 px-4 text-sm text-white focus:outline-none focus:border-iron-lime/30 cursor-pointer"
                       value={formData.gender} onChange={e => setFormData({ ...formData, gender: e.target.value })}>
                       <option value="Male">Male</option>

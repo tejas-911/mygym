@@ -86,18 +86,18 @@ export default function AssignPlan() {
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4">
         <div className="stat-card">
-          <p className="text-[10px] font-space font-bold uppercase tracking-[0.2em] text-iron-text-secondary mb-3">Active Members</p>
+          <p className="text-xs font-space font-bold uppercase tracking-[0.2em] text-iron-text-secondary mb-3">Active Members</p>
           <p className="text-4xl font-space font-black text-white">{members.length}</p>
         </div>
         <div className="stat-card">
-          <p className="text-[10px] font-space font-bold uppercase tracking-[0.2em] text-iron-text-secondary mb-3">Workout Plans</p>
+          <p className="text-xs font-space font-bold uppercase tracking-[0.2em] text-iron-text-secondary mb-3">Workout Plans</p>
           <div className="flex items-end gap-2">
             <p className="text-4xl font-space font-black text-iron-lime">{workouts.length}</p>
             <Dumbbell size={16} className="text-iron-lime mb-2" />
           </div>
         </div>
         <div className="stat-card">
-          <p className="text-[10px] font-space font-bold uppercase tracking-[0.2em] text-iron-text-secondary mb-3">Diet Plans</p>
+          <p className="text-xs font-space font-bold uppercase tracking-[0.2em] text-iron-text-secondary mb-3">Diet Plans</p>
           <div className="flex items-end gap-2">
             <p className="text-4xl font-space font-black text-emerald-400">{diets.length}</p>
             <Apple size={16} className="text-emerald-400 mb-2" />
@@ -135,7 +135,7 @@ export default function AssignPlan() {
           ) : (
             <form onSubmit={handleAssign} className="space-y-5">
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">
+                <label className="text-xs font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">
                   <Users size={10} className="inline mr-1.5" />Select Member <span className="text-red-400">*</span>
                 </label>
                 <select required value={formData.member_id} onChange={e => setFormData({ ...formData, member_id: e.target.value })}
@@ -149,7 +149,7 @@ export default function AssignPlan() {
 
               {/* Plan type toggle */}
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">Plan Type</label>
+                <label className="text-xs font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">Plan Type</label>
                 <div className="flex gap-3">
                   <button type="button"
                     onClick={() => setFormData({ ...formData, type: 'workout', plan_id: '' })}
@@ -173,7 +173,7 @@ export default function AssignPlan() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">
+                <label className="text-xs font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">
                   Select {formData.type === 'workout' ? 'Workout' : 'Diet'} Plan <span className="text-red-400">*</span>
                 </label>
                 <select required value={formData.plan_id} onChange={e => setFormData({ ...formData, plan_id: e.target.value })}
@@ -188,14 +188,14 @@ export default function AssignPlan() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">
+                  <label className="text-xs font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">
                     <Calendar size={10} className="inline mr-1.5" />Start Date <span className="text-red-400">*</span>
                   </label>
                   <input type="date" required value={formData.start_date} onChange={e => setFormData({ ...formData, start_date: e.target.value })}
                     className="w-full bg-[#18181A] border border-white/5 rounded-xl py-3 px-4 text-sm text-white focus:outline-none focus:border-iron-lime/30 [color-scheme:dark]" />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">
+                  <label className="text-xs font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">
                     <Calendar size={10} className="inline mr-1.5" />End Date <span className="text-red-400">*</span>
                   </label>
                   <input type="date" required value={formData.end_date} onChange={e => setFormData({ ...formData, end_date: e.target.value })}
@@ -224,7 +224,7 @@ export default function AssignPlan() {
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-iron-text-secondary text-xs">Type</span>
-                <span className={`px-2.5 py-0.5 rounded text-[9px] font-black uppercase tracking-widest ${
+                <span className={`px-2.5 py-0.5 rounded text-[11px] font-black uppercase tracking-widest ${
                   formData.type === 'workout' ? 'bg-iron-lime/10 text-iron-lime border border-iron-lime/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
                 }`}>{formData.type}</span>
               </div>
@@ -297,7 +297,7 @@ export default function AssignPlan() {
                       <span className="font-bold">{p.plan_name}</span>
                       {isSelected && <CheckCircle size={12} className="text-iron-lime" />}
                     </div>
-                    <span className="text-[10px] italic opacity-70">
+                    <span className="text-xs italic opacity-70">
                       {p.goal || ''}
                       {formData.type === 'workout' && p.difficulty_level ? ` · ${p.difficulty_level}` : ''}
                       {formData.type === 'diet' && p.calories_per_day ? ` · ${p.calories_per_day} kcal` : ''}

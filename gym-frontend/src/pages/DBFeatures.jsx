@@ -32,7 +32,7 @@ function Section({ icon: Icon, title, badge, badgeColor = 'iron-lime', descripti
             <div className="flex items-center gap-3">
               <h3 className="text-white font-space font-bold text-sm uppercase tracking-widest">{title}</h3>
               {badge && (
-                <span className={`px-2 py-0.5 bg-${badgeColor}/10 text-${badgeColor} border border-${badgeColor}/20 rounded text-[9px] font-black uppercase tracking-widest`}>
+                <span className={`px-2 py-0.5 bg-${badgeColor}/10 text-${badgeColor} border border-${badgeColor}/20 rounded text-[11px] font-black uppercase tracking-widest`}>
                   {badge}
                 </span>
               )}
@@ -71,7 +71,7 @@ function ResultTable({ data, maxHeight = '400px' }) {
         <thead className="sticky top-0 bg-surface z-10">
           <tr>
             {keys.map(k => (
-              <th key={k} className="px-4 py-3 text-[10px] font-space font-bold uppercase tracking-widest text-iron-text-secondary border-b border-border whitespace-nowrap">
+              <th key={k} className="px-4 py-3 text-xs font-space font-bold uppercase tracking-widest text-iron-text-secondary border-b border-border whitespace-nowrap">
                 {k.replace(/_/g, ' ')}
               </th>
             ))}
@@ -232,7 +232,7 @@ export default function DBFeatures() {
             </div>
             <div>
               <p className="text-3xl font-space font-black text-white">{String(count).padStart(2, '0')}</p>
-              <p className="text-[10px] font-bold text-iron-text-secondary uppercase tracking-widest">{label}</p>
+              <p className="text-xs font-bold text-iron-text-secondary uppercase tracking-widest">{label}</p>
             </div>
           </div>
         ))}
@@ -251,7 +251,7 @@ export default function DBFeatures() {
                 <Users size={16} className="text-blue-400" />
                 <div>
                   <h4 className="text-white text-sm font-bold font-space">vw_member_dashboard</h4>
-                  <p className="text-iron-text-secondary text-[10px] italic">Member + active plan + days remaining + total paid + visit count</p>
+                  <p className="text-iron-text-secondary text-xs italic">Member + active plan + days remaining + total paid + visit count</p>
                 </div>
               </div>
               <RunButton onClick={() => runView('member', '/views/member-dashboard')} loading={viewLoading.member} label="Run Query" />
@@ -269,7 +269,7 @@ export default function DBFeatures() {
                 <DollarSign size={16} className="text-emerald-400" />
                 <div>
                   <h4 className="text-white text-sm font-bold font-space">vw_monthly_revenue</h4>
-                  <p className="text-iron-text-secondary text-[10px] italic">Revenue aggregated by month, plan, and payment method</p>
+                  <p className="text-iron-text-secondary text-xs italic">Revenue aggregated by month, plan, and payment method</p>
                 </div>
               </div>
               <RunButton onClick={() => runView('revenue', '/views/monthly-revenue')} loading={viewLoading.revenue} label="Run Query" />
@@ -287,7 +287,7 @@ export default function DBFeatures() {
                 <Calendar size={16} className="text-amber-400" />
                 <div>
                   <h4 className="text-white text-sm font-bold font-space">vw_daily_attendance</h4>
-                  <p className="text-iron-text-secondary text-[10px] italic">Today's check-ins with session duration and visit status</p>
+                  <p className="text-iron-text-secondary text-xs italic">Today's check-ins with session duration and visit status</p>
                 </div>
               </div>
               <RunButton onClick={() => runView('attendance', '/views/daily-attendance')} loading={viewLoading.attendance} label="Run Query" />
@@ -305,7 +305,7 @@ export default function DBFeatures() {
                 <Wrench size={16} className="text-red-400" />
                 <div>
                   <h4 className="text-white text-sm font-bold font-space">vw_equipment_health</h4>
-                  <p className="text-iron-text-secondary text-[10px] italic">Equipment + last service date + maintenance overdue flag</p>
+                  <p className="text-iron-text-secondary text-xs italic">Equipment + last service date + maintenance overdue flag</p>
                 </div>
               </div>
               <RunButton onClick={() => runView('equipment', '/views/equipment-health')} loading={viewLoading.equipment} label="Run Query" />
@@ -328,7 +328,7 @@ export default function DBFeatures() {
               <UserPlus size={16} className="text-purple-400" />
               <div>
                 <h4 className="text-white text-sm font-bold font-space">sp_register_member</h4>
-                <p className="text-iron-text-secondary text-[10px] italic">Inserts a new member with name, email uniqueness, and gender validation</p>
+                <p className="text-iron-text-secondary text-xs italic">Inserts a new member with name, email uniqueness, and gender validation</p>
               </div>
             </div>
             <SQLBlock sql={`CALL sp_register_member(\n  'Rahul Sharma', 'Male', '9876543210',\n  'rahul@gym.com', '1998-03-15',\n  @new_id, @msg\n);\nSELECT @new_id AS member_id, @msg AS result;`} />
@@ -374,7 +374,7 @@ export default function DBFeatures() {
               <CreditCard size={16} className="text-purple-400" />
               <div>
                 <h4 className="text-white text-sm font-bold font-space">sp_renew_subscription</h4>
-                <p className="text-iron-text-secondary text-[10px] italic">Expires old subscription, creates new one, records payment, reactivates member</p>
+                <p className="text-iron-text-secondary text-xs italic">Expires old subscription, creates new one, records payment, reactivates member</p>
               </div>
             </div>
             <SQLBlock sql={`CALL sp_renew_subscription(\n  2, 3, 'UPI',\n  @sub_id, @msg\n);\nSELECT @sub_id AS subscription_id, @msg AS result;`} />
@@ -413,14 +413,14 @@ export default function DBFeatures() {
               <BarChart3 size={16} className="text-purple-400" />
               <div>
                 <h4 className="text-white text-sm font-bold font-space">sp_gym_performance_report</h4>
-                <p className="text-iron-text-secondary text-[10px] italic">Multi-result-set report: membership, revenue, attendance, top members, equipment alerts</p>
+                <p className="text-iron-text-secondary text-xs italic">Multi-result-set report: membership, revenue, attendance, top members, equipment alerts</p>
               </div>
             </div>
             <SQLBlock sql={`CALL sp_gym_performance_report(1, 2023);\n-- Returns 5 result sets: membership, revenue, attendance, top members, alerts`} />
 
             <div className="flex gap-3 items-end flex-wrap">
               <div>
-                <label className="text-iron-text-secondary text-[10px] uppercase tracking-widest font-bold block mb-1">Month</label>
+                <label className="text-iron-text-secondary text-xs uppercase tracking-widest font-bold block mb-1">Month</label>
                 <select value={procForm.report.month}
                   onChange={e => setProcForm(p => ({ ...p, report: { ...p.report, month: e.target.value } }))}
                   className="bg-[#18181A] border border-border rounded-lg px-4 py-3 text-xs text-white outline-none focus:border-iron-lime/40">
@@ -432,7 +432,7 @@ export default function DBFeatures() {
                 </select>
               </div>
               <div>
-                <label className="text-iron-text-secondary text-[10px] uppercase tracking-widest font-bold block mb-1">Year</label>
+                <label className="text-iron-text-secondary text-xs uppercase tracking-widest font-bold block mb-1">Year</label>
                 <input type="number" value={procForm.report.year}
                   onChange={e => setProcForm(p => ({ ...p, report: { ...p.report, year: e.target.value } }))}
                   className="bg-[#18181A] border border-border rounded-lg px-4 py-3 text-xs text-white outline-none focus:border-iron-lime/40 w-24" />
@@ -453,7 +453,7 @@ export default function DBFeatures() {
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     {Object.entries(procResult.report.data.membership).map(([k, v]) => (
                       <div key={k} className="bg-white/[0.02] border border-white/5 rounded-xl px-4 py-3">
-                        <p className="text-[9px] text-iron-text-secondary uppercase tracking-widest font-bold">{k.replace(/_/g, ' ')}</p>
+                        <p className="text-[11px] text-iron-text-secondary uppercase tracking-widest font-bold">{k.replace(/_/g, ' ')}</p>
                         <p className="text-white font-space font-bold text-lg">{v ?? '—'}</p>
                       </div>
                     ))}
@@ -462,7 +462,7 @@ export default function DBFeatures() {
 
                 {procResult.report.data.revenue && procResult.report.data.revenue.length > 0 && (
                   <div>
-                    <p className="text-iron-text-secondary text-[10px] uppercase tracking-widest font-bold mb-2">Revenue by Method</p>
+                    <p className="text-iron-text-secondary text-xs uppercase tracking-widest font-bold mb-2">Revenue by Method</p>
                     <ResultTable data={procResult.report.data.revenue} maxHeight="200px" />
                   </div>
                 )}
@@ -471,7 +471,7 @@ export default function DBFeatures() {
                   <div className="grid grid-cols-3 gap-3">
                     {Object.entries(procResult.report.data.attendance).map(([k, v]) => (
                       <div key={k} className="bg-white/[0.02] border border-white/5 rounded-xl px-4 py-3">
-                        <p className="text-[9px] text-iron-text-secondary uppercase tracking-widest font-bold">{k.replace(/_/g, ' ')}</p>
+                        <p className="text-[11px] text-iron-text-secondary uppercase tracking-widest font-bold">{k.replace(/_/g, ' ')}</p>
                         <p className="text-white font-space font-bold text-lg">{v ?? '—'}</p>
                       </div>
                     ))}
@@ -480,14 +480,14 @@ export default function DBFeatures() {
 
                 {procResult.report.data.top_members && procResult.report.data.top_members.length > 0 && (
                   <div>
-                    <p className="text-iron-text-secondary text-[10px] uppercase tracking-widest font-bold mb-2">Top Active Members</p>
+                    <p className="text-iron-text-secondary text-xs uppercase tracking-widest font-bold mb-2">Top Active Members</p>
                     <ResultTable data={procResult.report.data.top_members} maxHeight="200px" />
                   </div>
                 )}
 
                 {procResult.report.data.equipment_alerts && procResult.report.data.equipment_alerts.length > 0 && (
                   <div>
-                    <p className="text-iron-text-secondary text-[10px] uppercase tracking-widest font-bold mb-2">Equipment Alerts</p>
+                    <p className="text-iron-text-secondary text-xs uppercase tracking-widest font-bold mb-2">Equipment Alerts</p>
                     <ResultTable data={procResult.report.data.equipment_alerts} maxHeight="200px" />
                   </div>
                 )}
@@ -534,8 +534,8 @@ export default function DBFeatures() {
                   <span className="text-white text-xs font-bold font-space">{t.name}</span>
                 </div>
                 <div className="flex gap-2">
-                  <span className="px-2 py-0.5 bg-red-500/10 text-red-400 border border-red-500/20 rounded text-[9px] font-black uppercase tracking-widest">{t.event}</span>
-                  <span className="px-2 py-0.5 bg-white/5 text-iron-text-secondary border border-white/10 rounded text-[9px] font-black uppercase tracking-widest">{t.table}</span>
+                  <span className="px-2 py-0.5 bg-red-500/10 text-red-400 border border-red-500/20 rounded text-[11px] font-black uppercase tracking-widest">{t.event}</span>
+                  <span className="px-2 py-0.5 bg-white/5 text-iron-text-secondary border border-white/10 rounded text-[11px] font-black uppercase tracking-widest">{t.table}</span>
                 </div>
                 <p className="text-iron-text-secondary text-xs italic">{t.desc}</p>
               </div>

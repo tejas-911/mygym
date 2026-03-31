@@ -155,7 +155,7 @@ export default function Dashboard() {
             <ArrowUpRight size={14} />
             <span>+8% vs last</span>
           </div>
-          <p className="mt-4 text-[10px] text-iron-text-secondary font-medium italic">
+          <p className="mt-4 text-xs text-iron-text-secondary font-medium italic">
             On track for quarterly target
           </p>
         </div>
@@ -175,9 +175,9 @@ export default function Dashboard() {
             <span>3 fully booked</span>
           </div>
           <div className="mt-4 flex -space-x-2">
-            <div className="w-6 h-6 rounded-full bg-amber-400 border-2 border-surface flex items-center justify-center text-[10px] font-bold text-dark">H</div>
-            <div className="w-6 h-6 rounded-full bg-iron-blue border-2 border-surface flex items-center justify-center text-[10px] font-bold text-white">C</div>
-            <div className="w-6 h-6 rounded-full bg-border border-2 border-surface flex items-center justify-center text-[10px] font-bold text-white">+3</div>
+            <div className="w-6 h-6 rounded-full bg-amber-400 border-2 border-surface flex items-center justify-center text-xs font-bold text-dark">H</div>
+            <div className="w-6 h-6 rounded-full bg-iron-blue border-2 border-surface flex items-center justify-center text-xs font-bold text-white">C</div>
+            <div className="w-6 h-6 rounded-full bg-border border-2 border-surface flex items-center justify-center text-xs font-bold text-white">+3</div>
           </div>
         </div>
       </div>
@@ -257,7 +257,7 @@ export default function Dashboard() {
             </ResponsiveContainer>
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
               <span className="text-3xl font-bold font-space">247</span>
-              <span className="text-[10px] text-iron-text-secondary font-bold tracking-widest uppercase mt-1">TOTAL</span>
+              <span className="text-xs text-iron-text-secondary font-bold tracking-widest uppercase mt-1">TOTAL</span>
             </div>
           </div>
           <div className="mt-8 grid grid-cols-2 gap-4">
@@ -265,7 +265,7 @@ export default function Dashboard() {
               <div key={item.name} className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full" style={{ backgroundColor: item.fill }}></div>
                 <div className="flex flex-col">
-                  <span className="text-[10px] text-iron-text-secondary font-bold uppercase">{item.name} {item.value}%</span>
+                  <span className="text-xs text-iron-text-secondary font-bold uppercase">{item.name} {item.value}%</span>
                 </div>
               </div>
             ))}
@@ -278,7 +278,7 @@ export default function Dashboard() {
         <div className="card lg:col-span-2">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-sm font-bold tracking-widest uppercase">RECENT MEMBERS</h2>
-            <button className="text-[10px] text-iron-lime font-bold tracking-widest uppercase hover:underline">VIEW ALL</button>
+            <button className="text-xs text-iron-lime font-bold tracking-widest uppercase hover:underline">VIEW ALL</button>
           </div>
           <div className="overflow-x-auto">
             <table className="iron-table">
@@ -295,7 +295,7 @@ export default function Dashboard() {
                   <tr key={member.member_id}>
                     <td>
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center font-bold text-[10px] border border-white/10 group-hover:border-iron-lime/50 transition-colors">
+                        <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center font-bold text-xs border border-white/10 group-hover:border-iron-lime/50 transition-colors">
                           {getInitials(member.name)}
                         </div>
                         <span className="font-semibold">{member.name}</span>
@@ -312,7 +312,7 @@ export default function Dashboard() {
                 <tr>
                   <td>
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center font-bold text-[10px] border border-white/10">SL</div>
+                      <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center font-bold text-xs border border-white/10">SL</div>
                       <span className="font-semibold">Sarah Lopez</span>
                     </div>
                   </td>
@@ -338,9 +338,9 @@ export default function Dashboard() {
               <div className="flex-1">
                 <div className="flex justify-between items-start">
                   <h4 className="text-sm font-bold">Liam N.</h4>
-                  <span className="text-[10px] font-bold text-iron-lime">10:45 AM</span>
+                  <span className="text-xs font-bold text-iron-lime">10:45 AM</span>
                 </div>
-                <p className="text-[10px] text-iron-text-secondary font-medium">Current Session • 42m</p>
+                <p className="text-xs text-iron-text-secondary font-medium">Current Session • 42m</p>
               </div>
             </div>
 
@@ -351,9 +351,9 @@ export default function Dashboard() {
               <div className="flex-1">
                 <div className="flex justify-between items-start">
                   <h4 className="text-sm font-bold">Elena R.</h4>
-                  <span className="text-[10px] font-bold text-iron-text-secondary">09:15 AM</span>
+                  <span className="text-xs font-bold text-iron-text-secondary">09:15 AM</span>
                 </div>
-                <p className="text-[10px] text-iron-text-secondary font-medium">Duration • 1h 15m</p>
+                <p className="text-xs text-iron-text-secondary font-medium">Duration • 1h 15m</p>
               </div>
             </div>
           </div>

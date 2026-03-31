@@ -158,7 +158,7 @@ export default function Attendance() {
             </div>
             <div>
               <h2 className="text-white font-space font-bold tracking-widest uppercase">Quick Scan</h2>
-              <p className="text-[10px] text-iron-text-secondary font-medium italic">Enter ID to grant entry or exit</p>
+              <p className="text-xs text-iron-text-secondary font-medium italic">Enter ID to grant entry or exit</p>
             </div>
           </div>
           
@@ -207,7 +207,7 @@ export default function Attendance() {
                       <span className="opacity-80 italic">Successfully checked {actionMode === 'checkin' ? 'in' : 'out'} at {actionFeedback.time}.</span>
                       {actionFeedback.member_status && (
                         <div className="mt-2">
-                          <span className="px-2 py-0.5 bg-iron-lime/20 text-iron-lime text-[9px] rounded font-black uppercase tracking-widest">
+                          <span className="px-2 py-0.5 bg-iron-lime/20 text-iron-lime text-[11px] rounded font-black uppercase tracking-widest">
                             {actionFeedback.member_status}
                           </span>
                         </div>
@@ -229,13 +229,13 @@ export default function Attendance() {
               <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform">
                 <Users size={18} />
               </div>
-              <span className="px-2 py-1 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 rounded-full text-[9px] font-black uppercase tracking-widest italic flex items-center gap-1">
+              <span className="px-2 py-1 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 rounded-full text-[11px] font-black uppercase tracking-widest italic flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                 Live
               </span>
             </div>
             <div>
-              <p className="text-[10px] font-bold text-iron-text-secondary uppercase tracking-[0.2em] mb-1">Currently Inside</p>
+              <p className="text-xs font-bold text-iron-text-secondary uppercase tracking-[0.2em] mb-1">Currently Inside</p>
               <p className="text-4xl font-space font-bold text-white tracking-tighter">{stats.currently_inside}</p>
             </div>
           </div>
@@ -247,7 +247,7 @@ export default function Attendance() {
               </div>
             </div>
             <div>
-              <p className="text-[10px] font-bold text-iron-text-secondary uppercase tracking-[0.2em] mb-1">Checked In Today</p>
+              <p className="text-xs font-bold text-iron-text-secondary uppercase tracking-[0.2em] mb-1">Checked In Today</p>
               <p className="text-4xl font-space font-bold text-white tracking-tighter">{stats.checked_in_today}</p>
             </div>
           </div>
@@ -259,7 +259,7 @@ export default function Attendance() {
               </div>
             </div>
             <div>
-              <p className="text-[10px] font-bold text-iron-text-secondary uppercase tracking-[0.2em] mb-1">Avg Session</p>
+              <p className="text-xs font-bold text-iron-text-secondary uppercase tracking-[0.2em] mb-1">Avg Session</p>
               <div className="flex items-baseline gap-1">
                 <p className="text-4xl font-space font-bold text-white tracking-tighter">{stats.avg_session || 0}</p>
                 <span className="text-sm font-bold text-iron-text-secondary italic">min</span>
@@ -274,7 +274,7 @@ export default function Attendance() {
               </div>
             </div>
             <div>
-              <p className="text-[10px] font-bold text-iron-text-secondary uppercase tracking-[0.2em] mb-1">Peak Hour</p>
+              <p className="text-xs font-bold text-iron-text-secondary uppercase tracking-[0.2em] mb-1">Peak Hour</p>
               <p className="text-2xl mt-2 font-space font-bold text-white tracking-tighter">{stats.peak_hour || '—'}</p>
             </div>
           </div>
@@ -368,7 +368,7 @@ export default function Attendance() {
                           </div>
                           <div className="flex flex-col">
                             <span className="font-bold text-white group-hover:text-iron-lime transition-colors">{record.name}</span>
-                            <span className="text-[10px] font-bold text-iron-text-secondary uppercase tracking-tighter">ID: IC-{record.member_id}</span>
+                            <span className="text-xs font-bold text-iron-text-secondary uppercase tracking-tighter">ID: IC-{record.member_id}</span>
                           </div>
                         </div>
                       </td>
@@ -389,7 +389,7 @@ export default function Attendance() {
                         )}
                       </td>
                       <td>
-                        <span className="px-3 py-1 bg-white/[0.03] text-iron-text-secondary border border-white/5 rounded-lg text-[10px] font-black uppercase tracking-widest italic flex w-fit items-center justify-center">
+                        <span className="px-3 py-1 bg-white/[0.03] text-iron-text-secondary border border-white/5 rounded-lg text-xs font-black uppercase tracking-widest italic flex w-fit items-center justify-center">
                           {formatDuration(record.duration_minutes)}
                         </span>
                       </td>
@@ -398,12 +398,12 @@ export default function Attendance() {
                            {isInside ? (
                              <>
                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)] animate-pulse"></div>
-                               <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400">Inside Now</span>
+                               <span className="text-xs font-black uppercase tracking-widest text-emerald-400">Inside Now</span>
                              </>
                            ) : (
                              <>
                                <div className="w-1.5 h-1.5 rounded-full bg-iron-text-secondary"></div>
-                               <span className="text-[10px] font-black uppercase tracking-widest text-iron-text-secondary">Completed</span>
+                               <span className="text-xs font-black uppercase tracking-widest text-iron-text-secondary">Completed</span>
                              </>
                            )}
                         </div>
@@ -422,7 +422,7 @@ export default function Attendance() {
             <button
                onClick={() => fetchToday(false)}
                disabled={loadingMore}
-               className="flex items-center gap-2 px-6 py-2 bg-white/[0.03] hover:bg-white/[0.05] border border-white/5 rounded-full text-[10px] font-bold text-white uppercase tracking-widest transition-all disabled:opacity-50"
+               className="flex items-center gap-2 px-6 py-2 bg-white/[0.03] hover:bg-white/[0.05] border border-white/5 rounded-full text-xs font-bold text-white uppercase tracking-widest transition-all disabled:opacity-50"
              >
                {loadingMore ? <Loader2 size={14} className="animate-spin" /> : <ChevronDown size={14} />}
                {loadingMore ? 'Loading More...' : 'Load Older Records'}
