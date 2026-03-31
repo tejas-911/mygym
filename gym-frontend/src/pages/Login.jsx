@@ -40,7 +40,7 @@ export default function Login() {
             <Activity size={40} className="text-iron-lime" strokeWidth={2.5} />
           </div>
           <h1 className="text-4xl font-space font-bold tracking-tighter text-white mb-2">IRONCORE</h1>
-          <p className="text-iron-text-secondary font-bold text-[0.65rem] uppercase tracking-[0.3em]">Precision Management System</p>
+          <p className="text-iron-text-secondary font-bold text-xs uppercase tracking-[0.3em]">Precision Management System</p>
         </div>
 
         {/* Login Card */}
@@ -50,7 +50,7 @@ export default function Login() {
           <form onSubmit={handleLogin} className="space-y-6">
             {/* Role Switcher */}
             <div className="space-y-2">
-              <label className="text-[10px] font-bold text-iron-text-secondary uppercase tracking-widest ml-1">Access Level</label>
+              <label className="text-xs font-bold text-iron-text-secondary uppercase tracking-widest ml-1">Access Level</label>
               <div className="relative group/input">
                 <div className="absolute left-4 top-1/2 -translate-y-1/2 text-iron-text-secondary group-focus-within/input:text-iron-lime transition-colors">
                   <UserCog size={18} />
@@ -72,7 +72,7 @@ export default function Login() {
 
             {/* Email Field */}
             <div className="space-y-2">
-              <label className="text-[10px] font-bold text-iron-text-secondary uppercase tracking-widest ml-1">Email Identifier</label>
+              <label className="text-xs font-bold text-iron-text-secondary uppercase tracking-widest ml-1">Email Identifier</label>
               <div className="relative group/input">
                 <div className="absolute left-4 top-1/2 -translate-y-1/2 text-iron-text-secondary group-focus-within/input:text-iron-lime transition-colors">
                   <Mail size={18} />
@@ -90,7 +90,7 @@ export default function Login() {
 
             {/* Password Field */}
             <div className="space-y-2">
-              <label className="text-[10px] font-bold text-iron-text-secondary uppercase tracking-widest ml-1">Security Key</label>
+              <label className="text-xs font-bold text-iron-text-secondary uppercase tracking-widest ml-1">Security Key</label>
               <div className="relative group/input">
                 <div className="absolute left-4 top-1/2 -translate-y-1/2 text-iron-text-secondary group-focus-within/input:text-iron-lime transition-colors">
                   <Lock size={18} />
@@ -137,18 +137,18 @@ export default function Login() {
 
           {/* Card Footer */}
           <div className="mt-10 pt-8 border-t border-white/5 text-center">
-            <p className="text-[10px] text-iron-text-secondary font-bold uppercase tracking-widest mb-3 italic">Authorized Access Only</p>
+            <p className="text-xs text-iron-text-secondary font-bold uppercase tracking-widest mb-3 italic">Authorized Access Only</p>
             <div className="inline-flex items-center gap-3 bg-white/[0.02] px-4 py-2 rounded-full border border-white/5 group-hover/card:border-iron-lime/10 transition-colors">
-              <span className="text-[10px] text-iron-text-secondary font-medium">Demo:</span>
-              <span className="text-[10px] text-iron-lime font-bold">admin@gym.com</span>
-              <span className="text-[10px] text-white/20">|</span>
-              <span className="text-[10px] text-iron-lime font-bold">admin123</span>
+              <span className="text-xs text-iron-text-secondary font-medium">Demo:</span>
+              <span className="text-xs text-iron-lime font-bold">admin@gym.com</span>
+              <span className="text-xs text-white/20">|</span>
+              <span className="text-xs text-iron-lime font-bold">admin123</span>
             </div>
           </div>
         </div>
 
         {/* System Footer */}
-        <p className="text-center mt-12 text-[10px] text-white/20 font-bold uppercase tracking-[0.4em]">
+        <p className="text-center mt-12 text-xs text-white/20 font-bold uppercase tracking-[0.4em]">
           &copy; 2024 IRONCORE PRECISION • SECURE LOGON
         </p>
       </div>

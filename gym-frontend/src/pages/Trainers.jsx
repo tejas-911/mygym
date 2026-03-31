@@ -95,7 +95,7 @@ function TrainerCard({ trainer, onDelete }) {
         </div>
         {/* Status badge */}
         <div className="absolute top-3 left-3">
-          <span className={`px-2.5 py-1 rounded text-[9px] font-black uppercase tracking-widest ${spec.bgCls} ${spec.textCls}`}>
+          <span className={`px-2.5 py-1 rounded text-[11px] font-black uppercase tracking-widest ${spec.bgCls} ${spec.textCls}`}>
             {spec.label}
           </span>
         </div>
@@ -124,11 +124,11 @@ function TrainerCard({ trainer, onDelete }) {
 
         <div className="flex items-center justify-between mb-4">
           <div>
-            <p className="text-iron-text-secondary text-[9px] uppercase tracking-widest font-bold mb-0.5">Active Clients</p>
+            <p className="text-iron-text-secondary text-[11px] uppercase tracking-widest font-bold mb-0.5">Active Clients</p>
             <p className="text-white text-xl font-space font-black">{clients}</p>
           </div>
           <div className="text-right">
-            <p className="text-iron-text-secondary text-[9px] uppercase tracking-widest font-bold mb-0.5">Performance</p>
+            <p className="text-iron-text-secondary text-[11px] uppercase tracking-widest font-bold mb-0.5">Performance</p>
             <div className="flex items-center justify-end gap-1">
               <Star size={11} className="text-iron-lime fill-iron-lime" />
               <p className="text-iron-lime text-xl font-space font-black">+{rating}</p>
@@ -136,7 +136,7 @@ function TrainerCard({ trainer, onDelete }) {
           </div>
         </div>
 
-        <button className="w-full py-2 bg-white/[0.03] border border-white/5 rounded-lg text-[10px] font-black uppercase tracking-widest text-iron-text-secondary hover:text-white hover:border-white/20 hover:bg-white/5 transition-all flex items-center justify-center gap-2 group/btn">
+        <button className="w-full py-2 bg-white/[0.03] border border-white/5 rounded-lg text-xs font-black uppercase tracking-widest text-iron-text-secondary hover:text-white hover:border-white/20 hover:bg-white/5 transition-all flex items-center justify-center gap-2 group/btn">
           Manage Profile
           <ChevronRight size={11} className="group-hover/btn:translate-x-0.5 transition-transform" />
         </button>
@@ -164,13 +164,13 @@ function TrainerRow({ trainer, onDelete }) {
         </div>
       </div>
       <div>
-        <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest ${spec.bgCls} ${spec.textCls}`}>
+        <span className={`px-2 py-0.5 rounded text-[11px] font-black uppercase tracking-widest ${spec.bgCls} ${spec.textCls}`}>
           {spec.label}
         </span>
       </div>
       <div>
         <p className="text-white text-sm font-bold">{trainer.active_clients ?? 0}</p>
-        <p className="text-iron-text-secondary text-[10px]">clients</p>
+        <p className="text-iron-text-secondary text-xs">clients</p>
       </div>
       <div className="flex items-center gap-1">
         <Star size={12} className="text-iron-lime fill-iron-lime" />
@@ -284,7 +284,7 @@ export default function Trainers() {
 
         {/* Team Performance */}
         <div className="stat-card space-y-3">
-          <p className="text-[10px] font-space font-bold uppercase tracking-[0.2em] text-iron-text-secondary">Team Performance</p>
+          <p className="text-xs font-space font-bold uppercase tracking-[0.2em] text-iron-text-secondary">Team Performance</p>
           <div className="flex items-baseline gap-2">
             <p className="text-5xl font-space font-black text-white tracking-tighter">{stats.performance}</p>
             <span className="text-iron-lime font-black text-xl">%</span>
@@ -298,7 +298,7 @@ export default function Trainers() {
         {/* Sessions Today */}
         <div className="stat-card">
           <div className="flex items-start justify-between mb-4">
-            <p className="text-[10px] font-space font-bold uppercase tracking-[0.2em] text-iron-text-secondary">Sessions Today</p>
+            <p className="text-xs font-space font-bold uppercase tracking-[0.2em] text-iron-text-secondary">Sessions Today</p>
             <div className="w-9 h-9 rounded-lg bg-iron-lime/10 flex items-center justify-center text-iron-lime">
               <CalendarCheck size={16} />
             </div>
@@ -313,7 +313,7 @@ export default function Trainers() {
         {/* Active Clients */}
         <div className="stat-card">
           <div className="flex items-start justify-between mb-4">
-            <p className="text-[10px] font-space font-bold uppercase tracking-[0.2em] text-iron-text-secondary">Active Clients</p>
+            <p className="text-xs font-space font-bold uppercase tracking-[0.2em] text-iron-text-secondary">Active Clients</p>
             <div className="w-9 h-9 rounded-lg bg-iron-blue/10 flex items-center justify-center text-blue-400">
               <Users size={16} />
             </div>
@@ -322,10 +322,10 @@ export default function Trainers() {
           {/* Mini avatars */}
           <div className="flex mt-3 -space-x-2">
             {[...Array(Math.min(5, stats.total_trainers || 3))].map((_, i) => (
-              <div key={i} className="w-6 h-6 rounded-full border-2 border-surface bg-white/10 flex items-center justify-center text-[8px] font-bold text-white" />
+              <div key={i} className="w-6 h-6 rounded-full border-2 border-surface bg-white/10 flex items-center justify-center text-[10px] font-bold text-white" />
             ))}
             {stats.total_trainers > 5 && (
-              <div className="w-6 h-6 rounded-full border-2 border-surface bg-iron-lime/20 flex items-center justify-center text-[8px] font-black text-iron-lime">
+              <div className="w-6 h-6 rounded-full border-2 border-surface bg-iron-lime/20 flex items-center justify-center text-[10px] font-black text-iron-lime">
                 +{stats.total_trainers - 5}
               </div>
             )}
@@ -354,7 +354,7 @@ export default function Trainers() {
         {viewMode === 'list' && (
           <div className="grid grid-cols-[2fr_1fr_1fr_1fr_100px] px-6 py-2 border-b border-border bg-white/[0.01]">
             {['Trainer', 'Specialty', 'Clients', 'Rating', 'Actions'].map(h => (
-              <span key={h} className="text-[10px] font-black uppercase tracking-widest text-iron-text-secondary font-space">{h}</span>
+              <span key={h} className="text-xs font-black uppercase tracking-widest text-iron-text-secondary font-space">{h}</span>
             ))}
           </div>
         )}
@@ -387,11 +387,11 @@ export default function Trainers() {
           <div className="px-6 py-5 border-t border-border flex flex-col items-center gap-3">
             {hasMore && (
               <button onClick={() => fetchTrainers(false)} disabled={loadingMore}
-                className="flex items-center gap-2 px-10 py-3 border border-white/10 rounded-full text-[10px] font-black uppercase tracking-widest text-iron-text-secondary hover:text-white hover:border-white/30 hover:bg-white/[0.02] transition-all disabled:opacity-50">
+                className="flex items-center gap-2 px-10 py-3 border border-white/10 rounded-full text-xs font-black uppercase tracking-widest text-iron-text-secondary hover:text-white hover:border-white/30 hover:bg-white/[0.02] transition-all disabled:opacity-50">
                 {loadingMore ? <><Loader2 size={13} className="animate-spin" /> Loading...</> : 'Load More Trainers'}
               </button>
             )}
-            <p className="text-iron-text-secondary text-[10px] uppercase tracking-widest font-bold">
+            <p className="text-iron-text-secondary text-xs uppercase tracking-widest font-bold">
               Page {curPage} of {totalPages}&nbsp;
               <span className="mx-2 opacity-30">|</span>
               <button onClick={() => fetchTrainers(true)} className="hover:text-white transition-colors">Show All</button>
@@ -432,7 +432,7 @@ export default function Trainers() {
 
               {/* Name */}
               <div className="space-y-1">
-                <label className="text-iron-text-secondary text-[10px] uppercase tracking-widest font-space font-bold">
+                <label className="text-iron-text-secondary text-xs uppercase tracking-widest font-space font-bold">
                   Full Name <span className="text-red-400">*</span>
                 </label>
                 <input required type="text" placeholder="e.g. Arjun Kumar"
@@ -444,14 +444,14 @@ export default function Trainers() {
               {/* Specialization + Phone */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="text-iron-text-secondary text-[10px] uppercase tracking-widest font-space font-bold">Specialization</label>
+                  <label className="text-iron-text-secondary text-xs uppercase tracking-widest font-space font-bold">Specialization</label>
                   <input type="text" placeholder="e.g. Strength Training"
                     value={formData.specialization}
                     onChange={e => setFormData({ ...formData, specialization: e.target.value })}
                     className="w-full bg-[#18181A] border border-border rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-iron-lime/50 transition-colors placeholder:text-iron-text-secondary/50" />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-iron-text-secondary text-[10px] uppercase tracking-widest font-space font-bold">Phone</label>
+                  <label className="text-iron-text-secondary text-xs uppercase tracking-widest font-space font-bold">Phone</label>
                   <input type="text" placeholder="e.g. 9876543210"
                     value={formData.phone}
                     onChange={e => setFormData({ ...formData, phone: e.target.value })}
@@ -462,14 +462,14 @@ export default function Trainers() {
               {/* Salary + Hire Date */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="text-iron-text-secondary text-[10px] uppercase tracking-widest font-space font-bold">Monthly Salary (₹)</label>
+                  <label className="text-iron-text-secondary text-xs uppercase tracking-widest font-space font-bold">Monthly Salary (₹)</label>
                   <input type="number" min="0" placeholder="e.g. 35000"
                     value={formData.salary}
                     onChange={e => setFormData({ ...formData, salary: e.target.value })}
                     className="w-full bg-[#18181A] border border-border rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-iron-lime/50 transition-colors" />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-iron-text-secondary text-[10px] uppercase tracking-widest font-space font-bold">Hire Date</label>
+                  <label className="text-iron-text-secondary text-xs uppercase tracking-widest font-space font-bold">Hire Date</label>
                   <input type="date"
                     value={formData.hire_date}
                     onChange={e => setFormData({ ...formData, hire_date: e.target.value })}

@@ -132,18 +132,18 @@ export default function AssignPlan() {
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4">
         <div className="stat-card">
-          <p className="text-[10px] font-space font-bold uppercase tracking-[0.2em] text-iron-text-secondary mb-3">Active Members</p>
+          <p className="text-xs font-space font-bold uppercase tracking-[0.2em] text-iron-text-secondary mb-3">Active Members</p>
           <p className="text-4xl font-space font-black text-white">{members.length}</p>
         </div>
         <div className="stat-card">
-          <p className="text-[10px] font-space font-bold uppercase tracking-[0.2em] text-iron-text-secondary mb-3">Workout Plans</p>
+          <p className="text-xs font-space font-bold uppercase tracking-[0.2em] text-iron-text-secondary mb-3">Workout Plans</p>
           <div className="flex items-end gap-2">
             <p className="text-4xl font-space font-black text-iron-lime">{workouts.length}</p>
             <Dumbbell size={16} className="text-iron-lime mb-2" />
           </div>
         </div>
         <div className="stat-card">
-          <p className="text-[10px] font-space font-bold uppercase tracking-[0.2em] text-iron-text-secondary mb-3">Diet Plans</p>
+          <p className="text-xs font-space font-bold uppercase tracking-[0.2em] text-iron-text-secondary mb-3">Diet Plans</p>
           <div className="flex items-end gap-2">
             <p className="text-4xl font-space font-black text-emerald-400">{diets.length}</p>
             <Apple size={16} className="text-emerald-400 mb-2" />
@@ -153,24 +153,84 @@ export default function AssignPlan() {
 
       <div className="grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-6">
         {/* Form */}
-        <div className="space-y-6">
-          <div className="card">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-xl bg-iron-lime/10 flex items-center justify-center text-iron-lime">
-                <ClipboardList size={18} />
+        <div className="card">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 rounded-xl bg-iron-lime/10 flex items-center justify-center text-iron-lime">
+              <ClipboardList size={18} />
+            </div>
+            <div>
+              <h2 className="text-white font-space font-bold uppercase tracking-widest text-sm">Assign Plan</h2>
+              <p className="text-iron-text-secondary text-xs italic">Select member, plan type, and date range</p>
+            </div>
+          </div>
+
+          {msg && (
+            <div className={`flex items-center gap-3 p-4 rounded-xl text-xs mb-6 border ${
+              isError ? 'bg-red-500/10 border-red-500/20 text-red-400' : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
+            }`}>
+              {isError ? <AlertCircle size={14} /> : <CheckCircle size={14} />}
+              <span className="font-medium">{msg}</span>
+            </div>
+          )}
+
+          {loading ? (
+            <div className="flex items-center justify-center py-12 gap-3 text-iron-text-secondary">
+              <Loader2 size={16} className="animate-spin text-iron-lime" />
+              <span className="font-space text-xs uppercase tracking-widest">Loading options...</span>
+            </div>
+          ) : (
+            <form onSubmit={handleAssign} className="space-y-5">
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">
+                  <Users size={10} className="inline mr-1.5" />Select Member <span className="text-red-400">*</span>
+                </label>
+                <select required value={formData.member_id} onChange={e => setFormData({ ...formData, member_id: e.target.value })}
+                  className="w-full bg-[#18181A] border border-white/5 rounded-xl py-3 px-4 text-sm text-white focus:outline-none focus:border-iron-lime/30">
+                  <option value="">Choose member...</option>
+                  {members.map(m => (
+                    <option key={m.member_id} value={m.member_id}>{m.member_name || m.name} (ID: {m.member_id})</option>
+                  ))}
+                </select>
               </div>
-              <div>
-                <h2 className="text-white font-space font-bold uppercase tracking-widest text-sm">Assign Plan</h2>
-                <p className="text-iron-text-secondary text-xs italic">Select member, plan type, and date range</p>
+
+              {/* Plan type toggle */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">Plan Type</label>
+                <div className="flex gap-3">
+                  <button type="button"
+                    onClick={() => setFormData({ ...formData, type: 'workout', plan_id: '' })}
+                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-space font-bold uppercase tracking-widest transition-all ${
+                      formData.type === 'workout'
+                        ? 'bg-iron-lime text-dark'
+                        : 'bg-white/[0.03] border border-white/10 text-iron-text-secondary hover:text-white'
+                    }`}>
+                    <Dumbbell size={14} /> Workout
+                  </button>
+                  <button type="button"
+                    onClick={() => setFormData({ ...formData, type: 'diet', plan_id: '' })}
+                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-space font-bold uppercase tracking-widest transition-all ${
+                      formData.type === 'diet'
+                        ? 'bg-emerald-500 text-dark'
+                        : 'bg-white/[0.03] border border-white/10 text-iron-text-secondary hover:text-white'
+                    }`}>
+                    <Apple size={14} /> Diet
+                  </button>
+                </div>
               </div>
             </div>
 
-            {msg && (
-              <div className={`flex items-center gap-3 p-4 rounded-xl text-xs mb-6 border ${
-                isError ? 'bg-red-500/10 border-red-500/20 text-red-400' : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
-              }`}>
-                {isError ? <AlertCircle size={14} /> : <CheckCircle size={14} />}
-                <span className="font-medium">{msg}</span>
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">
+                  Select {formData.type === 'workout' ? 'Workout' : 'Diet'} Plan <span className="text-red-400">*</span>
+                </label>
+                <select required value={formData.plan_id} onChange={e => setFormData({ ...formData, plan_id: e.target.value })}
+                  className="w-full bg-[#18181A] border border-white/5 rounded-xl py-3 px-4 text-sm text-white focus:outline-none focus:border-iron-lime/30">
+                  <option value="">Choose {formData.type}...</option>
+                  {currentPlans.map(p => {
+                    const id = formData.type === 'workout' ? p.workout_id : p.diet_id;
+                    return <option key={id} value={id}>{p.plan_name}</option>;
+                  })}
+                </select>
               </div>
             )}
 
@@ -182,8 +242,8 @@ export default function AssignPlan() {
             ) : (
               <form onSubmit={handleAssign} className="space-y-5">
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">
-                    <Users size={10} className="inline mr-1.5" />Select Member <span className="text-red-400">*</span>
+                  <label className="text-xs font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">
+                    <Calendar size={10} className="inline mr-1.5" />Start Date <span className="text-red-400">*</span>
                   </label>
                   <select required value={formData.member_id} onChange={e => setFormData({ ...formData, member_id: e.target.value })}
                     className="w-full bg-[#18181A] border border-white/5 rounded-xl py-3 px-4 text-sm text-white focus:outline-none focus:border-iron-lime/30">
@@ -220,8 +280,8 @@ export default function AssignPlan() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">
-                    Select {formData.type === 'workout' ? 'Workout' : 'Diet'} Plan <span className="text-red-400">*</span>
+                  <label className="text-xs font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">
+                    <Calendar size={10} className="inline mr-1.5" />End Date <span className="text-red-400">*</span>
                   </label>
                   <select required value={formData.plan_id} onChange={e => setFormData({ ...formData, plan_id: e.target.value })}
                     className="w-full bg-[#18181A] border border-white/5 rounded-xl py-3 px-4 text-sm text-white focus:outline-none focus:border-iron-lime/30">
@@ -359,7 +419,7 @@ export default function AssignPlan() {
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-iron-text-secondary text-xs">Type</span>
-                <span className={`px-2.5 py-0.5 rounded text-[9px] font-black uppercase tracking-widest ${
+                <span className={`px-2.5 py-0.5 rounded text-[11px] font-black uppercase tracking-widest ${
                   formData.type === 'workout' ? 'bg-iron-lime/10 text-iron-lime border border-iron-lime/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
                 }`}>{formData.type}</span>
               </div>
@@ -438,7 +498,7 @@ export default function AssignPlan() {
                       <span className="font-bold">{p.plan_name}</span>
                       {isSelected && <CheckCircle size={12} className="text-iron-lime" />}
                     </div>
-                    <span className="text-[10px] italic opacity-70">
+                    <span className="text-xs italic opacity-70">
                       {p.goal || ''}
                       {formData.type === 'workout' && p.difficulty_level ? ` · ${p.difficulty_level}` : ''}
                       {formData.type === 'diet' && p.calories_per_day ? ` · ${p.calories_per_day} kcal` : ''}

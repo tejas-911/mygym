@@ -62,7 +62,7 @@ function ChartTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null;
   return (
     <div className="bg-[#18181A] border border-border rounded-xl px-4 py-3 shadow-2xl">
-      <p className="text-iron-text-secondary text-[10px] uppercase tracking-widest font-space mb-1">{label}</p>
+      <p className="text-iron-text-secondary text-xs uppercase tracking-widest font-space mb-1">{label}</p>
       <p className="text-iron-lime font-space font-bold text-base">{formatINR(payload[0].value)}</p>
     </div>
   );
@@ -221,7 +221,7 @@ export default function Payments() {
           <div className="absolute inset-0 flex items-center justify-end pr-4 pointer-events-none select-none">
             <span className="text-[5rem] font-space font-black text-white/[0.03] leading-none tracking-tighter">REV</span>
           </div>
-          <p className="text-[10px] font-space font-bold uppercase tracking-[0.2em] text-iron-text-secondary mb-4">
+          <p className="text-xs font-space font-bold uppercase tracking-[0.2em] text-iron-text-secondary mb-4">
             This Month Revenue
           </p>
           <p className="text-4xl font-space font-black text-iron-lime tracking-tighter mb-3">
@@ -245,7 +245,7 @@ export default function Payments() {
           <div className="absolute inset-0 flex items-center justify-end pr-4 pointer-events-none select-none">
             <span className="text-[5rem] font-space font-black text-white/[0.03] leading-none">₹?</span>
           </div>
-          <p className="text-[10px] font-space font-bold uppercase tracking-[0.2em] text-iron-text-secondary mb-4">
+          <p className="text-xs font-space font-bold uppercase tracking-[0.2em] text-iron-text-secondary mb-4">
             Pending Payments
           </p>
           <p className="text-5xl font-space font-black text-amber-400 tracking-tighter mb-3">
@@ -264,7 +264,7 @@ export default function Payments() {
           <div className="absolute inset-0 flex items-center justify-end pr-4 pointer-events-none select-none">
             <span className="text-[5rem] font-space font-black text-iron-blue/5 leading-none">OK</span>
           </div>
-          <p className="text-[10px] font-space font-bold uppercase tracking-[0.2em] text-iron-text-secondary mb-4">
+          <p className="text-xs font-space font-bold uppercase tracking-[0.2em] text-iron-text-secondary mb-4">
             Successful
           </p>
           <p className="text-5xl font-space font-black text-iron-blue tracking-tighter mb-3">
@@ -275,7 +275,7 @@ export default function Payments() {
           </p>
           <div className="flex items-center gap-1.5 px-3 py-1.5 bg-iron-blue/10 border border-iron-blue/20 rounded-full w-fit">
             <ShieldCheck size={11} className="text-iron-blue" />
-            <span className="text-iron-blue text-[10px] font-black uppercase tracking-widest">Verified Secure</span>
+            <span className="text-iron-blue text-xs font-black uppercase tracking-widest">Verified Secure</span>
           </div>
         </div>
       </div>
@@ -285,7 +285,7 @@ export default function Payments() {
         <div className="px-6 py-4 border-b border-border flex items-center justify-between">
           <div>
             <h3 className="text-white font-space font-bold uppercase tracking-widest text-sm">Revenue Trend</h3>
-            <p className="text-iron-text-secondary text-[10px] italic mt-0.5">
+            <p className="text-iron-text-secondary text-xs italic mt-0.5">
               {trendMode === 'monthly' ? 'Monthly collection performance' : 'Daily collection — last 30 days'}
             </p>
           </div>
@@ -294,7 +294,7 @@ export default function Payments() {
               <button
                 key={mode}
                 onClick={() => handleTrendToggle(mode)}
-                className={`px-4 py-2 text-[10px] font-space font-black uppercase tracking-widest transition-all ${
+                className={`px-4 py-2 text-xs font-space font-black uppercase tracking-widest transition-all ${
                   trendMode === mode
                     ? 'bg-iron-lime text-dark'
                     : 'text-iron-text-secondary hover:text-white'
@@ -339,7 +339,7 @@ export default function Payments() {
         <div className="px-6 py-4 border-b border-border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div>
             <h3 className="text-white font-space font-bold uppercase tracking-widest text-sm">Payments Log</h3>
-            <p className="text-iron-text-secondary text-[10px] italic mt-0.5">Real-time transaction history and status</p>
+            <p className="text-iron-text-secondary text-xs italic mt-0.5">Real-time transaction history and status</p>
           </div>
           <div className="flex items-center gap-3 flex-wrap">
             {/* Search */}
@@ -361,7 +361,7 @@ export default function Payments() {
                 )}
               </div>
             </form>
-            <button onClick={downloadCSV} className="flex items-center gap-2 px-4 py-2 bg-white/[0.03] hover:bg-white/[0.05] border border-white/5 rounded-lg text-[10px] font-bold text-iron-text-secondary hover:text-white uppercase tracking-widest transition-all">
+            <button onClick={downloadCSV} className="flex items-center gap-2 px-4 py-2 bg-white/[0.03] hover:bg-white/[0.05] border border-white/5 rounded-lg text-xs font-bold text-iron-text-secondary hover:text-white uppercase tracking-widest transition-all">
               <Download size={13} /> Download CSV
             </button>
           </div>
@@ -407,7 +407,7 @@ export default function Payments() {
                           <p className="font-semibold text-white group-hover:text-iron-lime transition-colors text-sm">
                             {r.member_name || <span className="text-iron-text-secondary italic">Supplement Sale</span>}
                           </p>
-                          <p className="text-[10px] text-iron-text-secondary uppercase tracking-tight">
+                          <p className="text-xs text-iron-text-secondary uppercase tracking-tight">
                             #{r.member_id ? `M-${r.member_id}` : `P-${r.payment_id}`}
                           </p>
                         </div>
@@ -431,7 +431,7 @@ export default function Payments() {
                       <span className="text-iron-text-secondary text-xs">{formatDate(r.payment_date)}</span>
                     </td>
                     <td>
-                      <span className={`inline-flex items-center px-2.5 py-1 rounded text-[10px] font-black uppercase tracking-widest border ${STATUS_STYLES[r.status] || STATUS_STYLES.Paid}`}>
+                      <span className={`inline-flex items-center px-2.5 py-1 rounded text-xs font-black uppercase tracking-widest border ${STATUS_STYLES[r.status] || STATUS_STYLES.Paid}`}>
                         {r.status}
                       </span>
                     </td>
@@ -456,14 +456,14 @@ export default function Payments() {
             <button
               onClick={() => setPage(p => Math.max(0, p - 1))}
               disabled={page === 0}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-white/[0.03] border border-white/5 rounded-lg text-[10px] font-bold text-iron-text-secondary hover:text-white hover:border-white/20 transition-all disabled:opacity-30 disabled:cursor-not-allowed uppercase tracking-widest font-space"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-white/[0.03] border border-white/5 rounded-lg text-xs font-bold text-iron-text-secondary hover:text-white hover:border-white/20 transition-all disabled:opacity-30 disabled:cursor-not-allowed uppercase tracking-widest font-space"
             >
               <ChevronLeft size={13} /> Previous
             </button>
             <button
               onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
               disabled={page >= totalPages - 1}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-iron-lime text-dark border border-iron-lime rounded-lg text-[10px] font-bold transition-all disabled:opacity-30 disabled:cursor-not-allowed uppercase tracking-widest font-space hover:shadow-[0_0_15px_rgba(223,255,0,0.3)]"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-iron-lime text-dark border border-iron-lime rounded-lg text-xs font-bold transition-all disabled:opacity-30 disabled:cursor-not-allowed uppercase tracking-widest font-space hover:shadow-[0_0_15px_rgba(223,255,0,0.3)]"
             >
               Next <ChevronRight size={13} />
             </button>
@@ -502,7 +502,7 @@ export default function Payments() {
               )}
 
               <div className="space-y-1">
-                <label className="text-iron-text-secondary text-[10px] uppercase tracking-widest font-space font-semibold">
+                <label className="text-iron-text-secondary text-xs uppercase tracking-widest font-space font-semibold">
                   Subscription <span className="text-red-400">*</span>
                 </label>
                 <select required value={formData.subscription_id}
@@ -518,7 +518,7 @@ export default function Payments() {
               </div>
 
               <div className="space-y-1">
-                <label className="text-iron-text-secondary text-[10px] uppercase tracking-widest font-space font-semibold">
+                <label className="text-iron-text-secondary text-xs uppercase tracking-widest font-space font-semibold">
                   Amount (₹) <span className="text-red-400">*</span>
                 </label>
                 <input required type="number" step="0.01" placeholder="e.g. 2499"
@@ -529,7 +529,7 @@ export default function Payments() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="text-iron-text-secondary text-[10px] uppercase tracking-widest font-space font-semibold">
+                  <label className="text-iron-text-secondary text-xs uppercase tracking-widest font-space font-semibold">
                     Method <span className="text-red-400">*</span>
                   </label>
                   <select value={formData.payment_method}
@@ -542,7 +542,7 @@ export default function Payments() {
                   </select>
                 </div>
                 <div className="space-y-1">
-                  <label className="text-iron-text-secondary text-[10px] uppercase tracking-widest font-space font-semibold">
+                  <label className="text-iron-text-secondary text-xs uppercase tracking-widest font-space font-semibold">
                     Date <span className="text-red-400">*</span>
                   </label>
                   <input required type="date" value={formData.payment_date}

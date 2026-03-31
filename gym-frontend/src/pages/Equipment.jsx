@@ -36,7 +36,7 @@ function CategoryBadge({ category }) {
   const cfg = CATEGORY_CFG[category] || CATEGORY_CFG.General;
   const Icon = cfg.Icon;
   return (
-    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-[10px] font-black uppercase tracking-widest border ${cfg.cls}`}>
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-black uppercase tracking-widest border ${cfg.cls}`}>
       <Icon size={10} /> {category}
     </span>
   );
@@ -84,7 +84,7 @@ function MaintenanceItem({ item }) {
 
   return (
     <div className={`pl-4 border-l-2 ${borderCls} py-1 space-y-1`}>
-      <p className={`text-[10px] font-black uppercase tracking-widest ${labelCls}`}>
+      <p className={`text-xs font-black uppercase tracking-widest ${labelCls}`}>
         {item.date_label}
         {isPast && <span className="ml-1 text-red-400">(Overdue)</span>}
       </p>
@@ -92,7 +92,7 @@ function MaintenanceItem({ item }) {
       {item.description && (
         <p className="text-iron-text-secondary text-xs leading-relaxed line-clamp-2">{item.description}</p>
       )}
-      <p className="text-[10px] uppercase tracking-widest font-bold">
+      <p className="text-xs uppercase tracking-widest font-bold">
         <span className="text-iron-text-secondary">Assigned: </span>
         <span className={isPast ? 'text-red-400' : isSoon ? 'text-iron-lime' : 'text-iron-text-secondary'}>
           Unassigned
@@ -182,7 +182,7 @@ export default function Equipment() {
         {/* Total Assets */}
         <div className="stat-card">
           <div className="flex items-start justify-between mb-4">
-            <p className="text-[10px] font-space font-bold uppercase tracking-[0.2em] text-iron-text-secondary">Total Assets</p>
+            <p className="text-xs font-space font-bold uppercase tracking-[0.2em] text-iron-text-secondary">Total Assets</p>
             <div className="w-9 h-9 rounded-lg bg-iron-lime/10 flex items-center justify-center text-iron-lime">
               <Package size={16} />
             </div>
@@ -200,7 +200,7 @@ export default function Equipment() {
         {/* Active / In-Use */}
         <div className="stat-card border-iron-blue/20">
           <div className="flex items-start justify-between mb-4">
-            <p className="text-[10px] font-space font-bold uppercase tracking-[0.2em] text-iron-text-secondary">Active / In-Use</p>
+            <p className="text-xs font-space font-bold uppercase tracking-[0.2em] text-iron-text-secondary">Active / In-Use</p>
             <div className="w-9 h-9 rounded-lg bg-iron-blue/10 flex items-center justify-center text-iron-blue">
               <Zap size={16} />
             </div>
@@ -216,7 +216,7 @@ export default function Equipment() {
         {/* Maintenance Due */}
         <div className="stat-card border-red-500/20">
           <div className="flex items-start justify-between mb-4">
-            <p className="text-[10px] font-space font-bold uppercase tracking-[0.2em] text-iron-text-secondary">Maintenance Due</p>
+            <p className="text-xs font-space font-bold uppercase tracking-[0.2em] text-iron-text-secondary">Maintenance Due</p>
             <div className="w-9 h-9 rounded-lg bg-red-500/10 flex items-center justify-center text-red-400">
               <AlertTriangle size={16} />
             </div>
@@ -297,7 +297,7 @@ export default function Equipment() {
                   equipment.map(item => (
                     <tr key={item.equipment_id} className="group">
                       <td>
-                        <span className="text-iron-text-secondary text-[10px] font-black uppercase tracking-widest font-space">
+                        <span className="text-iron-text-secondary text-xs font-black uppercase tracking-widest font-space">
                           #{item.equipment_id.toString().padStart(3, '0')}
                         </span>
                       </td>
@@ -349,7 +349,7 @@ export default function Equipment() {
                 <h3 className="text-white font-space font-black uppercase tracking-widest text-sm italic">Maintenance</h3>
               </div>
               {urgentCount > 0 && (
-                <span className="px-2.5 py-1 bg-red-500 text-white text-[9px] font-black uppercase tracking-widest rounded">
+                <span className="px-2.5 py-1 bg-red-500 text-white text-[11px] font-black uppercase tracking-widest rounded">
                   Urgent
                 </span>
               )}
@@ -371,10 +371,10 @@ export default function Equipment() {
             <div className="mx-5 mb-4 bg-white/[0.03] border border-white/5 rounded-xl px-4 py-3 space-y-2">
               <div className="flex items-center gap-2 mb-2">
                 <ShieldAlert size={13} className="text-iron-lime" />
-                <p className="text-[10px] font-black uppercase tracking-widest text-white font-space">Equipment Health</p>
+                <p className="text-xs font-black uppercase tracking-widest text-white font-space">Equipment Health</p>
               </div>
               <div className="flex justify-between items-center">
-                <p className="text-[10px] uppercase tracking-widest text-iron-text-secondary font-bold">Reliability Score</p>
+                <p className="text-xs uppercase tracking-widest text-iron-text-secondary font-bold">Reliability Score</p>
                 <p className="text-iron-lime font-black font-space text-sm">{stats?.reliability_score ?? '—'}</p>
               </div>
               <div className="w-full bg-white/5 rounded-full h-1.5 overflow-hidden">
@@ -388,7 +388,7 @@ export default function Equipment() {
             {/* View full schedule */}
             <button
               onClick={fetchMaintenance}
-              className="mx-5 mb-5 flex items-center justify-center gap-2 py-2.5 bg-white/[0.03] border border-white/5 rounded-xl text-[10px] font-black uppercase tracking-widest text-iron-text-secondary hover:text-white hover:border-white/20 transition-all"
+              className="mx-5 mb-5 flex items-center justify-center gap-2 py-2.5 bg-white/[0.03] border border-white/5 rounded-xl text-xs font-black uppercase tracking-widest text-iron-text-secondary hover:text-white hover:border-white/20 transition-all"
             >
               <Clock size={12} /> View Full Schedule
             </button>
@@ -396,7 +396,7 @@ export default function Equipment() {
 
           {/* Quick stats card */}
           <div className="card space-y-3">
-            <p className="text-[10px] font-space font-black uppercase tracking-widest text-iron-text-secondary mb-3">Condition Breakdown</p>
+            <p className="text-xs font-space font-black uppercase tracking-widest text-iron-text-secondary mb-3">Condition Breakdown</p>
             {[
               { label: 'New',          color: 'bg-iron-lime',    key: 'New'           },
               { label: 'Good',         color: 'bg-emerald-400',  key: 'Good'          },
@@ -451,7 +451,7 @@ export default function Equipment() {
               )}
 
               <div className="space-y-1">
-                <label className="text-iron-text-secondary text-[10px] uppercase tracking-widest font-space font-semibold">
+                <label className="text-iron-text-secondary text-xs uppercase tracking-widest font-space font-semibold">
                   Equipment Name <span className="text-red-400">*</span>
                 </label>
                 <input required type="text" placeholder="e.g. SteelForce Power Rack"
@@ -462,7 +462,7 @@ export default function Equipment() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="text-iron-text-secondary text-[10px] uppercase tracking-widest font-space font-semibold">
+                  <label className="text-iron-text-secondary text-xs uppercase tracking-widest font-space font-semibold">
                     Purchase Date
                   </label>
                   <input type="date"
@@ -471,7 +471,7 @@ export default function Equipment() {
                     className="w-full bg-[#18181A] border border-border rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-iron-lime/50 transition-colors" />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-iron-text-secondary text-[10px] uppercase tracking-widest font-space font-semibold">
+                  <label className="text-iron-text-secondary text-xs uppercase tracking-widest font-space font-semibold">
                     Condition <span className="text-red-400">*</span>
                   </label>
                   <select value={formData.condition_status}
@@ -483,7 +483,7 @@ export default function Equipment() {
               </div>
 
               <div className="space-y-1">
-                <label className="text-iron-text-secondary text-[10px] uppercase tracking-widest font-space font-semibold">
+                <label className="text-iron-text-secondary text-xs uppercase tracking-widest font-space font-semibold">
                   Location / Zone
                 </label>
                 <input type="text" placeholder="e.g. Main Floor, Zone A"
