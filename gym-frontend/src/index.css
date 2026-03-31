@@ -95,7 +95,7 @@
 }
 
 .iron-table th {
-  @apply text-left px-4 py-3 border-b border-border text-iron-text-secondary font-space font-semibold text-[0.625rem] uppercase tracking-wider;
+  @apply text-left px-4 py-3 border-b border-border text-iron-text-secondary font-space font-semibold text-xs uppercase tracking-wider;
 }
 
 .iron-table td {
@@ -117,4 +117,117 @@
 
 ::-webkit-scrollbar-thumb {
   @apply bg-border rounded-full hover:bg-iron-lime transition-colors;
+}
+
+/* ===================== LIGHT THEME ===================== */
+html.light {
+  --color-dark: #F0F0F5;
+  --color-surface: #FFFFFF;
+  --color-border: #E4E4EB;
+  --color-iron-lime: #2563EB;
+  --color-iron-text-primary: #0A0A0E;
+  --color-iron-text-secondary: #52525B;
+  color-scheme: light;
+}
+
+/* btn uses text-dark which is too dark on blue bg — make it white */
+html.light .btn {
+  color: #FFFFFF;
+  border-color: #2563EB;
+}
+
+html.light body {
+  color: #0A0A0E;
+  background: #F0F0F5;
+}
+
+html.light h1,
+html.light h2,
+html.light h3,
+html.light h4,
+html.light h5,
+html.light h6 {
+  color: #0A0A0E;
+}
+
+html.light .main-content {
+  background: #E8E8F0;
+}
+
+html.light .top-bar {
+  background: #FFFFFF;
+  border-color: #E4E4EB;
+}
+
+html.light .sidebar {
+  background: #FFFFFF;
+  border-color: #E4E4EB;
+}
+
+/* Cards in light mode */
+html.light .card,
+html.light .stat-card {
+  background: #FFFFFF;
+  border-color: #E4E4EB;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+/* Table rows */
+html.light .iron-table td {
+  color: #0A0A0E;
+}
+
+html.light .iron-table tr:hover {
+  background: rgba(0,0,0,0.02);
+}
+
+/* Text: override text-white used inline across pages */
+html.light .text-white {
+  color: #0A0A0E !important;
+}
+
+/* Inputs and selects */
+html.light input,
+html.light select,
+html.light textarea {
+  background: #F4F4F8 !important;
+  color: #0A0A0E !important;
+  border-color: #D4D4DC !important;
+}
+
+html.light input::placeholder,
+html.light textarea::placeholder {
+  color: #A1A1AA !important;
+}
+
+/* Hardcoded bg overrides used in form fields */
+html.light [class*="bg-\[#18181A\]"],
+html.light [class*="bg-\[#0D0D12\]"],
+html.light [class*="bg-\[#111116\]"],
+html.light [class*="bg-\[#111\]"] {
+  background-color: #F4F4F8 !important;
+}
+
+/* Borders using white/opacity */
+html.light [class*="border-white"] {
+  border-color: #D4D4DC !important;
+}
+
+/* bg-white/opacity patterns used in buttons/rows */
+html.light [class*="bg-white/"] {
+  background-color: rgba(0,0,0,0.03) !important;
+}
+
+/* Scrollbar in light mode */
+html.light ::-webkit-scrollbar-track {
+  background: #F0F0F5;
+}
+
+html.light ::-webkit-scrollbar-thumb {
+  background: #D4D4DC;
+}
+
+/* Transition for smooth theme switch */
+*, *::before, *::after {
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }

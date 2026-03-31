@@ -14,11 +14,13 @@ import {
   ShoppingBag,
   ClipboardList
 } from 'lucide-react';
-
+import { useTheme } from '../context/ThemeContext';
 
 export default function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -47,8 +49,8 @@ export default function Sidebar() {
           <Activity size={24} strokeWidth={3} />
         </div>
         <div className="flex flex-col">
-          <span className="font-space font-bold text-lg tracking-tighter leading-none">IRONCORE</span>
-          <span className="text-[0.55rem] font-bold text-iron-text-secondary tracking-[0.2em] mt-1 uppercase">PRECISION GMS</span>
+          <span className="font-space font-bold text-lg tracking-tighter leading-none" style={{ color: isLight ? '#0A0A0E' : '#FFFFFF' }}>IRONCORE</span>
+          <span className="text-[0.65rem] font-bold text-iron-text-secondary tracking-[0.2em] mt-1 uppercase">PRECISION GMS</span>
         </div>
       </div>
 
@@ -62,15 +64,23 @@ export default function Sidebar() {
               to={item.path}
               className={`
                 flex items-center gap-4 px-6 py-3 transition-all duration-200 group relative
-                ${isActive ? 'text-iron-lime bg-iron-lime/5' : 'text-iron-text-secondary hover:text-white hover:bg-white/[0.02]'}
+                ${isActive
+                  ? 'text-iron-lime bg-iron-lime/10'
+                  : isLight
+                    ? 'text-iron-text-secondary hover:text-[#0A0A0E] hover:bg-black/[0.04]'
+                    : 'text-iron-text-secondary hover:text-white hover:bg-white/[0.02]'
+                }
               `}
             >
               <div className={`transition-transform duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`}>
                 {item.icon}
               </div>
-              <span className="font-space font-bold text-[0.65rem] uppercase tracking-widest">{item.label}</span>
+              <span className="font-space font-bold text-xs uppercase tracking-widest">{item.label}</span>
               {isActive && (
-                <div className="absolute right-0 top-0 bottom-0 w-1 bg-iron-lime shadow-[0_0_10px_rgba(223,255,0,0.5)]"></div>
+                <div
+                  className="absolute right-0 top-0 bottom-0 w-1 bg-iron-lime"
+                  style={{ boxShadow: isLight ? '0 0 10px rgba(37,99,235,0.4)' : '0 0 10px rgba(223,255,0,0.5)' }}
+                ></div>
               )}
             </Link>
           );
@@ -84,7 +94,7 @@ export default function Sidebar() {
           className="w-full flex items-center gap-4 px-6 py-4 text-iron-text-secondary hover:text-red-400 transition-colors group"
         >
           <LogOut size={18} className="group-hover:translate-x-1 transition-transform" />
-          <span className="font-space font-bold text-[0.65rem] uppercase tracking-widest">Logout</span>
+          <span className="font-space font-bold text-xs uppercase tracking-widest">Logout</span>
         </button>
       </div>
     </div>

@@ -111,22 +111,22 @@ export default function Supplements() {
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="stat-card">
-          <p className="text-[10px] font-space font-bold uppercase tracking-[0.2em] text-iron-text-secondary mb-3">Total Products</p>
+          <p className="text-xs font-space font-bold uppercase tracking-[0.2em] text-iron-text-secondary mb-3">Total Products</p>
           <p className="text-4xl font-space font-black text-white">{data.length}</p>
         </div>
         <div className="stat-card">
-          <p className="text-[10px] font-space font-bold uppercase tracking-[0.2em] text-iron-text-secondary mb-3">Total Stock</p>
+          <p className="text-xs font-space font-bold uppercase tracking-[0.2em] text-iron-text-secondary mb-3">Total Stock</p>
           <div className="flex items-end gap-2">
             <p className="text-4xl font-space font-black text-white">{totalStock}</p>
             <span className="text-iron-text-secondary text-xs mb-1">units</span>
           </div>
         </div>
         <div className="stat-card">
-          <p className="text-[10px] font-space font-bold uppercase tracking-[0.2em] text-iron-text-secondary mb-3">Low Stock Alerts</p>
+          <p className="text-xs font-space font-bold uppercase tracking-[0.2em] text-iron-text-secondary mb-3">Low Stock Alerts</p>
           <p className={`text-4xl font-space font-black ${lowStockCount > 0 ? 'text-red-400' : 'text-emerald-400'}`}>{lowStockCount}</p>
         </div>
         <div className="stat-card">
-          <p className="text-[10px] font-space font-bold uppercase tracking-[0.2em] text-iron-text-secondary mb-3">Avg Price</p>
+          <p className="text-xs font-space font-bold uppercase tracking-[0.2em] text-iron-text-secondary mb-3">Avg Price</p>
           <div className="flex items-end gap-1">
             <p className="text-4xl font-space font-black text-white">
               ${data.length > 0 ? (data.reduce((s, d) => s + parseFloat(d.price), 0) / data.length).toFixed(0) : '0'}
@@ -164,7 +164,7 @@ export default function Supplements() {
                   <div className="w-12 h-12 rounded-xl bg-iron-lime/10 flex items-center justify-center text-iron-lime group-hover:scale-110 transition-transform">
                     <Package size={20} />
                   </div>
-                  <span className="text-iron-text-secondary text-[10px] font-black uppercase tracking-widest font-space">#{item.supplement_id}</span>
+                  <span className="text-iron-text-secondary text-xs font-black uppercase tracking-widest font-space">#{item.supplement_id}</span>
                 </div>
                 <h3 className="text-white font-bold text-sm mb-1 group-hover:text-iron-lime transition-colors">{item.name}</h3>
                 <p className="text-iron-text-secondary text-xs italic mb-4">{item.brand || 'Unknown Brand'}</p>
@@ -177,7 +177,7 @@ export default function Supplements() {
                   <div className="flex items-center gap-1.5">
                     {level === 'low' && <AlertTriangle size={12} className="text-red-400" />}
                     <span className={`text-sm font-space font-bold ${STOCK_COLORS[level]}`}>{item.stock_quantity}</span>
-                    <span className="text-iron-text-secondary text-[10px]">units</span>
+                    <span className="text-iron-text-secondary text-xs">units</span>
                   </div>
                 </div>
 
@@ -217,7 +217,7 @@ export default function Supplements() {
               )}
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">Member <span className="text-red-400">*</span></label>
+                <label className="text-xs font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">Member <span className="text-red-400">*</span></label>
                 <select required value={formData.member_id} onChange={e => setFormData({ ...formData, member_id: e.target.value })}
                   className="w-full bg-[#18181A] border border-white/5 rounded-xl py-3 px-4 text-sm text-white focus:outline-none focus:border-iron-lime/30">
                   <option value="">Select member...</option>
@@ -228,13 +228,13 @@ export default function Supplements() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">Supplement <span className="text-red-400">*</span></label>
+                <label className="text-xs font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">Supplement <span className="text-red-400">*</span></label>
                 <select required value={formData.supplement_id} onChange={e => setFormData({ ...formData, supplement_id: e.target.value })}
                   className="w-full bg-[#18181A] border border-white/5 rounded-xl py-3 px-4 text-sm text-white focus:outline-none focus:border-iron-lime/30">
                   <option value="">Select supplement...</option>
                   {data.map(s => (
                     <option key={s.supplement_id} value={s.supplement_id}>
-                      {s.name} (${parseFloat(s.price).toFixed(2)}) — {s.stock_quantity} left
+                      {s.name} (₹{parseFloat(s.price).toFixed(2)}) — {s.stock_quantity} left
                     </option>
                   ))}
                 </select>
@@ -242,13 +242,13 @@ export default function Supplements() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">Quantity <span className="text-red-400">*</span></label>
+                  <label className="text-xs font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">Quantity <span className="text-red-400">*</span></label>
                   <input required type="number" min="1" max={previewSupplement ? previewSupplement.stock_quantity : 99}
                     value={formData.quantity} onChange={e => setFormData({ ...formData, quantity: parseInt(e.target.value) || 1 })}
                     className="w-full bg-[#18181A] border border-white/5 rounded-xl py-3 px-4 text-sm text-white focus:outline-none focus:border-iron-lime/30" />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">Payment</label>
+                  <label className="text-xs font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">Payment</label>
                   <select value={formData.payment_method} onChange={e => setFormData({ ...formData, payment_method: e.target.value })}
                     className="w-full bg-[#18181A] border border-white/5 rounded-xl py-3 px-4 text-sm text-white focus:outline-none focus:border-iron-lime/30">
                     <option>Card</option><option>Cash</option><option>UPI</option><option>Bank Transfer</option>
@@ -257,7 +257,7 @@ export default function Supplements() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">Sale Date</label>
+                <label className="text-xs font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">Sale Date</label>
                 <input required type="date" value={formData.sale_date} onChange={e => setFormData({ ...formData, sale_date: e.target.value })}
                   className="w-full bg-[#18181A] border border-white/5 rounded-xl py-3 px-4 text-sm text-white focus:outline-none focus:border-iron-lime/30 [color-scheme:dark]" />
               </div>

@@ -36,7 +36,7 @@ const STATUS_CFG = {
 
 function StatusBadge({ status }) {
   return (
-    <span className={`px-2.5 py-1 rounded text-[9px] font-black uppercase tracking-widest border ${STATUS_CFG[status] || STATUS_CFG['Booking Open']}`}>
+    <span className={`px-2.5 py-1 rounded text-[11px] font-black uppercase tracking-widest border ${STATUS_CFG[status] || STATUS_CFG['Booking Open']}`}>
       {status}
     </span>
   );
@@ -98,7 +98,7 @@ function CapBar({ registered, capacity, color }) {
         }`} style={{ width: `${pct}%`, backgroundColor: pct < 90 ? p.hex : undefined }} />
       </div>
       <div className="flex justify-between">
-        <span className={`text-[9px] font-black ${p.text}`}>{registered}/{capacity}</span>
+        <span className={`text-[11px] font-black ${p.text}`}>{registered}/{capacity}</span>
       </div>
     </div>
   );
@@ -218,7 +218,7 @@ export default function Plans() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         <div className="stat-card">
           <div className="flex items-start justify-between mb-4">
-            <p className="text-[10px] font-space font-bold uppercase tracking-[0.2em] text-iron-text-secondary">Classes Today</p>
+            <p className="text-xs font-space font-bold uppercase tracking-[0.2em] text-iron-text-secondary">Classes Today</p>
             <div className="w-9 h-9 rounded-lg bg-iron-lime/10 flex items-center justify-center text-iron-lime">
               <CalendarDays size={16} />
             </div>
@@ -230,7 +230,7 @@ export default function Plans() {
 
         <div className="stat-card">
           <div className="flex items-start justify-between mb-4">
-            <p className="text-[10px] font-space font-bold uppercase tracking-[0.2em] text-iron-text-secondary">Total Bookings</p>
+            <p className="text-xs font-space font-bold uppercase tracking-[0.2em] text-iron-text-secondary">Total Bookings</p>
             <div className="w-9 h-9 rounded-lg bg-iron-blue/10 flex items-center justify-center text-blue-400">
               <TrendingUp size={16} />
             </div>
@@ -243,7 +243,7 @@ export default function Plans() {
 
         <div className="stat-card">
           <div className="flex items-start justify-between mb-4">
-            <p className="text-[10px] font-space font-bold uppercase tracking-[0.2em] text-iron-text-secondary">Avg. Capacity</p>
+            <p className="text-xs font-space font-bold uppercase tracking-[0.2em] text-iron-text-secondary">Avg. Capacity</p>
             <div className="w-9 h-9 rounded-lg bg-white/5 flex items-center justify-center text-iron-text-secondary">
               <Gauge size={16} />
             </div>
@@ -273,7 +273,7 @@ export default function Plans() {
             </div>
           </div>
           <button onClick={(e) => { e.stopPropagation(); openModal(); }}
-            className="btn flex items-center gap-2 !py-2 !text-[10px]">
+            className="btn flex items-center gap-2 !py-2 !text-xs">
             <Plus size={13} /> Add New Class
           </button>
         </div>
@@ -291,7 +291,7 @@ export default function Plans() {
               <div key={i} className={`flex flex-col ${todayDay ? 'bg-iron-lime/[0.03]' : ''}`}>
                 {/* Day header */}
                 <div className={`py-3 px-2 text-center border-b border-border ${todayDay ? 'border-iron-lime/30' : ''}`}>
-                  <p className={`text-[10px] font-black uppercase tracking-widest font-space ${todayDay ? 'text-iron-lime' : 'text-iron-text-secondary'}`}>{label}</p>
+                  <p className={`text-xs font-black uppercase tracking-widest font-space ${todayDay ? 'text-iron-lime' : 'text-iron-text-secondary'}`}>{label}</p>
                   <p className={`text-lg font-space font-bold mt-0.5 ${todayDay ? 'text-iron-lime' : 'text-white'}`}>{dateNum}</p>
                 </div>
 
@@ -305,7 +305,7 @@ export default function Plans() {
                     isSun ? (
                       <div className="flex flex-col items-center justify-center h-full py-8 gap-2 opacity-20">
                         <CalendarOff size={20} className="text-white" />
-                        <p className="text-[9px] font-bold uppercase tracking-widest text-white text-center">Gym Closed</p>
+                        <p className="text-[11px] font-bold uppercase tracking-widest text-white text-center">Gym Closed</p>
                       </div>
                     ) : null
                   ) : (
@@ -314,13 +314,13 @@ export default function Plans() {
                       return (
                         <div key={cls.class_id}
                           className={`rounded-lg p-2 bg-white/[0.03] border-l-2 ${p.border} hover:bg-white/[0.05] transition-colors cursor-pointer group`}>
-                          <p className={`text-[9px] font-black uppercase tracking-wider ${p.text}`}>
+                          <p className={`text-[11px] font-black uppercase tracking-wider ${p.text}`}>
                             {cls.time_display}
                           </p>
                           <p className="text-white text-[11px] font-bold leading-tight mt-0.5 group-hover:text-white/90 truncate">
                             {cls.class_name}
                           </p>
-                          <p className="text-iron-text-secondary text-[9px] italic truncate mt-0.5">
+                          <p className="text-iron-text-secondary text-[11px] italic truncate mt-0.5">
                             {cls.trainer_name}
                           </p>
                           <CapBar registered={cls.registered} capacity={cls.capacity} color={cls.color} />
@@ -372,7 +372,7 @@ export default function Plans() {
         {/* Column headers */}
         <div className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_80px] px-6 py-2 border-b border-border bg-white/[0.01]">
           {['Class Name','Trainer','Time','Registered','Status','Actions'].map(h => (
-            <span key={h} className="text-[10px] font-black uppercase tracking-widest text-iron-text-secondary font-space">{h}</span>
+            <span key={h} className="text-xs font-black uppercase tracking-widest text-iron-text-secondary font-space">{h}</span>
           ))}
         </div>
 
@@ -478,7 +478,7 @@ export default function Plans() {
               {/* Class name + trainer */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="text-iron-text-secondary text-[10px] uppercase tracking-widest font-space font-bold">
+                  <label className="text-iron-text-secondary text-xs uppercase tracking-widest font-space font-bold">
                     Class Name <span className="text-red-400">*</span>
                   </label>
                   <input required type="text" placeholder="e.g. Power Lifting"
@@ -487,7 +487,7 @@ export default function Plans() {
                     className="w-full bg-[#18181A] border border-border rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-iron-lime/50 transition-colors placeholder:text-iron-text-secondary/50" />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-iron-text-secondary text-[10px] uppercase tracking-widest font-space font-bold">Trainer</label>
+                  <label className="text-iron-text-secondary text-xs uppercase tracking-widest font-space font-bold">Trainer</label>
                   <input type="text" placeholder="e.g. Coach Marcus"
                     value={formData.trainer_name}
                     onChange={e => setFormData({ ...formData, trainer_name: e.target.value })}
@@ -498,7 +498,7 @@ export default function Plans() {
               {/* Date + Time */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="text-iron-text-secondary text-[10px] uppercase tracking-widest font-space font-bold">
+                  <label className="text-iron-text-secondary text-xs uppercase tracking-widest font-space font-bold">
                     Date <span className="text-red-400">*</span>
                   </label>
                   <input required type="date"
@@ -507,7 +507,7 @@ export default function Plans() {
                     className="w-full bg-[#18181A] border border-border rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-iron-lime/50 transition-colors" />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-iron-text-secondary text-[10px] uppercase tracking-widest font-space font-bold">
+                  <label className="text-iron-text-secondary text-xs uppercase tracking-widest font-space font-bold">
                     Start Time <span className="text-red-400">*</span>
                   </label>
                   <input required type="time"
@@ -520,14 +520,14 @@ export default function Plans() {
               {/* Duration + Capacity */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="text-iron-text-secondary text-[10px] uppercase tracking-widest font-space font-bold">Duration (min)</label>
+                  <label className="text-iron-text-secondary text-xs uppercase tracking-widest font-space font-bold">Duration (min)</label>
                   <input type="number" min="15" max="240" placeholder="60"
                     value={formData.duration_minutes}
                     onChange={e => setFormData({ ...formData, duration_minutes: Number(e.target.value) })}
                     className="w-full bg-[#18181A] border border-border rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-iron-lime/50 transition-colors" />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-iron-text-secondary text-[10px] uppercase tracking-widest font-space font-bold">Capacity</label>
+                  <label className="text-iron-text-secondary text-xs uppercase tracking-widest font-space font-bold">Capacity</label>
                   <input type="number" min="1" max="200" placeholder="20"
                     value={formData.capacity}
                     onChange={e => setFormData({ ...formData, capacity: Number(e.target.value) })}
@@ -537,7 +537,7 @@ export default function Plans() {
 
               {/* Color picker */}
               <div className="space-y-2">
-                <label className="text-iron-text-secondary text-[10px] uppercase tracking-widest font-space font-bold">Accent Colour</label>
+                <label className="text-iron-text-secondary text-xs uppercase tracking-widest font-space font-bold">Accent Colour</label>
                 <div className="flex gap-2">
                   {PALETTE_KEYS.map(key => (
                     <button key={key} type="button"
