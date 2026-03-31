@@ -151,8 +151,13 @@ export default function AssignPlan() {
         </div>
       </div>
 
+<<<<<<< Updated upstream
       <div className="grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-6">
         {/* Form */}
+=======
+      <div className="grid grid-cols-1 xl:grid-cols-[1fr_400px] gap-6">
+        {/* Left Column: Form & Breakdown */}
+>>>>>>> Stashed changes
         <div className="space-y-6">
           <div className="card">
             <div className="flex items-center gap-3 mb-6">
@@ -181,8 +186,13 @@ export default function AssignPlan() {
               </div>
             ) : (
               <form onSubmit={handleAssign} className="space-y-5">
+                {/* Member Selection */}
                 <div className="space-y-1.5">
+<<<<<<< Updated upstream
                   <label className="text-[10px] font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">
+=======
+                  <label className="text-xs font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">
+>>>>>>> Stashed changes
                     <Users size={10} className="inline mr-1.5" />Select Member <span className="text-red-400">*</span>
                   </label>
                   <select required value={formData.member_id} onChange={e => setFormData({ ...formData, member_id: e.target.value })}
@@ -196,13 +206,13 @@ export default function AssignPlan() {
 
                 {/* Plan type toggle */}
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">Plan Type</label>
+                  <label className="text-xs font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">Plan Type</label>
                   <div className="flex gap-3">
                     <button type="button"
                       onClick={() => setFormData({ ...formData, type: 'workout', plan_id: '' })}
                       className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-space font-bold uppercase tracking-widest transition-all ${
                         formData.type === 'workout'
-                          ? 'bg-iron-lime text-dark'
+                          ? 'bg-iron-lime text-dark shadow-[0_0_20px_rgba(217,255,0,0.2)]'
                           : 'bg-white/[0.03] border border-white/10 text-iron-text-secondary hover:text-white'
                       }`}>
                       <Dumbbell size={14} /> Workout
@@ -211,7 +221,7 @@ export default function AssignPlan() {
                       onClick={() => setFormData({ ...formData, type: 'diet', plan_id: '' })}
                       className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-space font-bold uppercase tracking-widest transition-all ${
                         formData.type === 'diet'
-                          ? 'bg-emerald-500 text-dark'
+                          ? 'bg-emerald-500 text-dark shadow-[0_0_20px_rgba(16,185,129,0.2)]'
                           : 'bg-white/[0.03] border border-white/10 text-iron-text-secondary hover:text-white'
                       }`}>
                       <Apple size={14} /> Diet
@@ -219,9 +229,15 @@ export default function AssignPlan() {
                   </div>
                 </div>
 
+                {/* Plan Selection */}
                 <div className="space-y-1.5">
+<<<<<<< Updated upstream
                   <label className="text-[10px] font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">
                     Select {formData.type === 'workout' ? 'Workout' : 'Diet'} Plan <span className="text-red-400">*</span>
+=======
+                  <label className="text-xs font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">
+                    <Target size={10} className="inline mr-1.5" />Select {formData.type === 'workout' ? 'Workout' : 'Diet'} Plan <span className="text-red-400">*</span>
+>>>>>>> Stashed changes
                   </label>
                   <select required value={formData.plan_id} onChange={e => setFormData({ ...formData, plan_id: e.target.value })}
                     className="w-full bg-[#18181A] border border-white/5 rounded-xl py-3 px-4 text-sm text-white focus:outline-none focus:border-iron-lime/30">
@@ -233,6 +249,7 @@ export default function AssignPlan() {
                   </select>
                 </div>
 
+                {/* Date Selection */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">
@@ -251,15 +268,15 @@ export default function AssignPlan() {
                 </div>
 
                 <button type="submit" disabled={isSubmitting}
-                  className="w-full btn flex items-center justify-center gap-2 !py-4">
-                  {isSubmitting ? <Loader2 size={14} className="animate-spin" /> : <ChevronRight size={14} />}
-                  {isSubmitting ? 'Assigning...' : 'Assign Plan'}
+                  className="w-full btn flex items-center justify-center gap-2 !py-4 font-space font-bold uppercase tracking-widest text-xs">
+                  {isSubmitting ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle size={14} />}
+                  {isSubmitting ? 'Assigning...' : 'Confirm Assignment'}
                 </button>
               </form>
             )}
           </div>
 
-          {/* ── Exercise Breakdown Panel (Workout_Exercise table) ── */}
+          {/* Exercise Breakdown Panel */}
           {formData.type === 'workout' && formData.plan_id && (
             <div className="card">
               <button
@@ -304,7 +321,6 @@ export default function AssignPlan() {
                   ) : (
                     Object.entries(groupedExercises).map(([group, exList]) => (
                       <div key={group}>
-                        {/* Muscle group header */}
                         <div className="flex items-center gap-2 mb-2">
                           <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest border ${getMuscleColor(group)}`}>
                             {group}
@@ -312,7 +328,6 @@ export default function AssignPlan() {
                           <span className="text-iron-text-secondary text-[10px]">{exList.length} exercise{exList.length !== 1 ? 's' : ''}</span>
                         </div>
 
-                        {/* Exercise rows */}
                         <div className="space-y-1.5 pl-1">
                           {exList.map(ex => (
                             <div key={ex.exercise_id}
@@ -347,9 +362,8 @@ export default function AssignPlan() {
           )}
         </div>
 
-        {/* Preview sidebar */}
+        {/* Right Column: Preview Sidebar */}
         <div className="space-y-4">
-          {/* Selection preview */}
           <div className="card">
             <h3 className="text-white font-space font-bold text-xs uppercase tracking-widest mb-4">Assignment Preview</h3>
             <div className="space-y-4">
@@ -380,47 +394,30 @@ export default function AssignPlan() {
                       selectedPlan.difficulty_level === 'Intermediate' ? 'text-amber-400' : 'text-emerald-400'
                     }`}>{selectedPlan.difficulty_level || '—'}</span>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-iron-text-secondary text-xs">Duration</span>
-                    <span className="text-white text-xs">{selectedPlan.duration_weeks ? `${selectedPlan.duration_weeks} weeks` : '—'}</span>
-                  </div>
-                  {exercises.length > 0 && (
-                    <div className="flex items-center justify-between">
-                      <span className="text-iron-text-secondary text-xs">Exercises</span>
-                      <span className="text-iron-lime text-xs font-bold font-space">{exercises.length} total</span>
-                    </div>
-                  )}
                 </>
               )}
               {selectedPlan && formData.type === 'diet' && (
-                <>
-                  <div className="flex items-center justify-between">
-                    <span className="text-iron-text-secondary text-xs">Goal</span>
-                    <span className="text-white text-xs">{selectedPlan.goal || '—'}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-iron-text-secondary text-xs">Calories/Day</span>
-                    <span className="text-iron-lime text-xs font-bold font-space">{selectedPlan.calories_per_day || '—'} kcal</span>
-                  </div>
-                </>
+                <div className="flex items-center justify-between">
+                  <span className="text-iron-text-secondary text-xs">Calories/Day</span>
+                  <span className="text-iron-lime text-xs font-bold font-space">{selectedPlan.calories_per_day || '—'} kcal</span>
+                </div>
               )}
-              <hr className="border-border" />
+              <hr className="border-white/5" />
               <div className="flex items-center justify-between">
                 <span className="text-iron-text-secondary text-xs">Period</span>
                 <span className="text-white text-xs font-medium">
                   {formData.start_date && formData.end_date
-                    ? `${new Date(formData.start_date).toLocaleDateString('en-US', { month: 'short', day: '2-digit' })} → ${new Date(formData.end_date).toLocaleDateString('en-US', { month: 'short', day: '2-digit' })}`
+                    ? `${new Date(formData.start_date).toLocaleDateString()} → ${new Date(formData.end_date).toLocaleDateString()}`
                     : '—'}
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Available plans list */}
           <div className="card">
             <h3 className="text-white font-space font-bold text-xs uppercase tracking-widest mb-4 flex items-center gap-2">
               {formData.type === 'workout' ? <Dumbbell size={12} className="text-iron-lime" /> : <Apple size={12} className="text-emerald-400" />}
-              Available {formData.type === 'workout' ? 'Workouts' : 'Diets'}
+              Quick Select {formData.type === 'workout' ? 'Workouts' : 'Diets'}
             </h3>
             <div className="space-y-2">
               {currentPlans.map(p => {
@@ -438,11 +435,14 @@ export default function AssignPlan() {
                       <span className="font-bold">{p.plan_name}</span>
                       {isSelected && <CheckCircle size={12} className="text-iron-lime" />}
                     </div>
+<<<<<<< Updated upstream
                     <span className="text-[10px] italic opacity-70">
                       {p.goal || ''}
                       {formData.type === 'workout' && p.difficulty_level ? ` · ${p.difficulty_level}` : ''}
                       {formData.type === 'diet' && p.calories_per_day ? ` · ${p.calories_per_day} kcal` : ''}
                     </span>
+=======
+>>>>>>> Stashed changes
                   </button>
                 );
               })}
