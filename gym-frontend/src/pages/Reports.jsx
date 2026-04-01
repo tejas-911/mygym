@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, AreaChart, Area } from 'recharts';
+import { useTheme } from '../context/ThemeContext';
 import {
   BarChart3, Users, DollarSign, Calendar, AlertTriangle, TrendingUp,
   Award, ShoppingBag, Dumbbell, Loader2, RefreshCw, ScrollText,
@@ -14,17 +15,19 @@ function getHeaders() {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-const CustomTooltip = ({ active, payload, label }) => {
+const CustomTooltip = ({ active, payload, label, isLight }) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-surface border border-border rounded-xl px-4 py-3 shadow-2xl">
+    <div className="bg-surface border border-border rounded-xl px-4 py-3 shadow-2xl" style={{ backgroundColor: isLight ? '#FFFFFF' : '', borderColor: isLight ? '#E4E4EB' : '' }}>
       <p className="text-iron-text-secondary text-xs uppercase tracking-widest font-bold">{label}</p>
-      <p className="text-iron-lime font-space font-bold text-lg">${parseFloat(payload[0].value).toFixed(2)}</p>
+      <p className="font-space font-bold text-lg" style={{ color: isLight ? '#2563EB' : 'var(--color-iron-lime)' }}>${parseFloat(payload[0].value).toFixed(2)}</p>
     </div>
   );
 };
 
 export default function Reports() {
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [month, setMonth] = useState(new Date().getMonth() + 1);
@@ -172,15 +175,15 @@ export default function Reports() {
                 <AreaChart data={data.monthlyRevenue}>
                   <defs>
                     <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#DFFF00" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#DFFF00" stopOpacity={0} />
+                      <stop offset="5%" stopColor={isLight ? '#2563EB' : '#DFFF00'} stopOpacity={0.3} />
+                      <stop offset="95%" stopColor={isLight ? '#2563EB' : '#DFFF00'} stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#1F1F26" vertical={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke={isLight ? '#E4E4EB' : '#1F1F26'} vertical={false} />
                   <XAxis dataKey="payment_month" axisLine={false} tickLine={false} tick={{ fill: '#71717A', fontSize: 10 }} />
                   <YAxis axisLine={false} tickLine={false} tick={{ fill: '#71717A', fontSize: 10 }} tickFormatter={v => `₹${v}`} />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Area type="monotone" dataKey="total_revenue" stroke="#DFFF00" strokeWidth={2} fill="url(#revGrad)" />
+                  <Tooltip content={<CustomTooltip isLight={isLight} />} />
+                  <Area type="monotone" dataKey="total_revenue" stroke={isLight ? '#2563EB' : '#DFFF00'} strokeWidth={2} fill="url(#revGrad)" />
                 </AreaChart>
               </ResponsiveContainer>
             </div>

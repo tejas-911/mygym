@@ -12,6 +12,7 @@ import {
   ResponsiveContainer, 
   CartesianGrid 
 } from 'recharts';
+import { useTheme } from '../context/ThemeContext';
 import { 
   Users, 
   TrendingUp, 
@@ -23,6 +24,8 @@ import {
 } from 'lucide-react';
 
 export default function Dashboard() {
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [recentMembers, setRecentMembers] = useState([]);
@@ -81,10 +84,10 @@ export default function Dashboard() {
   const attendanceData = data.attendanceStats || [];
 
   const membershipData = [
-    { name: 'Monthly', value: 35, fill: '#1A3AFF' },
-    { name: 'Quarterly', value: 40, fill: '#DFFF00' },
-    { name: 'Annual', value: 20, fill: '#2A2A35' },
-    { name: 'Student', value: 5, fill: '#71717A' }
+    { name: 'Monthly', value: 35, fill: isLight ? '#2563EB' : '#1A3AFF' },
+    { name: 'Quarterly', value: 40, fill: isLight ? '#3B82F6' : '#DFFF00' },
+    { name: 'Annual', value: 20, fill: isLight ? '#93C5FD' : '#2A2A35' },
+    { name: 'Student', value: 5, fill: isLight ? '#BFDBFE' : '#71717A' }
   ];
 
   const getInitials = (name) => {
@@ -197,11 +200,11 @@ export default function Dashboard() {
               <AreaChart data={revenueData}>
                 <defs>
                   <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#DFFF00" stopOpacity={0.1} />
-                    <stop offset="95%" stopColor="#DFFF00" stopOpacity={0} />
+                    <stop offset="5%" stopColor={isLight ? '#2563EB' : '#DFFF00'} stopOpacity={isLight ? 0.2 : 0.1} />
+                    <stop offset="95%" stopColor={isLight ? '#2563EB' : '#DFFF00'} stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#1F1F26" />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isLight ? '#E4E4EB' : '#1F1F26'} />
                 <XAxis 
                   dataKey="month" 
                   axisLine={false} 
@@ -211,13 +214,13 @@ export default function Dashboard() {
                 />
                 <YAxis hide />
                 <Tooltip 
-                  contentStyle={{ background: '#111116', border: '1px solid #1F1F26', borderRadius: '8px', color: '#FFFFFF' }}
-                  itemStyle={{ color: '#DFFF00' }}
+                  contentStyle={{ background: isLight ? '#FFFFFF' : '#111116', border: `1px solid ${isLight ? '#E4E4EB' : '#1F1F26'}`, borderRadius: '8px', color: isLight ? '#0A0A0E' : '#FFFFFF' }}
+                  itemStyle={{ color: isLight ? '#2563EB' : '#DFFF00' }}
                 />
                 <Area 
                   type="monotone" 
                   dataKey="total" 
-                  stroke="#DFFF00" 
+                  stroke={isLight ? '#2563EB' : '#DFFF00'} 
                   strokeWidth={2}
                   fillOpacity={1} 
                   fill="url(#revenueGradient)" 

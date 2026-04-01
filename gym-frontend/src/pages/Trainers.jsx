@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
+import { useTheme } from '../context/ThemeContext';
 import {
   Plus, X, Loader2, AlertCircle, CheckCircle,
   LayoutGrid, List, Users, CalendarCheck, TrendingUp,
@@ -49,7 +50,6 @@ function getSpec(specialization = '') {
   return { label: word, color: '#71717A', textCls: 'text-white', bgCls: 'bg-white/20' };
 }
 
-// Card background gradient per specialization color
 const CARD_GRADIENTS = [
   'from-[#1a1f0a] via-[#111116] to-[#0A0A0E]',   // lime-ish dark
   'from-[#0a0f1a] via-[#111116] to-[#0A0A0E]',   // blue-ish
@@ -59,7 +59,17 @@ const CARD_GRADIENTS = [
   'from-[#1a0a12] via-[#111116] to-[#0A0A0E]',   // pink-ish
 ];
 
-function cardGradient(id) {
+const CARD_GRADIENTS_LIGHT = [
+  'from-yellow-50 via-[#f4f4f8] to-slate-100',
+  'from-blue-50 via-[#f4f4f8] to-slate-100',
+  'from-purple-50 via-[#f4f4f8] to-slate-100',
+  'from-emerald-50 via-[#f4f4f8] to-slate-100',
+  'from-orange-50 via-[#f4f4f8] to-slate-100',
+  'from-pink-50 via-[#f4f4f8] to-slate-100',
+];
+
+function cardGradient(id, isLight) {
+  if (isLight) return CARD_GRADIENTS_LIGHT[id % CARD_GRADIENTS_LIGHT.length];
   return CARD_GRADIENTS[id % CARD_GRADIENTS.length];
 }
 
@@ -72,25 +82,26 @@ const initForm = {
 /* ════════════════════════════════════════════════════════════════
    Trainer Card — Grid View
 ══════════════════════════════════════════════════════════════════ */
-function TrainerCard({ trainer, onDelete }) {
+function TrainerCard({ trainer, onDelete, isLight }) {
   const spec    = getSpec(trainer.specialization);
+  const drawColor = isLight && spec.color === '#DFFF00' ? '#2563EB' : spec.color;
   const rating  = getRating(trainer.trainer_id);
-  const grad    = cardGradient(trainer.trainer_id);
+  const grad    = cardGradient(trainer.trainer_id, isLight);
   const clients = trainer.active_clients ?? 0;
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <div className={`relative rounded-2xl overflow-hidden border border-white/5 bg-gradient-to-b ${grad} group cursor-pointer hover:border-white/10 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.5)]`}>
+    <div className={`relative rounded-2xl overflow-hidden border border-white/5 bg-gradient-to-b ${grad} group cursor-pointer hover:border-white/10 transition-all duration-300 hover:-translate-y-1 ${isLight ? 'hover:shadow-[0_10px_40px_rgba(0,0,0,0.1)]' : 'hover:shadow-[0_20px_60px_rgba(0,0,0,0.5)]'}`}>
 
       {/* Large initials visual */}
       <div className="h-52 flex items-center justify-center relative overflow-hidden">
         {/* Glow blob */}
         <div className="absolute inset-0 flex items-center justify-center opacity-20">
-          <div className="w-32 h-32 rounded-full blur-3xl" style={{ backgroundColor: spec.color }} />
+          <div className="w-32 h-32 rounded-full blur-3xl" style={{ backgroundColor: drawColor }} />
         </div>
         {/* Initials */}
         <div className="relative z-10 w-24 h-24 rounded-full border-2 flex items-center justify-center text-3xl font-black font-space"
-          style={{ borderColor: spec.color, color: spec.color, backgroundColor: `${spec.color}15` }}>
+          style={{ borderColor: drawColor, color: drawColor, backgroundColor: `${drawColor}15` }}>
           {getInitials(trainer.name)}
         </div>
         {/* Status badge */}
@@ -146,16 +157,17 @@ function TrainerCard({ trainer, onDelete }) {
 }
 
 /* ── List Row ────────────────────────────────────────────────── */
-function TrainerRow({ trainer, onDelete }) {
+function TrainerRow({ trainer, onDelete, isLight }) {
   const spec   = getSpec(trainer.specialization);
+  const drawColor = isLight && spec.color === '#DFFF00' ? '#2563EB' : spec.color;
   const rating = getRating(trainer.trainer_id);
 
   return (
     <div className="grid grid-cols-[2fr_1fr_1fr_1fr_100px] items-center px-6 py-4 border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors group border-l-2"
-      style={{ borderLeftColor: spec.color }}>
+      style={{ borderLeftColor: drawColor }}>
       <div className="flex items-center gap-4">
         <div className="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-black font-space flex-shrink-0 border"
-          style={{ backgroundColor: `${spec.color}15`, color: spec.color, borderColor: `${spec.color}30` }}>
+          style={{ backgroundColor: `${drawColor}15`, color: drawColor, borderColor: `${drawColor}30` }}>
           {getInitials(trainer.name)}
         </div>
         <div>
@@ -190,6 +202,9 @@ function TrainerRow({ trainer, onDelete }) {
    Main Page
 ══════════════════════════════════════════════════════════════════ */
 export default function Trainers() {
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
+
   const [stats, setStats]       = useState({ total_trainers: 0, sessions_today: 0, active_clients: 0, performance: 0 });
   const [trainers, setTrainers] = useState([]);
   const [total, setTotal]       = useState(0);
@@ -371,13 +386,13 @@ export default function Trainers() {
         ) : viewMode === 'grid' ? (
           <div className="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {trainers.map(t => (
-              <TrainerCard key={t.trainer_id} trainer={t} onDelete={handleDelete} />
+              <TrainerCard key={t.trainer_id} trainer={t} onDelete={handleDelete} isLight={isLight} />
             ))}
           </div>
         ) : (
           <div className="divide-y divide-white/[0.03]">
             {trainers.map(t => (
-              <TrainerRow key={t.trainer_id} trainer={t} onDelete={handleDelete} />
+              <TrainerRow key={t.trainer_id} trainer={t} onDelete={handleDelete} isLight={isLight} />
             ))}
           </div>
         )}
