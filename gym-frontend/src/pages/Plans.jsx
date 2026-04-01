@@ -129,6 +129,14 @@ export default function Plans() {
   // Actions dropdown
   const [openAction, setOpenAction] = useState(null);
 
+  const [trainers, setTrainers] = useState([]);
+  const fetchTrainers = useCallback(async () => {
+    try {
+      const { data } = await axios.get(`http://localhost:5000/api/trainers`, { headers: getHeaders(), params: { limit: 100 } });
+      setTrainers(Array.isArray(data.trainers) ? data.trainers : []);
+    } catch(e) { console.error(e); }
+  }, []);
+
   const fetchStats = useCallback(async () => {
     try {
       const { data } = await axios.get(`${API}/stats`, { headers: getHeaders() });
@@ -162,6 +170,7 @@ export default function Plans() {
     fetchStats();
     fetchWeek(weekStart);
     fetchUpcoming(upFilter);
+    fetchTrainers();
   }, []);
 
   useEffect(() => { fetchWeek(weekStart); }, [weekStart]);
@@ -488,10 +497,15 @@ export default function Plans() {
                 </div>
                 <div className="space-y-1">
                   <label className="text-iron-text-secondary text-xs uppercase tracking-widest font-space font-bold">Trainer</label>
-                  <input type="text" placeholder="e.g. Coach Marcus"
+                  <select
                     value={formData.trainer_name}
                     onChange={e => setFormData({ ...formData, trainer_name: e.target.value })}
-                    className="w-full bg-[#18181A] border border-border rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-iron-lime/50 transition-colors placeholder:text-iron-text-secondary/50" />
+                    className="w-full bg-[#18181A] border border-border rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-iron-lime/50 transition-colors">
+                    <option value="">— Select Trainer —</option>
+                    {trainers.map(t => (
+                      <option key={t.trainer_id} value={t.name}>{t.name} ({t.specialization})</option>
+                    ))}
+                  </select>
                 </div>
               </div>
 

@@ -32,19 +32,19 @@ INSERT INTO Member (name, gender, phone, email, date_of_birth, join_date, status
 
 -- 2. Trainer
 INSERT INTO Trainer (name, specialization, phone, salary, hire_date) VALUES
-('Tom Hanks', 'Weightlifting', '5551112222', 50000.00, '2022-01-15'),
-('Emma Stone', 'Yoga', '5553334444', 45000.00, '2022-03-10'),
-('Dwayne Johnson', 'Bodybuilding', '5555556666', 60000.00, '2021-11-01'),
-('Scarlett Johansson', 'Cardio', '5557778888', 48000.00, '2022-05-20'),
-('Chris Hemsworth', 'Crossfit', '5559990000', 55000.00, '2022-08-15');
+('Tom Hanks', 'Weightlifting', '5551112222', 35000.00, '2022-01-15'),
+('Emma Stone', 'Yoga', '5553334444', 30000.00, '2022-03-10'),
+('Dwayne Johnson', 'Bodybuilding', '5555556666', 45000.00, '2021-11-01'),
+('Scarlett Johansson', 'Cardio', '5557778888', 35000.00, '2022-05-20'),
+('Chris Hemsworth', 'Crossfit', '5559990000', 40000.00, '2022-08-15');
 
 -- 3. Membership_Plan
 INSERT INTO Membership_Plan (plan_name, duration_months, price, description) VALUES
-('Basic', 1, 30.00, 'Access to basic equipment'),
-('Pro', 6, 150.00, 'Access to all equipment and classes'),
-('Elite', 12, 250.00, 'All access + personal trainer'),
-('Student', 3, 50.00, 'Discounted plan for students'),
-('Weekend Warrior', 1, 20.00, 'Weekend access only');
+('Basic', 1, 1000.00, 'Access to basic equipment'),
+('Pro', 6, 5000.00, 'Access to all equipment and classes'),
+('Elite', 12, 9000.00, 'All access + personal trainer'),
+('Student', 3, 2000.00, 'Discounted plan for students'),
+('Weekend Warrior', 1, 800.00, 'Weekend access only');
 
 -- 4. Subscription
 INSERT INTO Subscription (member_id, plan_id, start_date, end_date, status) VALUES
@@ -56,11 +56,11 @@ INSERT INTO Subscription (member_id, plan_id, start_date, end_date, status) VALU
 
 -- 5. Payment
 INSERT INTO Payment (subscription_id, amount, payment_date, payment_method) VALUES
-(1, 250.00, '2023-01-10', 'Card'),
-(2, 150.00, '2023-02-15', 'UPI'),
-(3, 30.00, '2023-03-20', 'Cash'),
-(4, 250.00, '2023-04-05', 'Bank Transfer'),
-(5, 150.00, '2023-05-12', 'Card');
+(1, 9000.00, '2023-01-10', 'Card'),
+(2, 5000.00, '2023-02-15', 'UPI'),
+(3, 1000.00, '2023-03-20', 'Cash'),
+(4, 9000.00, '2023-04-05', 'Bank Transfer'),
+(5, 5000.00, '2023-05-12', 'Card');
 
 -- 6. Attendance
 INSERT INTO Attendance (member_id, check_in_time, check_out_time, date) VALUES
@@ -136,16 +136,36 @@ INSERT INTO Maintenance (equipment_id, maintenance_date, description, cost) VALU
 
 -- 15. Supplement
 INSERT INTO Supplement (name, brand, price, stock_quantity) VALUES
-('Whey Protein Isolate', 'Optimum Nutrition', 59.99, 50),
-('Creatine Monohydrate', 'MuscleTech', 29.99, 100),
-('Pre-Workout Explode', 'Cellucor', 39.99, 40),
-('BCAA Recovery', 'Scivation', 34.99, 60),
-('Multivitamin Core', 'GNC', 19.99, 80);
+('Whey Protein Isolate', 'Optimum Nutrition', 2500.00, 50),
+('Creatine Monohydrate', 'MuscleTech', 1500.00, 100),
+('Pre-Workout Explode', 'Cellucor', 2000.00, 40),
+('BCAA Recovery', 'Scivation', 1800.00, 60),
+('Multivitamin Core', 'GNC', 800.00, 80);
 
 -- 16. Supplement_Sale
 INSERT INTO Supplement_Sale (member_id, supplement_id, quantity, sale_date, total_amount) VALUES
-(1, 1, 2, '2023-01-15', 119.98),
-(2, 3, 1, '2023-02-20', 39.99),
-(4, 2, 1, '2023-04-10', 29.99),
-(5, 1, 1, '2023-05-15', 59.99),
-(1, 4, 2, '2023-06-01', 69.98);
+(1, 1, 2, '2023-01-15', 5000.00),
+(2, 3, 1, '2023-02-20', 2000.00),
+(4, 2, 1, '2023-04-10', 1500.00),
+(5, 1, 1, '2023-05-15', 2500.00),
+(1, 4, 2, '2023-06-01', 3600.00);
+
+-- 17. Class_Schedule
+CREATE TABLE IF NOT EXISTS Class_Schedule (
+    class_id INT AUTO_INCREMENT PRIMARY KEY,
+    class_name VARCHAR(100) NOT NULL,
+    trainer_name VARCHAR(100) DEFAULT 'Unassigned',
+    scheduled_date DATE NOT NULL,
+    scheduled_time TIME NOT NULL,
+    duration_minutes INT DEFAULT 60,
+    capacity INT DEFAULT 20,
+    registered INT DEFAULT 0,
+    color VARCHAR(30) DEFAULT 'lime',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT INTO Class_Schedule (class_name, trainer_name, scheduled_date, scheduled_time, duration_minutes, capacity, registered, color) VALUES
+('Morning Yoga', 'Emma Stone', CURDATE(), '07:00:00', 60, 20, 12, 'purple'),
+('Heavy Weightlifting', 'Tom Hanks', CURDATE(), '10:00:00', 90, 15, 10, 'orange'),
+('Cardio Blast', 'Scarlett Johansson', CURDATE(), '17:30:00', 45, 25, 20, 'blue'),
+('Evening Crossfit', 'Chris Hemsworth', CURDATE(), '19:00:00', 60, 20, 15, 'lime');

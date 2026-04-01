@@ -114,7 +114,10 @@ exports.addClass = async (req, res) => {
              duration_minutes || 60, capacity || 20, color || 'lime']
         );
         res.status(201).json({ id: result.insertId, message: 'Class created' });
-    } catch (error) { res.status(500).json({ error: error.message }); }
+    } catch (error) {
+        console.error('Class Creation Error:', error);
+        res.status(500).json({ message: error.message }); 
+    }
 };
 
 exports.updateClass = async (req, res) => {
@@ -127,7 +130,10 @@ exports.updateClass = async (req, res) => {
             [class_name, trainer_name, scheduled_date, scheduled_time, duration_minutes, capacity, registered, color, id]
         );
         res.json({ message: 'Class updated' });
-    } catch (error) { res.status(500).json({ error: error.message }); }
+    } catch (error) {
+        console.error('Class Update Error:', error);
+        res.status(500).json({ message: error.message }); 
+    }
 };
 
 exports.deleteClass = async (req, res) => {

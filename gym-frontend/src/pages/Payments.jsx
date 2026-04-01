@@ -99,6 +99,15 @@ export default function Payments() {
   const searchRef = useRef(null);
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
+  // Fetch plans for dropdown
+  const [plans, setPlans] = useState([]);
+  const fetchPlans = useCallback(async () => {
+    try {
+      const { data } = await axios.get(`http://localhost:5000/api/plans`, { headers: getHeaders() });
+      setPlans(Array.isArray(data) ? data : []);
+    } catch (e) { console.error(e); }
+  }, []);
+
   // Fetch stats
   const fetchStats = useCallback(async () => {
     try {
@@ -141,7 +150,7 @@ export default function Payments() {
     } finally { setLoadingTable(false); }
   }, []);
 
-  useEffect(() => { fetchStats(); fetchTrend('monthly'); }, []);
+  useEffect(() => { fetchStats(); fetchTrend('monthly'); fetchPlans(); }, []);
   useEffect(() => { fetchTable(page, search); }, [page, search]);
 
   const handleTrendToggle = (mode) => {
@@ -522,12 +531,18 @@ export default function Payments() {
 
               <div className="space-y-1">
                 <label className="text-iron-text-secondary text-xs uppercase tracking-widest font-space font-semibold">
-                  Amount (₹) <span className="text-red-400">*</span>
+                  Plan <span className="text-red-400">*</span>
                 </label>
-                <input required type="number" step="0.01" placeholder="e.g. 2499"
-                  value={formData.amount}
+                <select required value={formData.amount}
                   onChange={e => setFormData({ ...formData, amount: e.target.value })}
-                  className="w-full bg-[#18181A] border border-border rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-iron-lime/50 transition-colors placeholder:text-iron-text-secondary/50" />
+                  className="w-full bg-[#18181A] border border-border rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-iron-lime/50 transition-colors">
+                  <option value="">— Select Plan —</option>
+                  {plans.map(p => (
+                    <option key={p.plan_id} value={p.price}>
+                      {p.plan_name} (₹{p.price})
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className="grid grid-cols-2 gap-4">

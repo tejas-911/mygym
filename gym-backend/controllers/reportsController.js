@@ -38,18 +38,32 @@ exports.getReports = async (req, res) => {
             equipmentAlerts = eqAlerts;
         }
 
-        // ── Try vw_monthly_revenue VIEW ──
+        // ── Construct Monthly Revenue dynamically for the requested `year` ──
         let monthlyRevenue = [];
+        const yearPrefix = `${year}-%`;
+        
         try {
-            const [rows] = await db.query('SELECT * FROM vw_monthly_revenue ORDER BY payment_month DESC LIMIT 12');
+            const [rows] = await db.query('SELECT * FROM vw_monthly_revenue WHERE payment_month LIKE ? ORDER BY payment_month ASC', [yearPrefix]);
             monthlyRevenue = rows;
         } catch (viewErr) {
             const [rows] = await db.query(`
                 SELECT DATE_FORMAT(payment_date, '%Y-%m') as payment_month, SUM(amount) as total_revenue, COUNT(*) as transaction_count
-                FROM Payment GROUP BY payment_month ORDER BY payment_month DESC LIMIT 12
-            `);
+                FROM Payment 
+                WHERE YEAR(payment_date) = ?
+                GROUP BY payment_month 
+                ORDER BY payment_month ASC
+            `, [year]);
             monthlyRevenue = rows;
         }
+
+        // Ensure all 12 months are present for the chart
+        const fullYear = [];
+        for (let i = 1; i <= 12; i++) {
+            const ym = `${year}-${String(i).padStart(2, '0')}`;
+            const found = monthlyRevenue.find(r => r.payment_month === ym);
+            fullYear.push(found || { payment_month: ym, total_revenue: 0, transaction_count: 0 });
+        }
+        monthlyRevenue = fullYear;
 
         // ── Popular workout / trainer / supplement (always direct queries) ──
         const [popularWorkout] = await db.query(`

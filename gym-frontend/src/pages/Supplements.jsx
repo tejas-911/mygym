@@ -129,7 +129,7 @@ export default function Supplements() {
           <p className="text-xs font-space font-bold uppercase tracking-[0.2em] text-iron-text-secondary mb-3">Avg Price</p>
           <div className="flex items-end gap-1">
             <p className="text-4xl font-space font-black text-white">
-              ${data.length > 0 ? (data.reduce((s, d) => s + parseFloat(d.price), 0) / data.length).toFixed(0) : '0'}
+              ₹{data.length > 0 ? (data.reduce((s, d) => s + parseFloat(d.price), 0) / data.length).toFixed(0) : '0'}
             </p>
           </div>
         </div>
@@ -266,7 +266,7 @@ export default function Supplements() {
               {previewSupplement && (
                 <div className="flex items-center justify-between p-4 bg-iron-lime/5 border border-iron-lime/20 rounded-xl">
                   <span className="text-iron-text-secondary text-xs font-bold uppercase tracking-widest">Total</span>
-                  <span className="text-iron-lime font-space font-black text-xl">${previewTotal.toFixed(2)}</span>
+                  <span className="text-iron-lime font-space font-black text-xl">₹{previewTotal.toFixed(2)}</span>
                 </div>
               )}
 

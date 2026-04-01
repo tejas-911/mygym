@@ -120,6 +120,13 @@ export default function Equipment() {
   const [formError, setFormError] = useState('');
   const [formSuccess, setFormSuccess] = useState(false);
 
+  // Repair/Maintenance Modal State
+  const [repairModalOpen, setRepairModalOpen] = useState(false);
+  const [repairItemId, setRepairItemId]       = useState(null);
+  const [repairDesc, setRepairDesc]           = useState('');
+  const [repairCost, setRepairCost]           = useState(0);
+  const [repairSubmitting, setRepairSubmitting] = useState(false);
+
   const fetchStats = useCallback(async () => {
     try {
       const { data } = await axios.get(`${API}/stats`, { headers: getHeaders() });
@@ -165,6 +172,45 @@ export default function Equipment() {
     } catch (err) {
       setFormError(err.response?.data?.message || 'Failed to add equipment.');
     } finally { setSubmitting(false); }
+  };
+
+  const handleRepair = async (id) => {
+    try {
+      await axios.put(`${API}/${id}/repair`, {}, { headers: getHeaders() });
+      fetchStats();
+      fetchEquipment(search);
+      fetchMaintenance();
+    } catch (e) {
+      console.error(e);
+      alert('Failed to update repair status.');
+    }
+  };
+
+  const handleSendToRepair = (id) => {
+    setRepairItemId(id);
+    setRepairDesc('Equipment sent to repair for maintenance.');
+    setRepairCost(0);
+    setRepairModalOpen(true);
+  };
+
+  const submitRepair = async (e) => {
+    e.preventDefault();
+    setRepairSubmitting(true);
+    try {
+      await axios.put(`${API}/${repairItemId}/send-repair`, 
+        { description: repairDesc, cost: parseFloat(repairCost) }, 
+        { headers: getHeaders() }
+      );
+      setRepairModalOpen(false);
+      fetchStats();
+      fetchEquipment(search);
+      fetchMaintenance();
+    } catch (e) {
+      console.error(e);
+      alert('Failed to send to repair.');
+    } finally {
+      setRepairSubmitting(false);
+    }
   };
 
   // upcoming / overdue split for maintenance panel
@@ -276,12 +322,13 @@ export default function Equipment() {
                   <th>Condition</th>
                   <th>Last Serviced</th>
                   <th>Status</th>
+                  <th className="text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {loadingEq ? (
                   <tr>
-                    <td colSpan={6} className="py-16 text-center">
+                    <td colSpan={7} className="py-16 text-center">
                       <div className="flex justify-center items-center gap-3 text-iron-text-secondary text-xs font-space uppercase tracking-widest">
                         <Loader2 size={15} className="animate-spin text-iron-lime" /> Loading inventory...
                       </div>
@@ -289,7 +336,7 @@ export default function Equipment() {
                   </tr>
                 ) : equipment.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="py-16 text-center text-iron-text-secondary italic text-sm">
+                    <td colSpan={7} className="py-16 text-center text-iron-text-secondary italic text-sm">
                       No equipment found. Click "+ Add Equipment" to get started.
                     </td>
                   </tr>
@@ -321,6 +368,17 @@ export default function Equipment() {
                         <span className="text-iron-text-secondary text-xs">{formatShortDate(item.last_serviced)}</span>
                       </td>
                       <td><StatusDot status={item.display_status} /></td>
+                      <td className="text-right">
+                        {(item.condition_status === 'Needs Repair' || item.condition_status === 'Out of Order') ? (
+                          <button onClick={() => handleRepair(item.equipment_id)} className="px-3 py-1 bg-iron-lime/10 text-iron-lime text-[10px] font-black uppercase tracking-widest rounded hover:bg-iron-lime/20 transition-colors whitespace-nowrap">
+                            Mark Repaired
+                          </button>
+                        ) : (
+                          <button onClick={() => handleSendToRepair(item.equipment_id)} className="px-3 py-1 bg-red-500/10 text-red-500 text-[10px] font-black uppercase tracking-widest rounded hover:bg-red-500/20 transition-colors whitespace-nowrap">
+                            Send Repair
+                          </button>
+                        )}
+                      </td>
                     </tr>
                   ))
                 )}
@@ -499,6 +557,54 @@ export default function Equipment() {
                 </button>
                 <button type="button" onClick={() => setShowModal(false)}
                   className="flex-1 py-3 px-6 bg-white/[0.03] border border-white/10 rounded text-white text-xs font-space font-semibold uppercase tracking-wider hover:bg-white/5 transition-colors">
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+      {/* ── Send to Repair Modal ─────────────────────────────────────── */}
+      {repairModalOpen && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+             onClick={() => setRepairModalOpen(false)}>
+          <div className="bg-surface border border-border rounded-2xl w-full max-w-md shadow-2xl"
+               onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-6 py-5 border-b border-border">
+              <div>
+                <h2 className="text-white font-space font-bold text-base tracking-wide">Send to Repair</h2>
+                <p className="text-iron-text-secondary text-xs italic mt-0.5">Log maintenance details</p>
+              </div>
+              <button onClick={() => setRepairModalOpen(false)} className="w-8 h-8 rounded-lg bg-white/[0.03] border border-white/5 flex items-center justify-center text-iron-text-secondary hover:text-white transition-colors">
+                <X size={15} />
+              </button>
+            </div>
+            
+            <form onSubmit={submitRepair} className="px-6 py-5 space-y-4">
+              <div className="space-y-1">
+                <label className="text-iron-text-secondary text-xs uppercase tracking-widest font-space font-semibold">Maintenance Description</label>
+                <textarea 
+                  required
+                  value={repairDesc}
+                  onChange={e => setRepairDesc(e.target.value)}
+                  className="w-full bg-[#18181A] border border-border rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-iron-lime/50 transition-colors h-24 resize-none"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-iron-text-secondary text-xs uppercase tracking-widest font-space font-semibold">Estimated Cost (₹)</label>
+                <input 
+                  type="number" 
+                  step="0.01"
+                  value={repairCost}
+                  onChange={e => setRepairCost(e.target.value)}
+                  className="w-full bg-[#18181A] border border-border rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-iron-lime/50 transition-colors"
+                />
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button type="submit" disabled={repairSubmitting} className="flex-1 btn flex items-center justify-center gap-2">
+                  {repairSubmitting ? <><Loader2 size={14} className="animate-spin" /> Sending...</> : 'Send to Repair'}
+                </button>
+                <button type="button" onClick={() => setRepairModalOpen(false)} className="flex-1 py-3 px-6 bg-white/[0.03] border border-white/10 rounded text-white text-xs font-space font-semibold uppercase tracking-wider hover:bg-white/5 transition-colors">
                   Cancel
                 </button>
               </div>

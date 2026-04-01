@@ -20,7 +20,7 @@ const CustomTooltip = ({ active, payload, label, isLight }) => {
   return (
     <div className="bg-surface border border-border rounded-xl px-4 py-3 shadow-2xl" style={{ backgroundColor: isLight ? '#FFFFFF' : '', borderColor: isLight ? '#E4E4EB' : '' }}>
       <p className="text-iron-text-secondary text-xs uppercase tracking-widest font-bold">{label}</p>
-      <p className="font-space font-bold text-lg" style={{ color: isLight ? '#2563EB' : 'var(--color-iron-lime)' }}>${parseFloat(payload[0].value).toFixed(2)}</p>
+      <p className="font-space font-bold text-lg" style={{ color: isLight ? '#2563EB' : 'var(--color-iron-lime)' }}>₹{parseFloat(payload[0].value).toFixed(2)}</p>
     </div>
   );
 };
@@ -30,7 +30,7 @@ export default function Reports() {
   const isLight = theme === 'light';
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [month, setMonth] = useState(new Date().getMonth() + 1);
+  const month = new Date().getMonth() + 1;
   const [year, setYear] = useState(new Date().getFullYear());
 
   const fetchReports = useCallback(async () => {
@@ -71,14 +71,6 @@ export default function Reports() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <select value={month} onChange={e => setMonth(parseInt(e.target.value))}
-            className="bg-surface border border-border rounded-xl px-4 py-2.5 text-xs text-white font-space outline-none focus:border-iron-lime/40">
-            {Array.from({ length: 12 }, (_, i) => (
-              <option key={i + 1} value={i + 1}>
-                {new Date(2000, i).toLocaleString('en', { month: 'long' })}
-              </option>
-            ))}
-          </select>
           <input type="number" value={year} onChange={e => setYear(parseInt(e.target.value))}
             className="bg-surface border border-border rounded-xl px-4 py-2.5 text-xs text-white font-space outline-none focus:border-iron-lime/40 w-24" />
           <button onClick={fetchReports}

@@ -98,3 +98,35 @@ exports.getStats = async (req, res) => {
         res.json({ total, active, utilization, maintenance_due, this_month, reliability_score, equipmentHealth });
     } catch (error) { res.status(500).json({ error: error.message }); }
 };
+
+exports.repairEquipment = async (req, res) => {
+    try {
+        const { id } = req.params;
+        await db.query(
+            "UPDATE Equipment SET condition_status = 'Good' WHERE equipment_id = ?",
+            [id]
+        );
+        res.json({ message: 'Equipment marked as repaired' });
+    } catch (error) { res.status(500).json({ error: error.message }); }
+};
+
+exports.sendToRepair = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { description, cost } = req.body;
+        
+        // 1. Update status to Needs Repair
+        await db.query(
+            "UPDATE Equipment SET condition_status = 'Needs Repair' WHERE equipment_id = ?",
+            [id]
+        );
+
+        // 2. Log Maintenance entry if provided (or default)
+        await db.query(
+            "INSERT INTO Maintenance (equipment_id, maintenance_date, description, cost) VALUES (?, CURDATE(), ?, ?)",
+            [id, description || 'Equipment sent to repair for maintenance.', cost || 0]
+        );
+
+        res.json({ message: 'Equipment sent to repair and maintenance logged.' });
+    } catch (error) { res.status(500).json({ error: error.message }); }
+};
