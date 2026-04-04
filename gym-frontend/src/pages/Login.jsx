@@ -6,7 +6,6 @@ import { Activity, Mail, Lock, UserCog, Loader2 } from 'lucide-react';
 export default function Login() {
   const [email, setEmail] = useState('admin@gym.com');
   const [password, setPassword] = useState('admin123');
-  const [role, setRole] = useState('admin');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -16,7 +15,7 @@ export default function Login() {
     setLoading(true);
     setError('');
     try {
-      const res = await axios.post('http://localhost:5000/api/auth/login', { email, password, role });
+      const res = await axios.post('http://localhost:5000/api/auth/login', { email, password });
       localStorage.setItem('token', res.data.token);
       localStorage.setItem('role', res.data.role);
       navigate('/');
@@ -48,27 +47,7 @@ export default function Login() {
           <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-iron-lime/30 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity duration-700"></div>
 
           <form onSubmit={handleLogin} className="space-y-6">
-            {/* Role Switcher */}
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-iron-text-secondary uppercase tracking-widest ml-1">Access Level</label>
-              <div className="relative group/input">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-iron-text-secondary group-focus-within/input:text-iron-lime transition-colors">
-                  <UserCog size={18} />
-                </div>
-                <select 
-                  value={role} 
-                  onChange={(e) => setRole(e.target.value)}
-                  className="w-full bg-white/[0.03] border border-white/5 rounded-xl py-3.5 pl-12 pr-4 text-sm text-white focus:outline-none focus:border-iron-lime/30 focus:bg-white/[0.05] transition-all appearance-none cursor-pointer"
-                >
-                  <option value="admin">Administrator Staff</option>
-                  <option value="trainer">Authorized Trainer</option>
-                  <option value="member">Privileged Member</option>
-                </select>
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-iron-text-secondary">
-                  <Activity size={12} className="opacity-50" />
-                </div>
-              </div>
-            </div>
+             {/* Simplified Login - Automated Role Detection */}
 
             {/* Email Field */}
             <div className="space-y-2">
