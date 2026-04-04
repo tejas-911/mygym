@@ -98,6 +98,91 @@ exports.getReports = async (req, res) => {
             FROM Member GROUP BY month ORDER BY MIN(join_date) ASC LIMIT 6
         `);
 
+        // ── Subscription Status Breakdown (isolated — never blocks the response) ──
+        let subscriptionStats = { active_subs: 0, expired_subs: 0, cancelled_subs: 0, total_subs: 0 };
+        try {
+            const [[row]] = await db.query(`
+                SELECT
+                    IFNULL(SUM(CASE WHEN status = 'Active'    THEN 1 ELSE 0 END), 0) AS active_subs,
+                    IFNULL(SUM(CASE WHEN status = 'Expired'   THEN 1 ELSE 0 END), 0) AS expired_subs,
+                    IFNULL(SUM(CASE WHEN status = 'Cancelled' THEN 1 ELSE 0 END), 0) AS cancelled_subs,
+                    COUNT(*) AS total_subs
+                FROM Subscription
+            `);
+            subscriptionStats = row;
+        } catch (e) { /* use defaults */ }
+
+        // ── Revenue by Plan — no status filter (column may not exist yet) ──
+        let revenueByPlan = [];
+        try {
+            const [rows] = await db.query(`
+                SELECT mp.plan_name,
+                       IFNULL(SUM(p.amount), 0) AS total_revenue,
+                       COUNT(*) AS transactions
+                FROM Payment p
+                JOIN Subscription s    ON p.subscription_id = s.subscription_id
+                JOIN Membership_Plan mp ON s.plan_id = mp.plan_id
+                WHERE YEAR(p.payment_date) = ?
+                GROUP BY mp.plan_id, mp.plan_name
+                ORDER BY total_revenue DESC
+            `, [year]);
+            revenueByPlan = rows;
+        } catch (e) { 
+            console.error('Error fetching revenueByPlan:', e.message);
+        }
+
+        // ── Revenue by Payment Method ──
+        let revenueByMethod = [];
+        try {
+            const [rows] = await db.query(`
+                SELECT payment_method,
+                       IFNULL(SUM(amount), 0) AS total,
+                       COUNT(*) AS count
+                FROM Payment
+                WHERE YEAR(payment_date) = ?
+                GROUP BY payment_method
+                ORDER BY total DESC
+            `, [year]);
+            revenueByMethod = rows;
+        } catch (e) { 
+            console.error('Error fetching revenueByMethod:', e.message);
+        }
+
+        // ── Year Revenue Totals ──
+        let revenueTotals = { total_revenue: 0, total_transactions: 0, pending_count: 0, refunded_count: 0 };
+        try {
+            // Check if status column exists to decide query shape
+            const [cols] = await db.query(`
+                SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+                WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'Payment' AND COLUMN_NAME = 'status'
+            `);
+            const hasStatusCol = cols.length > 0;
+
+            if (hasStatusCol) {
+                const [[row]] = await db.query(`
+                    SELECT
+                        IFNULL(SUM(CASE WHEN IFNULL(status,'Paid') IN ('Paid') THEN amount ELSE 0 END), 0) AS total_revenue,
+                        IFNULL(COUNT(*), 0) AS total_transactions,
+                        IFNULL(COUNT(CASE WHEN status = 'Pending'  THEN 1 END), 0) AS pending_count,
+                        IFNULL(COUNT(CASE WHEN status = 'Refunded' THEN 1 END), 0) AS refunded_count
+                    FROM Payment WHERE YEAR(payment_date) = ?
+                `, [year]);
+                revenueTotals = row;
+            } else {
+                const [[row]] = await db.query(`
+                    SELECT
+                        IFNULL(SUM(amount), 0) AS total_revenue,
+                        COUNT(*) AS total_transactions,
+                        0 AS pending_count,
+                        0 AS refunded_count
+                    FROM Payment WHERE YEAR(payment_date) = ?
+                `, [year]);
+                revenueTotals = row;
+            }
+        } catch (e) { 
+            console.error('Error fetching revenueTotals:', e.message);
+        }
+
         // ── Audit Log (populated by TRIGGERS) ──
         let auditLog = [];
         try {
@@ -127,7 +212,11 @@ exports.getReports = async (req, res) => {
             absentMembers: absentMembers?.count || 0,
             memberGrowth,
             auditLog,
-            equipmentHealth
+            equipmentHealth,
+            subscriptionStats,
+            revenueByPlan,
+            revenueByMethod,
+            revenueTotals
         });
     } catch (error) {
         res.status(500).json({ error: error.message });
