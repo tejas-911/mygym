@@ -523,7 +523,7 @@ export default function Payments() {
                   <option value="">— Select Subscription —</option>
                   {subscriptions.map(s => (
                     <option key={s.subscription_id} value={s.subscription_id}>
-                      Sub #{s.subscription_id} · Member #{s.member_id} ({s.status})
+                      {s.member_name} · {s.plan_name} (Sub: #{s.subscription_id})
                     </option>
                   ))}
                 </select>

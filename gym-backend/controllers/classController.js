@@ -28,7 +28,10 @@ exports.getStats = async (req, res) => {
         const [[{ avg_capacity }]] = await db.query(
             'SELECT ROUND(AVG(CASE WHEN capacity > 0 THEN (registered / capacity) * 100 ELSE 0 END), 1) AS avg_capacity FROM Class_Schedule WHERE capacity > 0'
         );
-        res.json({ classes_today, total_bookings, avg_capacity: avg_capacity || 0 });
+        const [[{ full_today }]] = await db.query(
+            'SELECT COUNT(*) AS full_today FROM Class_Schedule WHERE scheduled_date = ? AND capacity > 0 AND registered >= capacity', [today]
+        );
+        res.json({ classes_today, total_bookings, avg_capacity: avg_capacity || 0, full_today: full_today || 0 });
     } catch (error) { res.status(500).json({ error: error.message }); }
 };
 
@@ -115,7 +118,6 @@ exports.addClass = async (req, res) => {
         );
         res.status(201).json({ id: result.insertId, message: 'Class created' });
     } catch (error) {
-        console.error('Class Creation Error:', error);
         res.status(500).json({ message: error.message }); 
     }
 };

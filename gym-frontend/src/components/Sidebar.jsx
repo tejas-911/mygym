@@ -50,7 +50,7 @@ export default function Sidebar() {
         </div>
         <div className="flex flex-col">
           <span className="font-space font-bold text-lg tracking-tighter leading-none" style={{ color: isLight ? '#0A0A0E' : '#FFFFFF' }}>IRONCORE</span>
-          <span className="text-[0.65rem] font-bold text-iron-text-secondary tracking-[0.2em] mt-1 uppercase">PRECISION GMS</span>
+          <span className="text-xs font-bold text-iron-text-secondary tracking-[0.2em] mt-1 uppercase">PRECISION GMS</span>
         </div>
       </div>
 

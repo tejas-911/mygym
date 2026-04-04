@@ -51,6 +51,7 @@ CREATE TABLE IF NOT EXISTS Payment (
     amount DECIMAL(10,2) NOT NULL,
     payment_date DATE NOT NULL,
     payment_method ENUM('Cash', 'Card', 'UPI', 'Bank Transfer') NOT NULL,
+    status ENUM('Paid', 'Pending', 'Refunded', 'Failed') DEFAULT 'Paid',
     FOREIGN KEY (subscription_id) REFERENCES Subscription(subscription_id) ON DELETE CASCADE
 );
 
@@ -85,8 +86,8 @@ CREATE TABLE IF NOT EXISTS Exercise (
 CREATE TABLE IF NOT EXISTS Workout_Exercise (
     workout_id INT,
     exercise_id INT,
-    sets INT NOT NULL,
-    reps INT NOT NULL,
+    `sets` INT NOT NULL,
+    `reps` INT NOT NULL,
     rest_time INT, -- in seconds
     PRIMARY KEY (workout_id, exercise_id),
     FOREIGN KEY (workout_id) REFERENCES Workout_Plan(workout_id) ON DELETE CASCADE,

@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
+const { errorMiddleware } = require('./middleware/errorMiddleware');
 
 const app = express();
 
@@ -37,6 +38,9 @@ app.use('/api/supplements', supplementRoutes);
 app.use('/api/reports', reportsRoutes);
 app.use('/api/classes', classRoutes);
 app.use('/api/db', dbFeaturesRoutes);
+
+// Global error handling middleware (must be last)
+app.use(errorMiddleware);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
