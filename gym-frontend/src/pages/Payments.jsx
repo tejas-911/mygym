@@ -3,6 +3,7 @@ import axios from 'axios';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
+import { useTheme } from '../context/ThemeContext';
 import {
   TrendingUp, TrendingDown, Clock, ShieldCheck, Download,
   Search, ChevronLeft, ChevronRight, MoreHorizontal,
@@ -58,12 +59,12 @@ function Avatar({ name, idx }) {
 }
 
 // Custom tooltip for chart
-function ChartTooltip({ active, payload, label }) {
+function ChartTooltip({ active, payload, label, isLight }) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-[#18181A] border border-border rounded-xl px-4 py-3 shadow-2xl">
+    <div className="border rounded-xl px-4 py-3 shadow-2xl" style={{ backgroundColor: isLight ? '#FFFFFF' : '#18181A', borderColor: isLight ? '#E4E4EB' : 'var(--color-border)' }}>
       <p className="text-iron-text-secondary text-xs uppercase tracking-widest font-space mb-1">{label}</p>
-      <p className="text-iron-lime font-space font-bold text-base">{formatINR(payload[0].value)}</p>
+      <p className="font-space font-bold text-base" style={{ color: isLight ? '#2563EB' : 'var(--color-iron-lime)' }}>{formatINR(payload[0].value)}</p>
     </div>
   );
 }
@@ -72,6 +73,8 @@ const PAGE_SIZE = 8;
 const initialForm = { subscription_id: '', amount: '', payment_date: new Date().toISOString().split('T')[0], payment_method: 'Card' };
 
 export default function Payments() {
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
   // Stats
   const [stats, setStats] = useState(null);
   const [trendData, setTrendData] = useState([]);
@@ -95,6 +98,15 @@ export default function Payments() {
 
   const searchRef = useRef(null);
   const totalPages = Math.ceil(total / PAGE_SIZE);
+
+  // Fetch plans for dropdown
+  const [plans, setPlans] = useState([]);
+  const fetchPlans = useCallback(async () => {
+    try {
+      const { data } = await axios.get(`http://localhost:5000/api/plans`, { headers: getHeaders() });
+      setPlans(Array.isArray(data) ? data : []);
+    } catch (e) { console.error(e); }
+  }, []);
 
   // Fetch stats
   const fetchStats = useCallback(async () => {
@@ -138,7 +150,7 @@ export default function Payments() {
     } finally { setLoadingTable(false); }
   }, []);
 
-  useEffect(() => { fetchStats(); fetchTrend('monthly'); }, []);
+  useEffect(() => { fetchStats(); fetchTrend('monthly'); fetchPlans(); }, []);
   useEffect(() => { fetchTable(page, search); }, [page, search]);
 
   const handleTrendToggle = (mode) => {
@@ -310,23 +322,23 @@ export default function Payments() {
             <AreaChart data={trendData} margin={{ top: 10, right: 30, left: 10, bottom: 0 }}>
               <defs>
                 <linearGradient id="revenueGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#DFFF00" stopOpacity={0.25} />
-                  <stop offset="95%" stopColor="#DFFF00" stopOpacity={0} />
+                  <stop offset="5%" stopColor={isLight ? '#2563EB' : '#DFFF00'} stopOpacity={0.25} />
+                  <stop offset="95%" stopColor={isLight ? '#2563EB' : '#DFFF00'} stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#1F1F26" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke={isLight ? '#E4E4EB' : '#1F1F26'} vertical={false} />
               <XAxis dataKey="name" tick={{ fill: '#71717A', fontSize: 11, fontFamily: 'Space Grotesk' }} axisLine={false} tickLine={false} />
               <YAxis
                 tick={{ fill: '#71717A', fontSize: 10, fontFamily: 'Space Grotesk' }}
                 axisLine={false} tickLine={false}
                 tickFormatter={v => v >= 1000 ? `₹${(v / 1000).toFixed(0)}k` : `₹${v}`}
               />
-              <Tooltip content={<ChartTooltip />} cursor={{ stroke: '#DFFF00', strokeWidth: 1, strokeDasharray: '4 4' }} />
+              <Tooltip content={<ChartTooltip isLight={isLight} />} cursor={{ stroke: isLight ? '#2563EB' : '#DFFF00', strokeWidth: 1, strokeDasharray: '4 4' }} />
               <Area
                 type="monotone" dataKey="revenue"
-                stroke="#DFFF00" strokeWidth={2.5}
+                stroke={isLight ? '#2563EB' : '#DFFF00'} strokeWidth={2.5}
                 fill="url(#revenueGrad)"
-                dot={false} activeDot={{ r: 5, fill: '#DFFF00', stroke: '#0A0A0E', strokeWidth: 2 }}
+                dot={false} activeDot={{ r: 5, fill: isLight ? '#2563EB' : '#DFFF00', stroke: isLight ? '#FFFFFF' : '#0A0A0E', strokeWidth: 2 }}
               />
             </AreaChart>
           </ResponsiveContainer>
@@ -511,7 +523,7 @@ export default function Payments() {
                   <option value="">— Select Subscription —</option>
                   {subscriptions.map(s => (
                     <option key={s.subscription_id} value={s.subscription_id}>
-                      Sub #{s.subscription_id} · Member #{s.member_id} ({s.status})
+                      {s.member_name} · {s.plan_name} (Sub: #{s.subscription_id})
                     </option>
                   ))}
                 </select>
@@ -519,12 +531,18 @@ export default function Payments() {
 
               <div className="space-y-1">
                 <label className="text-iron-text-secondary text-xs uppercase tracking-widest font-space font-semibold">
-                  Amount (₹) <span className="text-red-400">*</span>
+                  Plan <span className="text-red-400">*</span>
                 </label>
-                <input required type="number" step="0.01" placeholder="e.g. 2499"
-                  value={formData.amount}
+                <select required value={formData.amount}
                   onChange={e => setFormData({ ...formData, amount: e.target.value })}
-                  className="w-full bg-[#18181A] border border-border rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-iron-lime/50 transition-colors placeholder:text-iron-text-secondary/50" />
+                  className="w-full bg-[#18181A] border border-border rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-iron-lime/50 transition-colors">
+                  <option value="">— Select Plan —</option>
+                  {plans.map(p => (
+                    <option key={p.plan_id} value={p.price}>
+                      {p.plan_name} (₹{p.price})
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className="grid grid-cols-2 gap-4">

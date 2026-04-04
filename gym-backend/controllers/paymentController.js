@@ -12,9 +12,9 @@ exports.getAllPayments = async (req, res) => {
 
         const [rows] = await db.query(
             `SELECT p.payment_id, p.subscription_id, p.amount, p.payment_date, p.payment_method,
+                    IFNULL(p.status, 'Paid') AS status,
                     m.name AS member_name, m.member_id,
-                    mp.plan_name,
-                    s.status AS subscription_status
+                    mp.plan_name
              FROM Payment p
              LEFT JOIN Subscription s ON p.subscription_id = s.subscription_id
              LEFT JOIN Member m ON s.member_id = m.member_id
@@ -35,11 +35,7 @@ exports.getAllPayments = async (req, res) => {
             [searchParam, searchParam, searchParam]
         );
 
-        // Derive status: Cancelled subscription → Refunded, otherwise Paid
-        const records = rows.map(r => ({
-            ...r,
-            status: r.subscription_status === 'Cancelled' ? 'Refunded' : 'Paid'
-        }));
+        const records = rows;
 
         res.json({ records, total });
     } catch (error) { res.status(500).json({ error: error.message }); }
@@ -61,25 +57,21 @@ exports.getStats = async (req, res) => {
         // This month & last month revenue
         const [[revRow]] = await db.query(`
             SELECT
-                SUM(CASE WHEN DATE_FORMAT(payment_date,'%Y-%m') = DATE_FORMAT(NOW(),'%Y-%m') THEN amount ELSE 0 END) AS this_month,
-                SUM(CASE WHEN DATE_FORMAT(payment_date,'%Y-%m') = DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 1 MONTH),'%Y-%m') THEN amount ELSE 0 END) AS last_month,
-                COUNT(CASE WHEN YEARWEEK(payment_date,1) = YEARWEEK(NOW(),1) THEN 1 END) AS successful_this_week,
-                COUNT(CASE WHEN DATE_FORMAT(payment_date,'%Y-%m') = DATE_FORMAT(NOW(),'%Y-%m') THEN 1 END) AS successful_this_month,
+                SUM(CASE WHEN DATE_FORMAT(payment_date,'%Y-%m') = DATE_FORMAT(NOW(),'%Y-%m')
+                         AND IFNULL(status,'Paid') = 'Paid' THEN amount ELSE 0 END) AS this_month,
+                SUM(CASE WHEN DATE_FORMAT(payment_date,'%Y-%m') = DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 1 MONTH),'%Y-%m')
+                         AND IFNULL(status,'Paid') = 'Paid' THEN amount ELSE 0 END) AS last_month,
+                COUNT(CASE WHEN YEARWEEK(payment_date,1) = YEARWEEK(NOW(),1)
+                           AND IFNULL(status,'Paid') = 'Paid' THEN 1 END) AS successful_this_week,
+                COUNT(CASE WHEN DATE_FORMAT(payment_date,'%Y-%m') = DATE_FORMAT(NOW(),'%Y-%m')
+                           AND IFNULL(status,'Paid') = 'Paid' THEN 1 END) AS successful_this_month,
+                COUNT(CASE WHEN IFNULL(status,'Paid') = 'Pending' THEN 1 END) AS pending_payments,
                 COUNT(*) AS total_all
             FROM Payment
         `);
 
-        // Pending: Active subscriptions with no payment this month
-        const [[{ pending }]] = await db.query(`
-            SELECT COUNT(*) AS pending
-            FROM Subscription s
-            WHERE s.status = 'Active'
-              AND s.subscription_id NOT IN (
-                  SELECT subscription_id FROM Payment
-                  WHERE DATE_FORMAT(payment_date,'%Y-%m') = DATE_FORMAT(NOW(),'%Y-%m')
-                    AND subscription_id IS NOT NULL
-              )
-        `);
+        // Pending count from Payment.status directly
+        const pending = revRow.pending_payments || 0;
 
         // Expired memberships needing action
         const [[{ expired_count }]] = await db.query(

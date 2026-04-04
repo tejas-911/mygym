@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import axios from 'axios';
 import {
   Search, Filter, Plus, X, ChevronLeft, ChevronRight,
@@ -27,6 +28,8 @@ export default function Members() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
 
+  const location = useLocation();
+
   const fetchMembers = async () => {
     try {
       const res = await axios.get(API, { headers: getHeaders() });
@@ -35,7 +38,14 @@ export default function Members() {
     finally { setLoading(false); }
   };
 
-  useEffect(() => { fetchMembers(); }, []);
+  useEffect(() => { 
+    fetchMembers(); 
+    if (location.state?.openModal) {
+      setShowModal(true);
+      // Optional: clear state so it doesn't reopen on refresh
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
 
   // Uses sp_register_member STORED PROCEDURE via backend
   const handleAdd = async (e) => {

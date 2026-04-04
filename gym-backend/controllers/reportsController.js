@@ -38,18 +38,38 @@ exports.getReports = async (req, res) => {
             equipmentAlerts = eqAlerts;
         }
 
-        // ── Try vw_monthly_revenue VIEW ──
+        // ── Construct Monthly Revenue (Rolling 12 Months) ──
         let monthlyRevenue = [];
         try {
-            const [rows] = await db.query('SELECT * FROM vw_monthly_revenue ORDER BY payment_month DESC LIMIT 12');
+            // Aggregate SUM from view (view is grouped by plan/method)
+            const [rows] = await db.query(`
+                SELECT payment_month, SUM(total_revenue) as total_revenue, SUM(transaction_count) as transaction_count 
+                FROM vw_monthly_revenue 
+                GROUP BY payment_month 
+                ORDER BY payment_month ASC
+            `);
             monthlyRevenue = rows;
         } catch (viewErr) {
             const [rows] = await db.query(`
                 SELECT DATE_FORMAT(payment_date, '%Y-%m') as payment_month, SUM(amount) as total_revenue, COUNT(*) as transaction_count
-                FROM Payment GROUP BY payment_month ORDER BY payment_month DESC LIMIT 12
+                FROM Payment 
+                GROUP BY payment_month 
+                ORDER BY payment_month ASC
             `);
             monthlyRevenue = rows;
         }
+
+        // Generate rolling 12 months (up to current month of requested year/month)
+        const rollingMonths = [];
+        const endDate = new Date(year, month - 1, 1);
+        for (let i = 11; i >= 0; i--) {
+            const d = new Date(endDate);
+            d.setMonth(d.getMonth() - i);
+            const ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+            const found = monthlyRevenue.find(r => r.payment_month === ym);
+            rollingMonths.push(found || { payment_month: ym, total_revenue: 0, transaction_count: 0 });
+        }
+        monthlyRevenue = rollingMonths;
 
         // ── Popular workout / trainer / supplement (always direct queries) ──
         const [popularWorkout] = await db.query(`

@@ -11,18 +11,6 @@ export default function TopBar({ title }) {
       <div className="font-space font-bold text-xl tracking-widest uppercase" style={{ color: isLight ? '#0A0A0E' : '#FFFFFF' }}>{title}</div>
 
       <div className="flex items-center gap-8">
-        <div className={`flex items-center rounded-full px-4 py-2 w-[360px] group transition-all border ${
-          isLight ? 'bg-black/[0.04] border-black/10 focus-within:border-iron-lime/40' : 'bg-white/[0.03] border-white/5 focus-within:border-iron-lime/20'
-        }`}>
-          <Search size={16} className="text-iron-text-secondary group-focus-within:text-iron-lime transition-colors shrink-0" />
-          <input
-            type="text"
-            placeholder="Search active members..."
-            className="bg-transparent border-none outline-none text-xs ml-3 w-full placeholder:font-medium placeholder:uppercase placeholder:tracking-widest"
-            style={{ color: isLight ? '#0A0A0E' : '#FFFFFF' }}
-          />
-        </div>
-
         <div className="flex items-center gap-6">
           {/* Theme toggle */}
           <button
@@ -44,11 +32,6 @@ export default function TopBar({ title }) {
                 : <Sun size={11} className="text-dark" />
               }
             </span>
-          </button>
-
-          <button className="text-iron-text-secondary hover:text-iron-lime transition-colors relative group">
-            <Bell size={18} className="group-hover:scale-110 group-active:scale-95 transition-transform" />
-            <div className="absolute top-[-3px] right-[-3px] w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-dark animate-pulse"></div>
           </button>
         </div>
 
