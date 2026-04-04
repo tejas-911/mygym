@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import {
   ShoppingBag, Plus, X, Loader2, Search,
-  Package, AlertTriangle, CheckCircle, DollarSign, Tag
+  Package, AlertTriangle, CheckCircle
 } from 'lucide-react';
 
 const API_SUPP = 'http://localhost:5000/api/supplements';
@@ -28,6 +28,11 @@ function stockLevel(qty) {
   if (qty > 40) return 'high';
   if (qty > 10) return 'medium';
   return 'low';
+}
+
+function formatINR(value) {
+  const amount = Number(value) || 0;
+  return `₹${amount.toFixed(2)}`;
 }
 
 export default function Supplements() {
@@ -129,7 +134,7 @@ export default function Supplements() {
           <p className="text-xs font-space font-bold uppercase tracking-[0.2em] text-iron-text-secondary mb-3">Avg Price</p>
           <div className="flex items-end gap-1">
             <p className="text-4xl font-space font-black text-white">
-              ₹{data.length > 0 ? (data.reduce((s, d) => s + parseFloat(d.price), 0) / data.length).toFixed(0) : '0'}
+              {data.length > 0 ? formatINR(data.reduce((s, d) => s + parseFloat(d.price), 0) / data.length) : formatINR(0)}
             </p>
           </div>
         </div>
@@ -171,7 +176,7 @@ export default function Supplements() {
 
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-1.5">
-                    <DollarSign size={12} className="text-emerald-400" />
+                    <span className="text-emerald-400 font-space font-black text-sm">₹</span>
                     <span className="text-white font-space font-bold text-lg">{parseFloat(item.price).toFixed(2)}</span>
                   </div>
                   <div className="flex items-center gap-1.5">
@@ -234,7 +239,7 @@ export default function Supplements() {
                   <option value="">Select supplement...</option>
                   {data.map(s => (
                     <option key={s.supplement_id} value={s.supplement_id}>
-                      {s.name} (₹{parseFloat(s.price).toFixed(2)}) — {s.stock_quantity} left
+                      {s.name} ({formatINR(s.price)}) — {s.stock_quantity} left
                     </option>
                   ))}
                 </select>
@@ -266,7 +271,7 @@ export default function Supplements() {
               {previewSupplement && (
                 <div className="flex items-center justify-between p-4 bg-iron-lime/5 border border-iron-lime/20 rounded-xl">
                   <span className="text-iron-text-secondary text-xs font-bold uppercase tracking-widest">Total</span>
-                  <span className="text-iron-lime font-space font-black text-xl">₹{previewTotal.toFixed(2)}</span>
+                  <span className="text-iron-lime font-space font-black text-xl">{formatINR(previewTotal)}</span>
                 </div>
               )}
 

@@ -104,14 +104,16 @@ export default function Attendance() {
     fetchToday(true);
   }, [fetchStats, fetchToday]);
 
-  const handleAction = async () => {
-    if (!memberIdInput.trim()) return;
+  const handleAction = async (mode = actionMode) => {
+    const memberId = memberIdInput.trim();
+    if (!memberId) return;
     setActionLoading(true);
     setActionFeedback(null);
     try {
-      const endpoint = actionMode === 'checkin' ? `${API}/checkin` : `${API}/checkout`;
-      const { data } = await axios.post(endpoint, { member_id: memberIdInput }, { headers: getHeaders() });
-      setActionFeedback({ type: 'success', message: data.message, member_name: data.member_name, time: data.time, member_status: data.member_status });
+      const endpoint = mode === 'checkin' ? `${API}/checkin` : `${API}/checkout`;
+      const { data } = await axios.post(endpoint, { member_id: memberId }, { headers: getHeaders() });
+      setActionMode(mode);
+      setActionFeedback({ type: 'success', message: data.message, member_name: data.member_name, time: data.time, member_status: data.member_status, mode });
       setMemberIdInput('');
       fetchStats();
       fetchToday(true);
@@ -125,7 +127,7 @@ export default function Attendance() {
     }
   };
 
-  const handleKeyDown = (e) => { if (e.key === 'Enter') handleAction(); };
+  const handleKeyDown = (e) => { if (e.key === 'Enter') handleAction(actionMode); };
 
   const filteredRecords = records.filter(r => {
     if (filterStatus === 'inside') return !r.check_out_time;
@@ -177,7 +179,7 @@ export default function Attendance() {
             
             <div className="flex gap-3">
               <button
-                onClick={() => { setActionMode('checkin'); handleAction(); }}
+                onClick={() => handleAction('checkin')}
                 disabled={actionLoading || !memberIdInput.trim()}
                 className="flex-1 flex justify-center items-center gap-2 bg-iron-lime text-dark py-3 rounded-xl font-space font-bold text-xs uppercase tracking-widest transition-all hover:shadow-[0_0_20px_rgba(223,255,0,0.3)] hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-none"
               >
@@ -185,7 +187,7 @@ export default function Attendance() {
                 Check In
               </button>
               <button
-                onClick={() => { setActionMode('checkout'); handleAction(); }}
+                onClick={() => handleAction('checkout')}
                 disabled={actionLoading || !memberIdInput.trim()}
                 className="flex-1 flex justify-center items-center gap-2 bg-white/[0.03] text-white border border-white/10 py-3 rounded-xl font-space font-bold text-xs uppercase tracking-widest transition-all hover:bg-white/5 disabled:opacity-50 disabled:cursor-not-allowed"
               >
@@ -204,7 +206,7 @@ export default function Attendance() {
                   {actionFeedback.type === 'success' && actionFeedback.member_name ? (
                     <>
                       <span className="font-bold text-white mb-1">{actionFeedback.member_name}</span>
-                      <span className="opacity-80 italic">Successfully checked {actionMode === 'checkin' ? 'in' : 'out'} at {actionFeedback.time}.</span>
+                      <span className="opacity-80 italic">Successfully checked {actionFeedback.mode === 'checkin' ? 'in' : 'out'} at {actionFeedback.time}.</span>
                       {actionFeedback.member_status && (
                         <div className="mt-2">
                           <span className="px-2 py-0.5 bg-iron-lime/20 text-iron-lime text-[11px] rounded font-black uppercase tracking-widest">
