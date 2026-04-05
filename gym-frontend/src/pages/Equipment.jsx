@@ -126,6 +126,7 @@ export default function Equipment() {
   const [repairDesc, setRepairDesc]           = useState('');
   const [repairCost, setRepairCost]           = useState(0);
   const [repairSubmitting, setRepairSubmitting] = useState(false);
+  const [showMaintenanceModal, setShowMaintenanceModal] = useState(false);
 
   const fetchStats = useCallback(async () => {
     try {
@@ -214,10 +215,10 @@ export default function Equipment() {
   };
 
   // upcoming / overdue split for maintenance panel
-  const overdue   = maintenance.filter(m => m.days_diff < 0).slice(0, 3);
-  const upcoming  = maintenance.filter(m => m.days_diff >= 0).slice(0, 3);
+  const overdue   = maintenance.filter(m => m.condition_status === 'Needs Repair' || m.condition_status === 'Out of Order').slice(0, 3);
+  const upcoming  = maintenance.filter(m => m.condition_status !== 'Needs Repair' && m.condition_status !== 'Out of Order').slice(0, 3);
   const panelItems = [...upcoming, ...overdue].slice(0, 4);
-  const urgentCount = overdue.length;
+  const urgentCount = stats?.maintenance_due ?? overdue.length;
 
   return (
     <div className="space-y-6 pb-10 font-manrope">
@@ -445,7 +446,7 @@ export default function Equipment() {
 
             {/* View full schedule */}
             <button
-              onClick={fetchMaintenance}
+              onClick={() => setShowMaintenanceModal(true)}
               className="mx-5 mb-5 flex items-center justify-center gap-2 py-2.5 bg-white/[0.03] border border-white/5 rounded-xl text-xs font-black uppercase tracking-widest text-iron-text-secondary hover:text-white hover:border-white/20 transition-all"
             >
               <Clock size={12} /> View Full Schedule
@@ -609,6 +610,48 @@ export default function Equipment() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {showMaintenanceModal && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+             onClick={() => setShowMaintenanceModal(false)}>
+          <div className="bg-surface border border-border rounded-2xl w-full max-w-2xl shadow-2xl max-h-[80vh] overflow-hidden"
+               onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-6 py-5 border-b border-border">
+              <div>
+                <h2 className="text-white font-space font-bold text-base tracking-wide">Maintenance Schedule</h2>
+                <p className="text-iron-text-secondary text-xs italic mt-0.5">Latest maintenance item per equipment</p>
+              </div>
+              <button onClick={() => setShowMaintenanceModal(false)} className="w-8 h-8 rounded-lg bg-white/[0.03] border border-white/5 flex items-center justify-center text-iron-text-secondary hover:text-white transition-colors">
+                <X size={15} />
+              </button>
+            </div>
+            <div className="overflow-y-auto max-h-[65vh] px-6 py-5 space-y-4">
+              {maintenance.length === 0 ? (
+                <p className="text-iron-text-secondary text-sm italic text-center py-8">No maintenance records found.</p>
+              ) : (
+                maintenance.map(item => (
+                  <div key={item.maintenance_id} className="p-4 rounded-xl bg-white/[0.02] border border-white/5">
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <p className="text-white font-bold text-sm">{item.equipment_name}</p>
+                        <p className="text-iron-text-secondary text-xs italic mt-1">{item.description || 'No description provided'}</p>
+                      </div>
+                      <span className={`text-[11px] font-black uppercase tracking-widest ${
+                        item.condition_status === 'Needs Repair' || item.condition_status === 'Out of Order' ? 'text-red-400' : 'text-iron-lime'
+                      }`}>
+                        {item.date_label}
+                      </span>
+                    </div>
+                    <div className="mt-3 flex items-center justify-between text-xs">
+                      <span className="text-iron-text-secondary">Condition: <span className="text-white">{item.condition_status}</span></span>
+                      <span className="text-iron-text-secondary">Date: <span className="text-white">{formatDate(item.maintenance_date)}</span></span>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         </div>
       )}

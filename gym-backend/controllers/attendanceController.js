@@ -7,6 +7,14 @@ async function getDbNowParts() {
     return row;
 }
 
+async function hasAttendanceForDate(memberId, dateValue) {
+    const [[row]] = await db.query(
+        'SELECT COUNT(*) AS cnt FROM Attendance WHERE member_id = ? AND date = ?',
+        [memberId, dateValue]
+    );
+    return row.cnt > 0;
+}
+
 exports.getAllAttendance = async (req, res) => {
     try {
         const [rows] = await db.query('SELECT * FROM Attendance ORDER BY check_in_time DESC');
@@ -17,6 +25,14 @@ exports.getAllAttendance = async (req, res) => {
 exports.createAttendance = async (req, res) => {
     try {
         const { member_id, check_in_time, check_out_time, date } = req.body;
+        if (!member_id || !check_in_time || !date) {
+            return res.status(400).json({ message: 'Member ID, check-in time, and date are required' });
+        }
+
+        if (await hasAttendanceForDate(member_id, date)) {
+            return res.status(400).json({ message: 'This member already has attendance recorded for that day' });
+        }
+
         const [result] = await db.query(
             'INSERT INTO Attendance (member_id, check_in_time, check_out_time, date) VALUES (?, ?, ?, ?)',
             [member_id, check_in_time, check_out_time, date]
@@ -36,12 +52,9 @@ exports.checkIn = async (req, res) => {
         const member = members[0];
         const { today, now_value: checkInTime } = await getDbNowParts();
 
-        // Check if already checked in today without checkout
-        const [existing] = await db.query(
-            'SELECT * FROM Attendance WHERE member_id = ? AND date = ? AND check_out_time IS NULL',
-            [member_id, today]
-        );
-        if (existing.length > 0) return res.status(400).json({ message: `${member.name} is already checked in today` });
+        if (await hasAttendanceForDate(member_id, today)) {
+            return res.status(400).json({ message: `${member.name} already has attendance recorded for today` });
+        }
 
         await db.query(
             'INSERT INTO Attendance (member_id, check_in_time, date) VALUES (?, ?, ?)',

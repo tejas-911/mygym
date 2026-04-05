@@ -71,6 +71,7 @@ function ChartTooltip({ active, payload, label, isLight }) {
 
 const PAGE_SIZE = 8;
 const initialForm = { subscription_id: '', amount: '', payment_date: new Date().toISOString().split('T')[0], payment_method: 'Card' };
+const initialPlanForm = { plan_name: '', duration_months: 1, price: '', description: '' };
 
 export default function Payments() {
   const { theme } = useTheme();
@@ -90,11 +91,16 @@ export default function Payments() {
 
   // Modal
   const [showModal, setShowModal] = useState(false);
+  const [showPlanModal, setShowPlanModal] = useState(false);
   const [subscriptions, setSubscriptions] = useState([]);
   const [formData, setFormData] = useState(initialForm);
+  const [planForm, setPlanForm] = useState(initialPlanForm);
   const [submitting, setSubmitting] = useState(false);
+  const [planSubmitting, setPlanSubmitting] = useState(false);
   const [formError, setFormError] = useState('');
+  const [planError, setPlanError] = useState('');
   const [formSuccess, setFormSuccess] = useState(false);
+  const [planSuccess, setPlanSuccess] = useState(false);
 
   const searchRef = useRef(null);
   const totalPages = Math.ceil(total / PAGE_SIZE);
@@ -211,6 +217,24 @@ export default function Payments() {
     } finally { setSubmitting(false); }
   };
 
+  const handleCreatePlan = async (e) => {
+    e.preventDefault();
+    setPlanSubmitting(true);
+    setPlanError('');
+    try {
+      await axios.post('http://localhost:5000/api/plans', planForm, { headers: getHeaders() });
+      setPlanSuccess(true);
+      fetchPlans();
+      setTimeout(() => {
+        setShowPlanModal(false);
+        setPlanSuccess(false);
+        setPlanForm(initialPlanForm);
+      }, 1000);
+    } catch (err) {
+      setPlanError(err.response?.data?.message || 'Failed to create plan.');
+    } finally { setPlanSubmitting(false); }
+  };
+
   return (
     <div className="space-y-6 pb-10 font-manrope">
 
@@ -220,9 +244,17 @@ export default function Payments() {
           <h1 className="text-4xl font-space font-bold tracking-tighter text-white mb-1">Revenue Overview</h1>
           <p className="text-iron-text-secondary text-sm italic">Real-time financial performance & transaction history</p>
         </div>
-        <button onClick={openModal} className="btn flex items-center gap-2">
-          <Plus size={14} /> Record Payment
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => { setPlanForm(initialPlanForm); setPlanError(''); setPlanSuccess(false); setShowPlanModal(true); }}
+            className="px-4 py-3 rounded-lg bg-white/[0.03] border border-white/10 text-xs font-black uppercase tracking-widest text-white hover:bg-white/5 transition-all"
+          >
+            Add Plan
+          </button>
+          <button onClick={openModal} className="btn flex items-center gap-2">
+            <Plus size={14} /> Record Payment
+          </button>
+        </div>
       </div>
 
       {/* ── Top Stats ─────────────────────────────────────────────── */}
@@ -576,6 +608,90 @@ export default function Payments() {
                 </button>
                 <button type="button" onClick={() => setShowModal(false)}
                   className="flex-1 py-3 px-6 bg-white/[0.03] border border-white/10 rounded text-white text-xs font-space font-semibold uppercase tracking-wider hover:bg-white/5 transition-colors">
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {showPlanModal && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-surface border border-border rounded-2xl w-full max-w-md shadow-2xl">
+            <div className="flex items-center justify-between px-6 py-5 border-b border-border">
+              <div>
+                <h2 className="text-white font-space font-bold text-base tracking-wide">Create Membership Plan</h2>
+                <p className="text-iron-text-secondary text-xs italic mt-0.5">Add a plan for subscriptions and payments</p>
+              </div>
+              <button onClick={() => setShowPlanModal(false)} className="w-8 h-8 rounded-lg bg-white/[0.03] border border-white/5 flex items-center justify-center text-iron-text-secondary hover:text-white transition-colors">
+                <X size={15} />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreatePlan} className="px-6 py-5 space-y-4">
+              {planError && (
+                <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 text-red-400 text-xs">
+                  <AlertCircle size={14} className="flex-shrink-0" />
+                  {planError}
+                </div>
+              )}
+              {planSuccess && (
+                <div className="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 rounded-xl px-4 py-3 text-emerald-400 text-xs">
+                  <CheckCircle size={14} className="flex-shrink-0" />
+                  Membership plan created!
+                </div>
+              )}
+
+              <div className="space-y-1">
+                <label className="text-iron-text-secondary text-xs uppercase tracking-widest font-space font-semibold">Plan Name</label>
+                <input
+                  required
+                  type="text"
+                  value={planForm.plan_name}
+                  onChange={e => setPlanForm({ ...planForm, plan_name: e.target.value })}
+                  className="w-full bg-[#18181A] border border-border rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-iron-lime/50 transition-colors"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-iron-text-secondary text-xs uppercase tracking-widest font-space font-semibold">Duration (Months)</label>
+                  <input
+                    required
+                    type="number"
+                    min="1"
+                    value={planForm.duration_months}
+                    onChange={e => setPlanForm({ ...planForm, duration_months: Number(e.target.value) || 1 })}
+                    className="w-full bg-[#18181A] border border-border rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-iron-lime/50 transition-colors"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-iron-text-secondary text-xs uppercase tracking-widest font-space font-semibold">Price (₹)</label>
+                  <input
+                    required
+                    type="number"
+                    min="1"
+                    step="0.01"
+                    value={planForm.price}
+                    onChange={e => setPlanForm({ ...planForm, price: e.target.value })}
+                    className="w-full bg-[#18181A] border border-border rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-iron-lime/50 transition-colors"
+                  />
+                </div>
+              </div>
+              <div className="space-y-1">
+                <label className="text-iron-text-secondary text-xs uppercase tracking-widest font-space font-semibold">Description</label>
+                <textarea
+                  value={planForm.description}
+                  onChange={e => setPlanForm({ ...planForm, description: e.target.value })}
+                  className="w-full bg-[#18181A] border border-border rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-iron-lime/50 transition-colors h-24 resize-none"
+                />
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button type="submit" disabled={planSubmitting} className="flex-1 btn flex items-center justify-center gap-2">
+                  {planSubmitting ? <><Loader2 size={14} className="animate-spin" /> Saving...</> : 'Create Plan'}
+                </button>
+                <button type="button" onClick={() => setShowPlanModal(false)} className="flex-1 py-3 px-6 bg-white/[0.03] border border-white/10 rounded text-white text-xs font-space font-semibold uppercase tracking-wider hover:bg-white/5 transition-colors">
                   Cancel
                 </button>
               </div>

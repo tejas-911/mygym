@@ -17,6 +17,7 @@ const initialFormState = {
   member_id: '', supplement_id: '', quantity: 1,
   sale_date: new Date().toISOString().split('T')[0], payment_method: 'Card'
 };
+const initialRestockState = { supplement_id: '', quantity: 1 };
 
 const STOCK_COLORS = {
   high: 'text-emerald-400',
@@ -45,6 +46,10 @@ export default function Supplements() {
   const [modalError, setModalError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [showRestockModal, setShowRestockModal] = useState(false);
+  const [restockData, setRestockData] = useState(initialRestockState);
+  const [restockSubmitting, setRestockSubmitting] = useState(false);
+  const [restockError, setRestockError] = useState('');
 
   const fetchData = async () => {
     try {
@@ -81,6 +86,30 @@ export default function Supplements() {
     } finally { setIsSubmitting(false); }
   };
 
+  const openRestockModal = (supplementId = '') => {
+    setRestockData({ supplement_id: supplementId ? String(supplementId) : '', quantity: 1 });
+    setRestockError('');
+    setShowRestockModal(true);
+  };
+
+  const handleRestock = async (e) => {
+    e.preventDefault();
+    setRestockSubmitting(true);
+    setRestockError('');
+    try {
+      await axios.put(`${API_SUPP}/${restockData.supplement_id}/restock`, { quantity: restockData.quantity }, { headers: getHeaders() });
+      setShowRestockModal(false);
+      setRestockData(initialRestockState);
+      fetchData();
+      setSuccessMsg('Supplement restocked successfully!');
+      setTimeout(() => setSuccessMsg(''), 5000);
+    } catch (err) {
+      setRestockError(err.response?.data?.error || 'Failed to restock supplement.');
+    } finally {
+      setRestockSubmitting(false);
+    }
+  };
+
   const previewSupplement = data.find(s => s.supplement_id === parseInt(formData.supplement_id));
   const previewTotal = previewSupplement ? (previewSupplement.price * formData.quantity) : 0;
 
@@ -103,6 +132,9 @@ export default function Supplements() {
         </div>
         <button onClick={() => { setShowModal(true); setModalError(''); }} className="btn flex items-center gap-2">
           <Plus size={14} /> Record Sale
+        </button>
+        <button onClick={() => openRestockModal()} className="px-4 py-3 rounded-lg bg-white/[0.03] border border-white/10 text-xs font-black uppercase tracking-widest text-white hover:bg-white/5 transition-all">
+          Restock
         </button>
       </div>
 
@@ -192,6 +224,12 @@ export default function Supplements() {
                     level === 'high' ? 'bg-emerald-400' : level === 'medium' ? 'bg-amber-400' : 'bg-red-400'
                   }`} style={{ width: `${pct}%` }} />
                 </div>
+                <button
+                  onClick={() => openRestockModal(item.supplement_id)}
+                  className="mt-4 w-full py-2 bg-white/[0.03] border border-white/10 rounded-lg text-xs font-black uppercase tracking-widest text-iron-text-secondary hover:text-white hover:border-iron-lime/30 transition-all"
+                >
+                  Restock
+                </button>
               </div>
             );
           })
@@ -282,6 +320,72 @@ export default function Supplements() {
                   {isSubmitting ? 'Processing...' : 'Record Sale'}
                 </button>
                 <button type="button" onClick={() => setShowModal(false)}
+                  className="flex-1 py-3 px-6 bg-white/[0.03] border border-white/10 rounded text-white text-xs font-space font-semibold uppercase tracking-wider hover:bg-white/5 transition-colors">
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {showRestockModal && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-dark/80 backdrop-blur-md" onClick={() => setShowRestockModal(false)} />
+          <div className="bg-surface border border-border rounded-xl w-full max-w-md relative z-[210] shadow-[0_30px_100px_rgba(0,0,0,0.5)] overflow-hidden">
+            <div className="p-6 pb-4 flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-bold text-white">Restock Supplement</h2>
+                <p className="text-iron-text-secondary text-xs italic mt-1">Increase available inventory</p>
+              </div>
+              <button onClick={() => setShowRestockModal(false)} className="text-iron-text-secondary hover:text-white transition-colors">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="w-full h-px bg-white/5" />
+
+            <form onSubmit={handleRestock} className="p-6 space-y-4">
+              {restockError && (
+                <div className="p-4 bg-red-500/10 border border-red-500/20 text-red-400 text-xs rounded-xl flex items-center gap-3">
+                  <AlertTriangle size={14} className="shrink-0" /> {restockError}
+                </div>
+              )}
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">Supplement</label>
+                <select
+                  required
+                  value={restockData.supplement_id}
+                  onChange={e => setRestockData({ ...restockData, supplement_id: e.target.value })}
+                  className="w-full bg-[#18181A] border border-white/5 rounded-xl py-3 px-4 text-sm text-white focus:outline-none focus:border-iron-lime/30"
+                >
+                  <option value="">Select supplement...</option>
+                  {data.map(s => (
+                    <option key={s.supplement_id} value={s.supplement_id}>
+                      {s.name} ({s.stock_quantity} in stock)
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">Quantity to Add</label>
+                <input
+                  required
+                  min="1"
+                  type="number"
+                  value={restockData.quantity}
+                  onChange={e => setRestockData({ ...restockData, quantity: parseInt(e.target.value, 10) || 1 })}
+                  className="w-full bg-[#18181A] border border-white/5 rounded-xl py-3 px-4 text-sm text-white focus:outline-none focus:border-iron-lime/30"
+                />
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button type="submit" disabled={restockSubmitting} className="flex-1 btn flex items-center justify-center gap-2">
+                  {restockSubmitting ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
+                  {restockSubmitting ? 'Updating...' : 'Restock'}
+                </button>
+                <button type="button" onClick={() => setShowRestockModal(false)}
                   className="flex-1 py-3 px-6 bg-white/[0.03] border border-white/10 rounded text-white text-xs font-space font-semibold uppercase tracking-wider hover:bg-white/5 transition-colors">
                   Cancel
                 </button>
