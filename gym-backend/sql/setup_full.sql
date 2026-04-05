@@ -1,0 +1,10 @@
+SOURCE schema.sql;
+SOURCE update_schema.sql;
+SOURCE ddl_extensions.sql;
+SOURCE seed.sql;
+SOURCE constraints.sql;
+SOURCE functions.sql;
+SOURCE procedures.sql;
+SOURCE views.sql;
+SOURCE ddl_extensions.sql;
+SOURCE triggers.sql;

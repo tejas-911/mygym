@@ -54,14 +54,27 @@ exports.getMaintenance = async (req, res) => {
             `SELECT m.*, e.equipment_name, e.condition_status
              FROM Maintenance m
              JOIN Equipment e ON m.equipment_id = e.equipment_id
-             ORDER BY m.maintenance_date ASC`
+             JOIN (
+                SELECT equipment_id, MAX(maintenance_date) AS latest_maintenance_date
+                FROM Maintenance
+                GROUP BY equipment_id
+             ) latest
+               ON latest.equipment_id = m.equipment_id
+              AND latest.latest_maintenance_date = m.maintenance_date
+             ORDER BY
+                CASE
+                    WHEN e.condition_status IN ('Needs Repair', 'Out of Order') THEN 0
+                    ELSE 1
+                END,
+                m.maintenance_date DESC`
         );
         const today = new Date();
         const enriched = rows.map(r => {
             const mDate = new Date(r.maintenance_date);
             const diffDays = Math.round((mDate - today) / (1000 * 60 * 60 * 24));
             let label = '';
-            if (diffDays < 0) label = `Past Due (${Math.abs(diffDays)} day${Math.abs(diffDays) !== 1 ? 's' : ''})`;
+            if (r.condition_status === 'Needs Repair' || r.condition_status === 'Out of Order') label = 'Urgent';
+            else if (diffDays < 0) label = `Past Due (${Math.abs(diffDays)} day${Math.abs(diffDays) !== 1 ? 's' : ''})`;
             else if (diffDays === 0) label = 'Today';
             else if (diffDays === 1) label = 'Tomorrow';
             else label = mDate.toLocaleDateString('en-US', { weekday: 'short', day: '2-digit', month: 'short' });
@@ -105,6 +118,10 @@ exports.repairEquipment = async (req, res) => {
         await db.query(
             "UPDATE Equipment SET condition_status = 'Good' WHERE equipment_id = ?",
             [id]
+        );
+        await db.query(
+            "INSERT INTO Maintenance (equipment_id, maintenance_date, description, cost) VALUES (?, CURDATE(), ?, ?)",
+            [id, 'Equipment repaired and returned to service.', 0]
         );
         res.json({ message: 'Equipment marked as repaired' });
     } catch (error) { res.status(500).json({ error: error.message }); }

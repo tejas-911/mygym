@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 import axios from 'axios';
 import {
   Search, Filter, Plus, X, ChevronLeft, ChevronRight,
-  Dumbbell, MoreHorizontal, Loader2, Clock, IndianRupee, UserCheck
+  Dumbbell, MoreHorizontal, Loader2, Clock, IndianRupee, UserCheck, Pencil
 } from 'lucide-react';
 
 const API = 'http://localhost:5000/api/members';
@@ -22,6 +22,7 @@ export default function Members() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState(initialFormState);
+  const [editingId, setEditingId] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [modalError, setModalError] = useState('');
   const [modalSuccess, setModalSuccess] = useState('');
@@ -64,6 +65,54 @@ export default function Members() {
     } finally { setIsSubmitting(false); }
   };
 
+  const openCreateModal = () => {
+    setEditingId(null);
+    setFormData(initialFormState);
+    setModalError('');
+    setModalSuccess('');
+    setShowModal(true);
+  };
+
+  const openEditModal = (member) => {
+    setEditingId(member.member_id);
+    setFormData({
+      name: member.member_name || member.name || '',
+      email: member.email || '',
+      phone: member.phone || '',
+      gender: member.gender || 'Male',
+      date_of_birth: member.date_of_birth ? String(member.date_of_birth).split('T')[0] : '',
+      join_date: member.join_date ? String(member.join_date).split('T')[0] : '',
+      status: member.member_status || member.status || 'Active'
+    });
+    setModalError('');
+    setModalSuccess('');
+    setShowModal(true);
+  };
+
+  const handleSave = async (e) => {
+    if (editingId) {
+      e.preventDefault();
+      setIsSubmitting(true);
+      setModalError('');
+      setModalSuccess('');
+      try {
+        await axios.put(`${API}/${editingId}`, formData, { headers: getHeaders() });
+        setModalSuccess('Member updated successfully!');
+        fetchMembers();
+        setTimeout(() => {
+          setShowModal(false);
+          setModalSuccess('');
+          setEditingId(null);
+          setFormData(initialFormState);
+        }, 1200);
+      } catch (err) {
+        setModalError(err.response?.data?.message || 'Failed to update member.');
+      } finally { setIsSubmitting(false); }
+      return;
+    }
+    return handleAdd(e);
+  };
+
   const getInitials = (name) => name?.split(' ').map(n => n[0]).join('').toUpperCase() || '??';
 
   // Filter + search
@@ -92,7 +141,7 @@ export default function Members() {
             {hasEnrichedData && <span className="ml-2 px-2 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded text-[11px] font-black uppercase tracking-widest">View + Functions Active</span>}
           </p>
         </div>
-        <button className="btn flex items-center gap-2 group" onClick={() => { setShowModal(true); setModalError(''); setModalSuccess(''); }}>
+        <button className="btn flex items-center gap-2 group" onClick={openCreateModal}>
           <Dumbbell size={18} className="group-hover:rotate-12 transition-transform" />
           <span>Register Member</span>
         </button>
@@ -132,18 +181,19 @@ export default function Members() {
                 {hasEnrichedData && <th>VISITS</th>}
                 {!hasEnrichedData && <th>JOIN DATE</th>}
                 <th>STATUS</th>
+                <th>ACTIONS</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/[0.03]">
               {loading ? (
                 <tr>
-                  <td colSpan={hasEnrichedData ? 7 : 5} className="py-20 text-center text-iron-text-secondary font-space uppercase tracking-widest text-xs animate-pulse italic">
+                  <td colSpan={hasEnrichedData ? 8 : 6} className="py-20 text-center text-iron-text-secondary font-space uppercase tracking-widest text-xs animate-pulse italic">
                     Retrieving member directory...
                   </td>
                 </tr>
               ) : filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={hasEnrichedData ? 7 : 5} className="py-20 text-center text-iron-text-secondary italic">
+                  <td colSpan={hasEnrichedData ? 8 : 6} className="py-20 text-center text-iron-text-secondary italic">
                     No members found matching your criteria.
                   </td>
                 </tr>
@@ -245,6 +295,15 @@ export default function Members() {
                           </span>
                         </div>
                       </td>
+                      <td>
+                        <button
+                          onClick={() => openEditModal(member)}
+                          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.03] border border-white/10 text-xs font-black uppercase tracking-widest text-iron-text-secondary hover:text-white hover:border-iron-lime/30 transition-all"
+                        >
+                          <Pencil size={12} />
+                          Edit
+                        </button>
+                      </td>
                     </tr>
                   );
                 })
@@ -267,8 +326,10 @@ export default function Members() {
           <div className="bg-surface border border-border rounded-xl w-full max-w-[640px] relative z-[210] shadow-[0_30px_100px_rgba(0,0,0,0.5)] overflow-hidden">
             <div className="p-6 pb-4 flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-bold text-white">Register Member</h2>
-                <p className="text-iron-text-secondary text-xs italic mt-1">Uses sp_register_member stored procedure</p>
+                <h2 className="text-xl font-bold text-white">{editingId ? 'Edit Member' : 'Register Member'}</h2>
+                <p className="text-iron-text-secondary text-xs italic mt-1">
+                  {editingId ? 'Update profile details and membership status' : 'Uses sp_register_member stored procedure'}
+                </p>
               </div>
               <button onClick={() => setShowModal(false)} className="text-iron-text-secondary hover:text-white transition-colors">
                 <X size={20} />
@@ -276,7 +337,7 @@ export default function Members() {
             </div>
             <div className="w-full h-px bg-white/5" />
 
-            <form onSubmit={handleAdd} className="p-6 space-y-6">
+            <form onSubmit={handleSave} className="p-6 space-y-6">
               {modalError && (
                 <div className="p-4 bg-red-500/10 border border-red-500/20 text-red-400 text-xs rounded-xl flex items-center gap-3 italic">
                   <div className="w-1 h-1 bg-red-400 rounded-full animate-pulse" />
@@ -326,6 +387,24 @@ export default function Members() {
                     </select>
                   </div>
                 </div>
+                {editingId && (
+                  <>
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">Join Date</label>
+                      <input type="date"
+                        className="w-full bg-[#18181A] border border-white/5 rounded py-3 px-4 text-sm text-white focus:outline-none focus:border-iron-lime/30 transition-all [color-scheme:dark]"
+                        value={formData.join_date || ''} onChange={e => setFormData({ ...formData, join_date: e.target.value })} />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">Status</label>
+                      <select className="w-full bg-[#18181A] border border-white/5 rounded py-3 px-4 text-sm text-white focus:outline-none focus:border-iron-lime/30 cursor-pointer"
+                        value={formData.status || 'Active'} onChange={e => setFormData({ ...formData, status: e.target.value })}>
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                      </select>
+                    </div>
+                  </>
+                )}
               </div>
 
               <div className="flex justify-end gap-3 pt-4 border-t border-white/5">
@@ -335,7 +414,7 @@ export default function Members() {
                 </button>
                 <button type="submit" disabled={isSubmitting}
                   className="px-6 py-3 rounded-lg bg-iron-lime text-dark text-xs font-black tracking-widest uppercase hover:shadow-[0_0_20px_rgba(223,255,0,0.3)] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2">
-                  {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : <span>Register Member</span>}
+                  {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : <span>{editingId ? 'Save Changes' : 'Register Member'}</span>}
                 </button>
               </div>
             </form>

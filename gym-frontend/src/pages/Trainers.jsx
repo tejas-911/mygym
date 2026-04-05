@@ -76,13 +76,14 @@ function cardGradient(id, isLight) {
 /* ── Initial form ────────────────────────────────────────────── */
 const initForm = {
   name: '', specialization: '', phone: '',
-  salary: '', hire_date: new Date().toISOString().split('T')[0]
+  salary: '', hire_date: new Date().toISOString().split('T')[0],
+  email: '', password: ''
 };
 
 /* ════════════════════════════════════════════════════════════════
    Trainer Card — Grid View
 ══════════════════════════════════════════════════════════════════ */
-function TrainerCard({ trainer, onDelete, isLight }) {
+function TrainerCard({ trainer, onDelete, onManage, isLight }) {
   const spec    = getSpec(trainer.specialization);
   const drawColor = isLight && spec.color === '#DFFF00' ? '#2563EB' : spec.color;
   const rating  = getRating(trainer.trainer_id);
@@ -147,7 +148,10 @@ function TrainerCard({ trainer, onDelete, isLight }) {
           </div>
         </div>
 
-        <button className="w-full py-2 bg-white/[0.03] border border-white/5 rounded-lg text-xs font-black uppercase tracking-widest text-iron-text-secondary hover:text-white hover:border-white/20 hover:bg-white/5 transition-all flex items-center justify-center gap-2 group/btn">
+        <button
+          onClick={() => onManage(trainer)}
+          className="w-full py-2 bg-white/[0.03] border border-white/5 rounded-lg text-xs font-black uppercase tracking-widest text-iron-text-secondary hover:text-white hover:border-white/20 hover:bg-white/5 transition-all flex items-center justify-center gap-2 group/btn"
+        >
           Manage Profile
           <ChevronRight size={11} className="group-hover/btn:translate-x-0.5 transition-transform" />
         </button>
@@ -157,7 +161,7 @@ function TrainerCard({ trainer, onDelete, isLight }) {
 }
 
 /* ── List Row ────────────────────────────────────────────────── */
-function TrainerRow({ trainer, onDelete, isLight }) {
+function TrainerRow({ trainer, onDelete, onManage, isLight }) {
   const spec   = getSpec(trainer.specialization);
   const drawColor = isLight && spec.color === '#DFFF00' ? '#2563EB' : spec.color;
   const rating = getRating(trainer.trainer_id);
@@ -189,10 +193,16 @@ function TrainerRow({ trainer, onDelete, isLight }) {
         <span className="text-iron-lime font-black font-space text-sm">{rating}</span>
       </div>
       <div className="flex justify-end">
-        <button onClick={() => onDelete(trainer.trainer_id)}
-          className="w-8 h-8 rounded-lg bg-white/[0.03] border border-white/5 flex items-center justify-center text-iron-text-secondary hover:text-red-400 hover:border-red-500/20 hover:bg-red-500/5 transition-colors">
-          <Trash2 size={13} />
-        </button>
+        <div className="flex items-center gap-2">
+          <button onClick={() => onManage(trainer)}
+            className="px-3 h-8 rounded-lg bg-white/[0.03] border border-white/5 flex items-center justify-center text-iron-text-secondary hover:text-white hover:border-white/20 transition-colors text-[10px] font-black uppercase tracking-widest">
+            Edit
+          </button>
+          <button onClick={() => onDelete(trainer.trainer_id)}
+            className="w-8 h-8 rounded-lg bg-white/[0.03] border border-white/5 flex items-center justify-center text-iron-text-secondary hover:text-red-400 hover:border-red-500/20 hover:bg-red-500/5 transition-colors">
+            <Trash2 size={13} />
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -216,6 +226,7 @@ export default function Trainers() {
   // Modal
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData]   = useState(initForm);
+  const [editingId, setEditingId] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [formErr, setFormErr]     = useState('');
   const [formOk, setFormOk]       = useState(false);
@@ -254,7 +265,24 @@ export default function Trainers() {
   };
 
   const openModal = () => {
+    setEditingId(null);
     setFormData(initForm); setFormErr(''); setFormOk(false);
+    setShowModal(true);
+  };
+
+  const openManageModal = (trainer) => {
+    setEditingId(trainer.trainer_id);
+    setFormData({
+      name: trainer.name || '',
+      specialization: trainer.specialization || '',
+      phone: trainer.phone || '',
+      salary: trainer.salary || '',
+      hire_date: trainer.hire_date ? String(trainer.hire_date).split('T')[0] : '',
+      email: trainer.email || '',
+      password: ''
+    });
+    setFormErr('');
+    setFormOk(false);
     setShowModal(true);
   };
 
@@ -262,7 +290,11 @@ export default function Trainers() {
     e.preventDefault();
     setSubmitting(true); setFormErr('');
     try {
-      await axios.post(API, formData, { headers: getHeaders() });
+      if (editingId) {
+        await axios.put(`${API}/${editingId}`, formData, { headers: getHeaders() });
+      } else {
+        await axios.post(API, formData, { headers: getHeaders() });
+      }
       setFormOk(true);
       fetchStats(); fetchTrainers(true); setOffset(0);
       setTimeout(() => { setShowModal(false); setFormOk(false); }, 1000);
@@ -334,17 +366,7 @@ export default function Trainers() {
             </div>
           </div>
           <p className="text-5xl font-space font-black text-white tracking-tighter">{stats.active_clients}</p>
-          {/* Mini avatars */}
-          <div className="flex mt-3 -space-x-2">
-            {[...Array(Math.min(5, stats.total_trainers || 3))].map((_, i) => (
-              <div key={i} className="w-6 h-6 rounded-full border-2 border-surface bg-white/10 flex items-center justify-center text-[10px] font-bold text-white" />
-            ))}
-            {stats.total_trainers > 5 && (
-              <div className="w-6 h-6 rounded-full border-2 border-surface bg-iron-lime/20 flex items-center justify-center text-[10px] font-black text-iron-lime">
-                +{stats.total_trainers - 5}
-              </div>
-            )}
-          </div>
+          <p className="text-iron-text-secondary text-xs italic mt-3">Distinct members with an active workout or diet assignment</p>
         </div>
       </div>
 
@@ -386,13 +408,13 @@ export default function Trainers() {
         ) : viewMode === 'grid' ? (
           <div className="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {trainers.map(t => (
-              <TrainerCard key={t.trainer_id} trainer={t} onDelete={handleDelete} isLight={isLight} />
+              <TrainerCard key={t.trainer_id} trainer={t} onDelete={handleDelete} onManage={openManageModal} isLight={isLight} />
             ))}
           </div>
         ) : (
           <div className="divide-y divide-white/[0.03]">
             {trainers.map(t => (
-              <TrainerRow key={t.trainer_id} trainer={t} onDelete={handleDelete} isLight={isLight} />
+              <TrainerRow key={t.trainer_id} trainer={t} onDelete={handleDelete} onManage={openManageModal} isLight={isLight} />
             ))}
           </div>
         )}
@@ -424,8 +446,8 @@ export default function Trainers() {
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-5 border-b border-border">
               <div>
-                <h2 className="text-white font-space font-bold text-base tracking-wide">Hire New Trainer</h2>
-                <p className="text-iron-text-secondary text-xs italic mt-0.5">Add a trainer to the active roster</p>
+                <h2 className="text-white font-space font-bold text-base tracking-wide">{editingId ? 'Manage Trainer Profile' : 'Hire New Trainer'}</h2>
+                <p className="text-iron-text-secondary text-xs italic mt-0.5">{editingId ? 'Update trainer profile and login details' : 'Add a trainer to the active roster'}</p>
               </div>
               <button onClick={() => setShowModal(false)}
                 className="w-8 h-8 rounded-lg bg-white/[0.03] border border-white/5 flex items-center justify-center text-iron-text-secondary hover:text-white transition-colors">
@@ -441,7 +463,7 @@ export default function Trainers() {
               )}
               {formOk && (
                 <div className="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 rounded-xl px-4 py-3 text-emerald-400 text-xs">
-                  <CheckCircle size={14} className="flex-shrink-0" />Trainer added to roster!
+                  <CheckCircle size={14} className="flex-shrink-0" />{editingId ? 'Trainer profile updated!' : 'Trainer added to roster!'}
                 </div>
               )}
 
@@ -492,10 +514,29 @@ export default function Trainers() {
                 </div>
               </div>
 
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-iron-text-secondary text-xs uppercase tracking-widest font-space font-bold">Email</label>
+                  <input type="email" placeholder="trainer@example.com"
+                    value={formData.email}
+                    onChange={e => setFormData({ ...formData, email: e.target.value })}
+                    className="w-full bg-[#18181A] border border-border rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-iron-lime/50 transition-colors placeholder:text-iron-text-secondary/50" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-iron-text-secondary text-xs uppercase tracking-widest font-space font-bold">
+                    {editingId ? 'New Password' : 'Password'}
+                  </label>
+                  <input type="password" placeholder={editingId ? 'Leave blank to keep current' : 'Optional'}
+                    value={formData.password}
+                    onChange={e => setFormData({ ...formData, password: e.target.value })}
+                    className="w-full bg-[#18181A] border border-border rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-iron-lime/50 transition-colors placeholder:text-iron-text-secondary/50" />
+                </div>
+              </div>
+
               <div className="flex gap-3 pt-2">
                 <button type="submit" disabled={submitting}
                   className="flex-1 btn flex items-center justify-center gap-2">
-                  {submitting ? <><Loader2 size={14} className="animate-spin" /> Saving...</> : <><UserPlus size={13} /> Add Trainer</>}
+                  {submitting ? <><Loader2 size={14} className="animate-spin" /> Saving...</> : <><UserPlus size={13} /> {editingId ? 'Save Profile' : 'Add Trainer'}</>}
                 </button>
                 <button type="button" onClick={() => setShowModal(false)}
                   className="flex-1 py-3 px-6 bg-white/[0.03] border border-white/10 rounded text-white text-xs font-space font-semibold uppercase tracking-wider hover:bg-white/5 transition-colors">

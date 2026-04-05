@@ -17,9 +17,20 @@ exports.getExercises = async (req, res) => {
 exports.assignWorkout = async (req, res) => {
     try {
         const { member_id, workout_id, trainer_id, start_date, end_date } = req.body;
+        if (!member_id || !workout_id || !start_date || !end_date) {
+            return res.status(400).json({ message: 'Member, workout, start date, and end date are required.' });
+        }
+        if (new Date(end_date) < new Date(start_date)) {
+            return res.status(400).json({ message: 'End date cannot be before start date.' });
+        }
         await db.query(
-            'INSERT INTO Member_Workout (member_id, workout_id, trainer_id, start_date, end_date) VALUES (?, ?, ?, ?, ?)',
-            [member_id, workout_id, trainer_id, start_date, end_date]
+            `INSERT INTO Member_Workout (member_id, workout_id, trainer_id, start_date, end_date)
+             VALUES (?, ?, ?, ?, ?)
+             ON DUPLICATE KEY UPDATE
+                trainer_id = VALUES(trainer_id),
+                start_date = VALUES(start_date),
+                end_date = VALUES(end_date)`,
+            [member_id, workout_id, trainer_id || null, start_date, end_date]
         );
         res.status(201).json({ message: 'Workout assigned' });
     } catch (error) { res.status(500).json({ error: error.message }); }
