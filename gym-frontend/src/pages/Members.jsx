@@ -1,12 +1,28 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import axios from 'axios';
 import {
-  Search, Filter, Plus, X, ChevronLeft, ChevronRight,
-  Dumbbell, MoreHorizontal, Loader2, Clock, IndianRupee, UserCheck, Pencil
+  Search, X, Dumbbell, Loader2, Clock, IndianRupee,
+  UserCheck, Pencil, CreditCard, Banknote, Smartphone,
+  Building2, CheckCircle, AlertCircle, BadgeCheck, CalendarDays
 } from 'lucide-react';
 
 const API = 'http://localhost:5000/api/members';
+const PLANS_API = 'http://localhost:5000/api/plans';
+const SUB_SP_API = 'http://localhost:5000/api/db/procedures/renew-subscription';
+
+const METHOD_ICONS = {
+  Card: <CreditCard size={14} />,
+  Cash: <Banknote size={14} />,
+  UPI: <Smartphone size={14} />,
+  'Bank Transfer': <Building2 size={14} />,
+};
+
+function addMonths(dateStr, months) {
+  const d = new Date(dateStr);
+  d.setMonth(d.getMonth() + months);
+  return d.toISOString().split('T')[0];
+}
 
 function getHeaders() {
   const token = localStorage.getItem('token');
@@ -29,6 +45,37 @@ export default function Members() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
 
+  // ── Subscription Modal ────────────────────────────────────────
+  const [showSubModal, setShowSubModal] = useState(false);
+  const [subTarget, setSubTarget] = useState(null); // { member_id, name }
+  const [plans, setPlans] = useState([]);
+  const [plansLoading, setPlansLoading] = useState(false);
+  const [subForm, setSubForm] = useState({ plan_id: '', payment_method: 'Card' });
+  const [subSubmitting, setSubSubmitting] = useState(false);
+  const [subError, setSubError] = useState('');
+  const [subSuccess, setSubSuccess] = useState('');
+
+  const selectedPlan = plans.find(p => p.plan_id === parseInt(subForm.plan_id));
+  const today = new Date().toISOString().split('T')[0];
+  const endDate = selectedPlan ? addMonths(today, selectedPlan.duration_months) : '';
+
+  const openSubModal = useCallback(async (member) => {
+    setSubTarget(member);
+    setSubForm({ plan_id: '', payment_method: 'Card' });
+    setSubError('');
+    setSubSuccess('');
+    setShowSubModal(true);
+    setPlansLoading(true);
+    try {
+      const { data: planData } = await axios.get(PLANS_API, { headers: getHeaders() });
+      setPlans(Array.isArray(planData) ? planData : []);
+    } catch (e) {
+      setPlans([]);
+    } finally {
+      setPlansLoading(false);
+    }
+  }, []);
+
   const location = useLocation();
 
   const fetchMembers = async () => {
@@ -37,6 +84,33 @@ export default function Members() {
       setData(Array.isArray(res.data) ? res.data : []);
     } catch (err) { console.error(err); }
     finally { setLoading(false); }
+  };
+
+
+  const handleSubscribe = async (e) => {
+    e.preventDefault();
+    if (!subForm.plan_id) { setSubError('Please select a membership plan.'); return; }
+    setSubSubmitting(true);
+    setSubError('');
+    setSubSuccess('');
+    try {
+      const { data: result } = await axios.post(SUB_SP_API, {
+        member_id: subTarget.member_id,
+        plan_id: parseInt(subForm.plan_id),
+        payment_method: subForm.payment_method,
+      }, { headers: getHeaders() });
+      if (result.subscription_id > 0) {
+        setSubSuccess(result.message || 'Subscription assigned successfully!');
+        fetchMembers();
+        setTimeout(() => { setShowSubModal(false); setSubSuccess(''); }, 2500);
+      } else {
+        setSubError(result.message || 'Failed to assign subscription.');
+      }
+    } catch (err) {
+      setSubError(err.response?.data?.message || err.response?.data?.error || 'Failed to assign subscription.');
+    } finally {
+      setSubSubmitting(false);
+    }
   };
 
   useEffect(() => { 
@@ -296,13 +370,22 @@ export default function Members() {
                         </div>
                       </td>
                       <td>
-                        <button
-                          onClick={() => openEditModal(member)}
-                          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.03] border border-white/10 text-xs font-black uppercase tracking-widest text-iron-text-secondary hover:text-white hover:border-iron-lime/30 transition-all"
-                        >
-                          <Pencil size={12} />
-                          Edit
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => openEditModal(member)}
+                            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.03] border border-white/10 text-xs font-black uppercase tracking-widest text-iron-text-secondary hover:text-white hover:border-iron-lime/30 transition-all"
+                          >
+                            <Pencil size={12} />
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => openSubModal(member)}
+                            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-iron-lime/10 border border-iron-lime/20 text-xs font-black uppercase tracking-widest text-iron-lime hover:bg-iron-lime/20 hover:border-iron-lime/40 transition-all"
+                          >
+                            <BadgeCheck size={12} />
+                            Subscribe
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -415,6 +498,169 @@ export default function Members() {
                 <button type="submit" disabled={isSubmitting}
                   className="px-6 py-3 rounded-lg bg-iron-lime text-dark text-xs font-black tracking-widest uppercase hover:shadow-[0_0_20px_rgba(223,255,0,0.3)] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2">
                   {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : <span>{editingId ? 'Save Changes' : 'Register Member'}</span>}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── Subscription Modal ─────────────────────────────────────── */}
+      {showSubModal && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-dark/80 backdrop-blur-md" onClick={() => setShowSubModal(false)} />
+          <div className="bg-surface border border-border rounded-xl w-full max-w-[560px] relative z-[210] shadow-[0_30px_100px_rgba(0,0,0,0.5)] overflow-hidden">
+
+            {/* Header */}
+            <div className="p-6 pb-4 border-b border-white/5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-11 h-11 rounded-xl bg-iron-lime/10 flex items-center justify-center">
+                    <BadgeCheck size={20} className="text-iron-lime" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-white">Assign Membership</h2>
+                    <p className="text-iron-text-secondary text-xs italic mt-0.5">
+                      Subscribing: <span className="text-white font-bold">{subTarget?.member_name || subTarget?.name}</span>
+                    </p>
+                  </div>
+                </div>
+                <button onClick={() => setShowSubModal(false)} className="text-iron-text-secondary hover:text-white transition-colors">
+                  <X size={20} />
+                </button>
+              </div>
+            </div>
+
+            <form onSubmit={handleSubscribe} className="p-6 space-y-5">
+              {/* Alerts */}
+              {subError && (
+                <div className="p-4 bg-red-500/10 border border-red-500/20 text-red-400 text-xs rounded-xl flex items-center gap-3">
+                  <AlertCircle size={14} className="shrink-0" />
+                  <span>{subError}</span>
+                </div>
+              )}
+              {subSuccess && (
+                <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs rounded-xl flex items-center gap-3">
+                  <CheckCircle size={14} className="shrink-0" />
+                  <span>{subSuccess}</span>
+                </div>
+              )}
+
+              {/* Plan selection */}
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">
+                  Membership Plan <span className="text-red-400">*</span>
+                </label>
+                {plansLoading ? (
+                  <div className="flex items-center gap-3 py-4 text-iron-text-secondary text-xs">
+                    <Loader2 size={14} className="animate-spin text-iron-lime" />
+                    Loading plans...
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 gap-2">
+                    {plans.map(p => {
+                      const isSelected = parseInt(subForm.plan_id) === p.plan_id;
+                      return (
+                        <button
+                          key={p.plan_id}
+                          type="button"
+                          onClick={() => setSubForm(f => ({ ...f, plan_id: String(p.plan_id) }))}
+                          className={`w-full flex items-center justify-between p-4 rounded-xl border transition-all text-left ${
+                            isSelected
+                              ? 'bg-iron-lime/10 border-iron-lime/40 shadow-[0_0_15px_rgba(223,255,0,0.08)]'
+                              : 'bg-white/[0.02] border-white/5 hover:bg-white/[0.04] hover:border-white/10'
+                          }`}
+                        >
+                          <div>
+                            <p className={`font-bold text-sm ${isSelected ? 'text-white' : 'text-iron-text-secondary'}`}>
+                              {p.plan_name}
+                            </p>
+                            {p.description && (
+                              <p className="text-iron-text-secondary text-xs italic mt-0.5">{p.description}</p>
+                            )}
+                          </div>
+                          <div className="text-right shrink-0 ml-4">
+                            <p className={`text-lg font-space font-black ${isSelected ? 'text-iron-lime' : 'text-white'}`}>
+                              ₹{parseFloat(p.price).toLocaleString('en-IN')}
+                            </p>
+                            <p className="text-iron-text-secondary text-[11px] font-bold uppercase tracking-widest">
+                              {p.duration_months} month{p.duration_months !== 1 ? 's' : ''}
+                            </p>
+                          </div>
+                        </button>
+                      );
+                    })}
+                    {plans.length === 0 && !plansLoading && (
+                      <p className="text-iron-text-secondary text-xs italic py-2">No membership plans found. Create one from the Payments page first.</p>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Duration preview */}
+              {selectedPlan && (
+                <div className="flex items-center gap-3 p-4 bg-white/[0.02] border border-white/5 rounded-xl">
+                  <CalendarDays size={16} className="text-iron-lime shrink-0" />
+                  <div className="flex-1">
+                    <p className="text-iron-text-secondary text-xs">Subscription Period</p>
+                    <p className="text-white text-sm font-bold mt-0.5">
+                      {new Date(today).toLocaleDateString('en-IN', {day:'2-digit',month:'short',year:'numeric'})}
+                      {' → '}
+                      {new Date(endDate).toLocaleDateString('en-IN', {day:'2-digit',month:'short',year:'numeric'})}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-iron-text-secondary text-xs">Total</p>
+                    <p className="text-iron-lime font-space font-black text-base mt-0.5">
+                      ₹{parseFloat(selectedPlan.price).toLocaleString('en-IN')}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Payment method */}
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">
+                  Payment Method <span className="text-red-400">*</span>
+                </label>
+                <div className="grid grid-cols-4 gap-2">
+                  {['Card','Cash','UPI','Bank Transfer'].map(method => {
+                    const isActive = subForm.payment_method === method;
+                    return (
+                      <button
+                        key={method}
+                        type="button"
+                        onClick={() => setSubForm(f => ({ ...f, payment_method: method }))}
+                        className={`flex flex-col items-center gap-2 py-3 px-2 rounded-xl border text-xs font-bold transition-all ${
+                          isActive
+                            ? 'bg-iron-lime/10 border-iron-lime/30 text-white'
+                            : 'bg-white/[0.02] border-white/5 text-iron-text-secondary hover:border-white/10 hover:text-white'
+                        }`}
+                      >
+                        <span className={isActive ? 'text-iron-lime' : ''}>{METHOD_ICONS[method]}</span>
+                        <span className="capitalize leading-tight text-center text-[11px]">{method}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex justify-end gap-3 pt-2 border-t border-white/5">
+                <button
+                  type="button"
+                  onClick={() => setShowSubModal(false)}
+                  className="px-6 py-3 rounded-lg border border-white/10 text-xs font-bold tracking-widest uppercase text-white hover:bg-white/5 transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={subSubmitting || !subForm.plan_id}
+                  className="px-8 py-3 rounded-lg bg-iron-lime text-dark text-xs font-black tracking-widest uppercase hover:shadow-[0_0_20px_rgba(223,255,0,0.3)] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed disabled:scale-100"
+                >
+                  {subSubmitting ? <Loader2 size={15} className="animate-spin" /> : <BadgeCheck size={15} />}
+                  {subSubmitting ? 'Assigning...' : 'Confirm Subscription'}
                 </button>
               </div>
             </form>
