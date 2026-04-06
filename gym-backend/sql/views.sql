@@ -113,7 +113,7 @@ LEFT JOIN (
         MAX(maintenance_date) AS last_service_date,
         (SELECT cost FROM Maintenance m2
          WHERE m2.equipment_id = m1.equipment_id
-         ORDER BY maintenance_date DESC LIMIT 1) AS last_service_cost
+         ORDER BY maintenance_id DESC LIMIT 1) AS last_service_cost
     FROM Maintenance m1
     GROUP BY equipment_id
 ) latest ON latest.equipment_id = e.equipment_id;

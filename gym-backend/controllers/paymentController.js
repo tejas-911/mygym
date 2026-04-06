@@ -31,16 +31,21 @@ exports.getAllPayments = async (req, res) => {
         const [rows] = await db.query(
             `SELECT p.payment_id, p.subscription_id, p.amount, p.payment_date, p.payment_method,
                     ${statusCol},
-                    m.name AS member_name, m.member_id,
-                    mp.plan_name
+                    COALESCE(m.name, 'Supplement Sale') AS member_name,
+                    m.member_id,
+                    COALESCE(mp.plan_name, 'Supplement') AS plan_name
              FROM Payment p
              LEFT JOIN Subscription s  ON p.subscription_id = s.subscription_id
              LEFT JOIN Member m        ON s.member_id = m.member_id
              LEFT JOIN Membership_Plan mp ON s.plan_id = mp.plan_id
-             WHERE (m.name LIKE ? OR mp.plan_name LIKE ? OR p.payment_method LIKE ?)
+             WHERE (
+               (p.subscription_id IS NOT NULL AND (m.name LIKE ? OR mp.plan_name LIKE ? OR p.payment_method LIKE ?))
+               OR
+               (p.subscription_id IS NULL AND p.payment_method LIKE ?)
+             )
              ORDER BY p.payment_date DESC, p.payment_id DESC
              LIMIT ? OFFSET ?`,
-            [searchParam, searchParam, searchParam, limit, offset]
+            [searchParam, searchParam, searchParam, searchParam, limit, offset]
         );
 
         const [[{ total }]] = await db.query(
@@ -49,15 +54,21 @@ exports.getAllPayments = async (req, res) => {
              LEFT JOIN Subscription s  ON p.subscription_id = s.subscription_id
              LEFT JOIN Member m        ON s.member_id = m.member_id
              LEFT JOIN Membership_Plan mp ON s.plan_id = mp.plan_id
-             WHERE (m.name LIKE ? OR mp.plan_name LIKE ? OR p.payment_method LIKE ?)`,
-            [searchParam, searchParam, searchParam]
+             WHERE (
+               (p.subscription_id IS NOT NULL AND (m.name LIKE ? OR mp.plan_name LIKE ? OR p.payment_method LIKE ?))
+               OR
+               (p.subscription_id IS NULL AND p.payment_method LIKE ?)
+             )`,
+            [searchParam, searchParam, searchParam, searchParam]
         );
+
 
         res.json({ records: rows, total });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
+
 
 // ── POST /api/payments ────────────────────────────────────────────────────────
 exports.createPayment = async (req, res) => {

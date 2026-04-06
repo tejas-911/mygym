@@ -57,9 +57,9 @@ BEGIN
     ELSEIF v_diff < 0 THEN
         RETURN CONCAT('Expired ', ABS(v_diff), ' days ago');
     ELSEIF v_diff <= 7 THEN
-        RETURN CONCAT('Expiring in ', v_diff, ' days — RENEW NOW');
+        RETURN CONCAT('Expiring in ', v_diff, ' days - RENEW NOW');
     ELSE
-        RETURN CONCAT('Active — ', v_diff, ' days remaining');
+        RETURN CONCAT('Active - ', v_diff, ' days remaining');
     END IF;
 END //
 DELIMITER ;

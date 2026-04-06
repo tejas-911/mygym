@@ -51,6 +51,14 @@ export default function Supplements() {
   const [restockSubmitting, setRestockSubmitting] = useState(false);
   const [restockError, setRestockError] = useState('');
 
+  const fetchMembers = async () => {
+    try {
+      const memRes = await axios.get(API_MEM, { headers: getHeaders() });
+      const memData = Array.isArray(memRes.data) ? memRes.data : [];
+      setMembers(memData);
+    } catch (err) { console.error('Failed to load members', err); }
+  };
+
   const fetchData = async () => {
     try {
       const [suppRes, memRes] = await Promise.all([
@@ -65,6 +73,7 @@ export default function Supplements() {
   };
 
   useEffect(() => { fetchData(); }, []);
+
 
   const handleSale = async (e) => {
     e.preventDefault();
@@ -130,7 +139,7 @@ export default function Supplements() {
           <h1 className="text-4xl font-space font-bold tracking-tighter text-white mb-2">Supplements</h1>
           <p className="text-iron-text-secondary font-medium italic text-sm">{data.length} products · {totalStock} units in stock</p>
         </div>
-        <button onClick={() => { setShowModal(true); setModalError(''); }} className="btn flex items-center gap-2">
+        <button onClick={() => { setShowModal(true); setModalError(''); fetchMembers(); }} className="btn flex items-center gap-2">
           <Plus size={14} /> Record Sale
         </button>
         <button onClick={() => openRestockModal()} className="px-4 py-3 rounded-lg bg-white/[0.03] border border-white/10 text-xs font-black uppercase tracking-widest text-white hover:bg-white/5 transition-all">

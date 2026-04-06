@@ -55,12 +55,11 @@ exports.getMaintenance = async (req, res) => {
              FROM Maintenance m
              JOIN Equipment e ON m.equipment_id = e.equipment_id
              JOIN (
-                SELECT equipment_id, MAX(maintenance_date) AS latest_maintenance_date
+                SELECT equipment_id, MAX(maintenance_id) AS latest_maintenance_id
                 FROM Maintenance
                 GROUP BY equipment_id
              ) latest
-               ON latest.equipment_id = m.equipment_id
-              AND latest.latest_maintenance_date = m.maintenance_date
+               ON latest.latest_maintenance_id = m.maintenance_id
              ORDER BY
                 CASE
                     WHEN e.condition_status IN ('Needs Repair', 'Out of Order') THEN 0

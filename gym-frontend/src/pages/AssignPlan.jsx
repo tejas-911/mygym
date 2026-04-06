@@ -40,6 +40,13 @@ export default function AssignPlan() {
   const [exercisesLoading, setExercisesLoading] = useState(false);
   const [showExercises, setShowExercises] = useState(false);
 
+  const fetchMembers = async () => {
+    try {
+      const mRes = await axios.get(`${API}/members`, { headers: getHeaders() });
+      setMembers(Array.isArray(mRes.data) ? mRes.data : []);
+    } catch (err) { console.error(err); }
+  };
+
   useEffect(() => {
     const fetchOptions = async () => {
       try {
@@ -55,7 +62,14 @@ export default function AssignPlan() {
       finally { setLoading(false); }
     };
     fetchOptions();
+
+    // Re-fetch members when tab becomes visible (user switches back from Members page)
+    const handleVisibility = () => { if (!document.hidden) fetchMembers(); };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
   }, []);
+
+
 
   // Fetch exercises whenever a workout plan is selected
   useEffect(() => {
