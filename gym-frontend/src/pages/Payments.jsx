@@ -40,10 +40,10 @@ const METHOD_ICONS = {
 };
 
 const STATUS_STYLES = {
-  Paid:     'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
-  Pending:  'bg-amber-500/10  text-amber-400  border-amber-500/20',
-  Failed:   'bg-red-500/10    text-red-400    border-red-500/20',
-  Refunded: 'bg-iron-blue/10  text-blue-400   border-blue-500/20',
+  Paid:     'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
+  Pending:  'bg-amber-500/10  text-amber-500  border-amber-500/20',
+  Failed:   'bg-red-500/10    text-red-500    border-red-500/20',
+  Refunded: 'bg-iron-blue/10  text-blue-500   border-blue-500/20',
 };
 
 const AVATAR_PALETTE = ['#3B82F6','#8B5CF6','#EC4899','#F59E0B','#10B981','#EF4444','#6366F1','#0EA5E9'];
@@ -220,7 +220,7 @@ export default function Payments() {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-4xl font-space font-bold tracking-tighter text-white mb-1">Revenue Overview</h1>
+          <h1 className="text-4xl font-space font-bold tracking-tighter mb-1" style={{ color: isLight ? '#0A0A0E' : '#FFFFFF' }}>Revenue Overview</h1>
           <p className="text-iron-text-secondary text-sm italic">Real-time financial performance &amp; transaction history</p>
         </div>
         <button onClick={downloadCSV} className="flex items-center gap-2 px-4 py-3 rounded-lg bg-white/[0.03] border border-white/10 text-xs font-black uppercase tracking-widest text-white hover:bg-white/5 transition-all">
@@ -235,7 +235,7 @@ export default function Payments() {
         {/* This Month Revenue */}
         <div className="card relative overflow-hidden">
           <div className="absolute inset-0 flex items-center justify-end pr-4 pointer-events-none select-none">
-            <span className="text-[5rem] font-space font-black text-white/[0.03] leading-none tracking-tighter">REV</span>
+            <span className="text-[5rem] font-space font-black leading-none tracking-tighter" style={{ color: isLight ? 'rgba(0,0,0,0.03)' : 'rgba(255,255,255,0.03)' }}>REV</span>
           </div>
           <p className="text-xs font-space font-bold uppercase tracking-[0.2em] text-iron-text-secondary mb-4">
             This Month Revenue
@@ -300,12 +300,12 @@ export default function Payments() {
       <div className="card !p-0 overflow-hidden">
         <div className="px-6 py-4 border-b border-border flex items-center justify-between">
           <div>
-            <h3 className="text-white font-space font-bold uppercase tracking-widest text-sm">Revenue Trend</h3>
+            <h3 className="font-space font-bold uppercase tracking-widest text-sm" style={{ color: isLight ? '#0A0A0E' : '#FFFFFF' }}>Revenue Trend</h3>
             <p className="text-iron-text-secondary text-xs italic mt-0.5">
               {trendMode === 'monthly' ? 'Monthly collection performance' : 'Daily collection — last 30 days'}
             </p>
           </div>
-          <div className="flex items-center bg-[#18181A] border border-border rounded-lg overflow-hidden">
+          <div className="flex items-center bg-surface border border-border rounded-lg overflow-hidden">
             {['daily', 'monthly'].map(mode => (
               <button
                 key={mode}
@@ -354,7 +354,7 @@ export default function Payments() {
         {/* Table Header */}
         <div className="px-6 py-4 border-b border-border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div>
-            <h3 className="text-white font-space font-bold uppercase tracking-widest text-sm">Payments Log</h3>
+            <h3 className="font-space font-bold uppercase tracking-widest text-sm" style={{ color: isLight ? '#0A0A0E' : '#FFFFFF' }}>Payments Log</h3>
             <p className="text-iron-text-secondary text-xs italic mt-0.5">Real-time transaction history and status</p>
           </div>
           <div className="flex items-center gap-3 flex-wrap">
@@ -368,7 +368,8 @@ export default function Payments() {
                   placeholder="Search transactions..."
                   value={searchInput}
                   onChange={e => setSearchInput(e.target.value)}
-                  className="bg-[#18181A] border border-border rounded-lg pl-8 pr-8 py-2 text-xs text-white placeholder:text-iron-text-secondary/60 outline-none focus:border-iron-lime/40 transition-colors w-44"
+                  className="bg-surface border border-border rounded-lg pl-8 pr-8 py-2 text-xs placeholder:text-iron-text-secondary/60 outline-none focus:border-iron-lime transition-colors w-44"
+                  style={{ color: isLight ? '#0A0A0E' : '#FFFFFF' }}
                 />
                 {searchInput && (
                   <button type="button" onClick={clearSearch} className="absolute right-2 text-iron-text-secondary hover:text-white">
@@ -420,7 +421,7 @@ export default function Payments() {
                       <div className="flex items-center gap-3">
                         <Avatar name={r.member_name || '??'} idx={idx} />
                         <div>
-                          <p className="font-semibold text-white group-hover:text-iron-lime transition-colors text-sm">
+                          <p className="font-semibold group-hover:text-iron-lime transition-colors text-sm" style={{ color: isLight ? '#0A0A0E' : '#FFFFFF' }}>
                             {r.member_name || <span className="text-iron-text-secondary italic">Supplement Sale</span>}
                           </p>
                           <p className="text-xs text-iron-text-secondary uppercase tracking-tight">
@@ -435,7 +436,7 @@ export default function Payments() {
                       </span>
                     </td>
                     <td>
-                      <span className="text-white font-bold font-space">{formatINR(r.amount)}</span>
+                      <span className="font-bold font-space" style={{ color: isLight ? '#0A0A0E' : '#FFFFFF' }}>{formatINR(r.amount)}</span>
                     </td>
                     <td>
                       <div className="flex items-center gap-2 text-iron-text-secondary">
