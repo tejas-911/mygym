@@ -40,19 +40,19 @@ const METHOD_ICONS = {
 };
 
 const STATUS_STYLES = {
-  Paid:     'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
-  Pending:  'bg-amber-500/10  text-amber-400  border-amber-500/20',
-  Failed:   'bg-red-500/10    text-red-400    border-red-500/20',
+  Paid: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+  Pending: 'bg-amber-500/10  text-amber-400  border-amber-500/20',
+  Failed: 'bg-red-500/10    text-red-400    border-red-500/20',
   Refunded: 'bg-iron-blue/10  text-blue-400   border-blue-500/20',
 };
 
-const AVATAR_PALETTE = ['#3B82F6','#8B5CF6','#EC4899','#F59E0B','#10B981','#EF4444','#6366F1','#0EA5E9'];
+const AVATAR_PALETTE = ['#3B82F6', '#8B5CF6', '#EC4899', '#F59E0B', '#10B981', '#EF4444', '#6366F1', '#0EA5E9'];
 
 function Avatar({ name, idx }) {
   const color = AVATAR_PALETTE[idx % AVATAR_PALETTE.length];
   return (
     <div className="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs text-white flex-shrink-0"
-         style={{ background: color }}>
+      style={{ background: color }}>
       {getInitials(name)}
     </div>
   );
@@ -256,25 +256,6 @@ export default function Payments() {
           )}
         </div>
 
-        {/* Pending Payments */}
-        <div className="card relative overflow-hidden">
-          <div className="absolute inset-0 flex items-center justify-end pr-4 pointer-events-none select-none">
-            <span className="text-[5rem] font-space font-black text-white/[0.03] leading-none">₹?</span>
-          </div>
-          <p className="text-xs font-space font-bold uppercase tracking-[0.2em] text-iron-text-secondary mb-4">
-            Pending Payments
-          </p>
-          <p className="text-5xl font-space font-black text-amber-400 tracking-tighter mb-3">
-            {stats ? String(stats.pending_count).padStart(2, '0') : '—'}
-          </p>
-          <div className="flex items-center gap-2">
-            <AlertCircle size={13} className="text-amber-400/70" />
-            <p className="text-iron-text-secondary text-xs italic">
-              Action required for {stats?.expired_count ?? '—'} expired memberships
-            </p>
-          </div>
-        </div>
-
         {/* Successful */}
         <div className="card relative overflow-hidden border-iron-blue/20">
           <div className="absolute inset-0 flex items-center justify-end pr-4 pointer-events-none select-none">
@@ -282,9 +263,6 @@ export default function Payments() {
           </div>
           <p className="text-xs font-space font-bold uppercase tracking-[0.2em] text-iron-text-secondary mb-4">
             Successful
-          </p>
-          <p className="text-5xl font-space font-black text-iron-blue tracking-tighter mb-3">
-            {stats ? stats.successful_this_week : '—'}
           </p>
           <p className="text-iron-text-secondary text-xs italic mb-3">
             {stats?.success_rate}% transaction success rate this week
@@ -294,6 +272,7 @@ export default function Payments() {
             <span className="text-iron-blue text-xs font-black uppercase tracking-widest">Verified Secure</span>
           </div>
         </div>
+
       </div>
 
       {/* ── Revenue Trend Chart ───────────────────────────────────── */}
@@ -310,11 +289,10 @@ export default function Payments() {
               <button
                 key={mode}
                 onClick={() => handleTrendToggle(mode)}
-                className={`px-4 py-2 text-xs font-space font-black uppercase tracking-widest transition-all ${
-                  trendMode === mode
+                className={`px-4 py-2 text-xs font-space font-black uppercase tracking-widest transition-all ${trendMode === mode
                     ? 'bg-iron-lime text-dark'
                     : 'text-iron-text-secondary hover:text-white'
-                }`}
+                  }`}
               >
                 {mode}
               </button>

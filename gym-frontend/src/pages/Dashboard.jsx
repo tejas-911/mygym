@@ -223,8 +223,8 @@ export default function Dashboard() {
             <span>{fullyBooked} fully booked</span>
           </div>
           <div className="mt-4 flex -space-x-2">
-            <div className="w-6 h-6 rounded-full bg-amber-400 border-2 border-surface flex items-center justify-center text-xs font-bold text-dark">H</div>
-            <div className="w-6 h-6 rounded-full bg-iron-blue border-2 border-surface flex items-center justify-center text-xs font-bold text-white">C</div>
+            <div className="w-6 h-6 rounded-full bg-amber-400 border-2 border-surface flex items-center justify-center text-xs font-bold" style={{ color: '#0A0A0E' }}>H</div>
+            <div className="w-6 h-6 rounded-full bg-iron-blue border-2 border-surface flex items-center justify-center text-xs font-bold" style={{ color: '#FFFFFF' }}>C</div>
             <div className="w-6 h-6 rounded-full bg-border border-2 border-surface flex items-center justify-center text-xs font-bold text-white">+{Math.max(0, classesToday - 2)}</div>
           </div>
         </div>
