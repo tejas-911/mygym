@@ -92,7 +92,7 @@
 }
 
 .stat-value {
-  @apply text-5xl font-space font-black text-white tracking-tighter block;
+  @apply text-5xl font-space font-black text-iron-text-primary tracking-tighter block;
 }
 
 .stat-change {
@@ -154,15 +154,30 @@
   @apply bg-border rounded-full hover:bg-iron-lime transition-colors;
 }
 
+/* Transition for smooth theme switch */
+*, *::before, *::after {
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.15s ease;
+}
+
 /* ===================== LIGHT THEME ===================== */
 html.light {
   --color-dark: #F0F0F5;
   --color-surface: #FFFFFF;
   --color-border: #E4E4EB;
-  --color-iron-lime: #2563EB;
+  --color-iron-lime: #2563EB; /* Brand Blue in light mode */
+  --color-iron-blue: #1A3AFF;
   --color-iron-text-primary: #0A0A0E;
   --color-iron-text-secondary: #52525B;
   color-scheme: light;
+}
+
+html.light body {
+  color: #0A0A0E;
+  background: #F0F0F5;
+}
+
+html.light h1, html.light h2, html.light h3, html.light h4, html.light h5, html.light h6 {
+  color: #0A0A0E;
 }
 
 /* btn uses text-dark which is too dark on blue bg — make it white */
@@ -171,29 +186,11 @@ html.light .btn {
   border-color: #2563EB;
 }
 
-html.light body {
-  color: #0A0A0E;
-  background: #F0F0F5;
-}
-
-html.light h1,
-html.light h2,
-html.light h3,
-html.light h4,
-html.light h5,
-html.light h6 {
-  color: #0A0A0E;
-}
-
 html.light .main-content {
   background: #E8E8F0;
 }
 
-html.light .top-bar {
-  background: #FFFFFF;
-  border-color: #E4E4EB;
-}
-
+html.light .top-bar,
 html.light .sidebar {
   background: #FFFFFF;
   border-color: #E4E4EB;
@@ -204,53 +201,82 @@ html.light .card,
 html.light .stat-card {
   background: #FFFFFF;
   border-color: #E4E4EB;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.04);
 }
 
-/* Table rows */
+/* Table styling */
+html.light .iron-table th {
+  border-color: #E4E4EB;
+  color: #71717A;
+}
+
 html.light .iron-table td {
   color: #0A0A0E;
+  border-color: #F0F0F5;
 }
 
 html.light .iron-table tr:hover {
   background: rgba(0,0,0,0.02);
 }
 
-/* Text: override text-white used inline across pages */
-html.light .text-white {
+/* ===================== ROBUST UTILITY OVERRIDES ===================== */
+
+/* Critical Fix: text-white/opacity patterns */
+html.light [class*="text-white"] {
   color: #0A0A0E !important;
 }
 
-/* Inputs and selects */
+html.light [class*="text-white/80"],
+html.light [class*="text-white/70"] {
+  color: rgba(10, 10, 14, 0.8) !important;
+}
+
+html.light [class*="text-white/50"],
+html.light [class*="text-white/40"] {
+  color: rgba(10, 10, 14, 0.5) !important;
+}
+
+/* Fix: text-iron-text-secondary for better contrast */
+html.light .text-iron-text-secondary {
+  color: #52525B !important;
+}
+
+/* Fix: bg-white/opacity patterns (mostly for tracks and subtle buttons) */
+html.light [class*="bg-white/"] {
+  background-color: rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Ensure progress bar tracks are visible */
+html.light .bg-white\/5 {
+  background-color: #E4E4EB !important;
+}
+
+/* Fixed inputs and selects */
 html.light input,
 html.light select,
-html.light textarea {
-  background: #F4F4F8 !important;
+html.light textarea,
+html.light [class*="bg-[#18181A]"],
+html.light [class*="bg-[#0D0D12]"],
+html.light [class*="bg-[#111116]"] {
+  background-color: #F8F8FC !important;
   color: #0A0A0E !important;
   border-color: #D4D4DC !important;
 }
 
-html.light input::placeholder,
-html.light textarea::placeholder {
+html.light input::placeholder {
   color: #A1A1AA !important;
 }
 
-/* Hardcoded bg overrides used in form fields */
-html.light [class*="bg-\[#18181A\]"],
-html.light [class*="bg-\[#0D0D12\]"],
-html.light [class*="bg-\[#111116\]"],
-html.light [class*="bg-\[#111\]"] {
-  background-color: #F4F4F8 !important;
+/* Modals */
+html.light .bg-dark\/80 {
+  background-color: rgba(240, 240, 245, 0.8) !important;
 }
 
-/* Borders using white/opacity */
-html.light [class*="border-white"] {
-  border-color: #D4D4DC !important;
-}
-
-/* bg-white/opacity patterns used in buttons/rows */
-html.light [class*="bg-white/"] {
-  background-color: rgba(0,0,0,0.03) !important;
+/* Specific Badge handling */
+html.light .badge-active {
+  background-color: rgba(5, 150, 105, 0.1) !important;
+  color: #059669 !important;
+  border-color: rgba(5, 150, 105, 0.2) !important;
 }
 
 /* Scrollbar in light mode */
@@ -260,9 +286,4 @@ html.light ::-webkit-scrollbar-track {
 
 html.light ::-webkit-scrollbar-thumb {
   background: #D4D4DC;
-}
-
-/* Transition for smooth theme switch */
-*, *::before, *::after {
-  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }

@@ -5,6 +5,7 @@ import {
   Download, Filter, ChevronDown, CheckCircle, AlertCircle,
   QrCode, Search, ChevronLeft, ChevronRight, Loader2, Info
 } from 'lucide-react';
+import { useTheme } from '../context/ThemeContext';
 
 const API = 'http://localhost:5000/api/attendance';
 
@@ -51,6 +52,8 @@ function downloadCSV(records) {
 }
 
 export default function Attendance() {
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
   const [memberIdInput, setMemberIdInput] = useState('');
   const [actionMode, setActionMode] = useState('checkin'); // 'checkin' | 'checkout'
   const [actionFeedback, setActionFeedback] = useState(null); // { type: 'success'|'error', message }
@@ -142,7 +145,7 @@ export default function Attendance() {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-4xl font-space font-bold tracking-tighter text-white mb-2">Attendance</h1>
+          <h1 className="text-4xl font-space font-bold tracking-tighter mb-2" style={{ color: isLight ? '#0A0A0E' : '#FFFFFF' }}>Attendance</h1>
           <p className="text-iron-text-secondary font-medium italic text-sm">Monitor facility access and member activity</p>
         </div>
       </div>
@@ -159,7 +162,7 @@ export default function Attendance() {
               <QrCode size={16} />
             </div>
             <div>
-              <h2 className="text-white font-space font-bold tracking-widest uppercase">Quick Scan</h2>
+              <h2 className="font-space font-bold tracking-widest uppercase" style={{ color: isLight ? '#0A0A0E' : '#FFFFFF' }}>Quick Scan</h2>
               <p className="text-xs text-iron-text-secondary font-medium italic">Enter ID to grant entry or exit</p>
             </div>
           </div>
@@ -173,7 +176,8 @@ export default function Attendance() {
                 onChange={e => setMemberIdInput(e.target.value)}
                 onKeyDown={handleKeyDown}
                 maxLength={10}
-                className="w-full bg-[#18181A] border border-border rounded-xl px-4 py-4 text-center text-sm text-white font-space font-bold tracking-[0.2em] outline-none focus:border-iron-lime/50 focus:bg-white/[0.02] transition-all placeholder:text-iron-text-secondary/50 placeholder:font-manrope placeholder:tracking-normal placeholder:font-normal"
+                className="w-full bg-surface border border-border rounded-xl px-4 py-4 text-center text-sm font-space font-bold tracking-[0.2em] outline-none focus:border-iron-lime transition-all placeholder:text-iron-text-secondary/50 placeholder:font-manrope placeholder:tracking-normal placeholder:font-normal"
+                style={{ color: isLight ? '#0A0A0E' : '#FFFFFF' }}
               />
             </div>
             
@@ -205,7 +209,7 @@ export default function Attendance() {
                 <div className="flex flex-col">
                   {actionFeedback.type === 'success' && actionFeedback.member_name ? (
                     <>
-                      <span className="font-bold text-white mb-1">{actionFeedback.member_name}</span>
+                      <span className="font-bold mb-1" style={{ color: isLight ? '#0A0A0E' : '#FFFFFF' }}>{actionFeedback.member_name}</span>
                       <span className="opacity-80 italic">Successfully checked {actionFeedback.mode === 'checkin' ? 'in' : 'out'} at {actionFeedback.time}.</span>
                       {actionFeedback.member_status && (
                         <div className="mt-2">
@@ -238,7 +242,7 @@ export default function Attendance() {
             </div>
             <div>
               <p className="text-xs font-bold text-iron-text-secondary uppercase tracking-[0.2em] mb-1">Currently Inside</p>
-              <p className="text-4xl font-space font-bold text-white tracking-tighter">{stats.currently_inside}</p>
+              <p className="text-4xl font-space font-bold tracking-tighter" style={{ color: isLight ? '#0A0A0E' : '#FFFFFF' }}>{stats.currently_inside}</p>
             </div>
           </div>
           
@@ -250,7 +254,7 @@ export default function Attendance() {
             </div>
             <div>
               <p className="text-xs font-bold text-iron-text-secondary uppercase tracking-[0.2em] mb-1">Checked In Today</p>
-              <p className="text-4xl font-space font-bold text-white tracking-tighter">{stats.checked_in_today}</p>
+              <p className="text-4xl font-space font-bold tracking-tighter" style={{ color: isLight ? '#0A0A0E' : '#FFFFFF' }}>{stats.checked_in_today}</p>
             </div>
           </div>
 
@@ -263,7 +267,7 @@ export default function Attendance() {
             <div>
               <p className="text-xs font-bold text-iron-text-secondary uppercase tracking-[0.2em] mb-1">Avg Session</p>
               <div className="flex items-baseline gap-1">
-                <p className="text-4xl font-space font-bold text-white tracking-tighter">{stats.avg_session || 0}</p>
+                <p className="text-4xl font-space font-bold tracking-tighter" style={{ color: isLight ? '#0A0A0E' : '#FFFFFF' }}>{stats.avg_session || 0}</p>
                 <span className="text-sm font-bold text-iron-text-secondary italic">min</span>
               </div>
             </div>
@@ -277,7 +281,7 @@ export default function Attendance() {
             </div>
             <div>
               <p className="text-xs font-bold text-iron-text-secondary uppercase tracking-[0.2em] mb-1">Peak Hour</p>
-              <p className="text-2xl mt-2 font-space font-bold text-white tracking-tighter">{stats.peak_hour || '—'}</p>
+              <p className="text-2xl mt-2 font-space font-bold tracking-tighter" style={{ color: isLight ? '#0A0A0E' : '#FFFFFF' }}>{stats.peak_hour || '—'}</p>
             </div>
           </div>
         </div>
@@ -310,13 +314,13 @@ export default function Attendance() {
                 {filterStatus === 'all' ? 'Filter' : filterStatus}
                 <ChevronDown size={14} className="opacity-50 group-hover/filter:rotate-180 transition-transform" />
               </button>
-              <div className="absolute right-0 top-full mt-2 w-48 bg-[#18181A] border border-border rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.5)] opacity-0 invisible group-hover/filter:opacity-100 group-hover/filter:visible transition-all duration-200 overflow-hidden translate-y-2 group-hover/filter:translate-y-0 p-2">
+              <div className="absolute right-0 top-full mt-2 w-48 bg-surface border border-border rounded-xl shadow-2xl opacity-0 invisible group-hover/filter:opacity-100 group-hover/filter:visible transition-all duration-200 overflow-hidden translate-y-2 group-hover/filter:translate-y-0 p-2">
                 {[['all', 'All Activity'], ['inside', 'Currently Inside'], ['completed', 'Completed Sessions']].map(([val, label]) => (
                   <button
                     key={val}
                     onClick={() => { setFilterStatus(val); }}
                     className={`w-full text-left px-4 py-3 rounded-lg text-xs font-bold tracking-widest uppercase transition-colors flex items-center justify-between ${
-                      filterStatus === val ? 'bg-iron-lime/10 text-iron-lime' : 'text-iron-text-secondary hover:bg-white/5 hover:text-white'
+                      filterStatus === val ? 'bg-iron-lime/10 text-iron-lime' : 'text-iron-text-secondary hover:bg-black/5 hover:text-white'
                     }`}
                   >
                     {label}

@@ -1,0 +1,5 @@
+{
+  "ignore": [".git", "node_modules", "sql/"],
+  "watch": ["server.js", "controllers/", "routes/", "middleware/", "services/", "db.js"],
+  "ext": "js,json"
+}

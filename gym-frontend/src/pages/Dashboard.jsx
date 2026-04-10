@@ -159,10 +159,13 @@ export default function Dashboard() {
             <TrendingUp size={14} />
             <span>+{newThisMonth} this month</span>
           </div>
-          <div className="mt-6 h-1 w-full bg-white/5 rounded-full overflow-hidden">
+          <div className="mt-6 h-1 w-full bg-border/40 rounded-full overflow-hidden">
             <div
-              className="h-full bg-iron-lime rounded-full shadow-[0_0_10px_rgba(223,255,0,0.5)]"
-              style={{ width: totalMembers > 0 ? `${Math.round((activeMembers / totalMembers) * 100)}%` : '0%' }}
+              className="h-full bg-iron-lime rounded-full"
+              style={{ 
+                width: totalMembers > 0 ? `${Math.round((activeMembers / totalMembers) * 100)}%` : '0%',
+                boxShadow: isLight ? '0 0 10px rgba(37,99,235,0.3)' : '0 0 10px rgba(223,255,0,0.5)'
+              }}
             />
           </div>
         </div>
@@ -183,7 +186,9 @@ export default function Dashboard() {
           </div>
           <div className="mt-6 flex gap-1">
             {Array.from({ length: 6 }, (_, i) => (
-              <div key={i} className={`h-1 flex-1 rounded-full ${i < Math.round((checkinsTodayVal / Math.max(activeMembers, 1)) * 6) ? 'bg-iron-lime shadow-[0_0_8px_rgba(223,255,0,0.3)]' : 'bg-white/5'}`} />
+              <div key={i} className={`h-1 flex-1 rounded-full ${i < Math.round((checkinsTodayVal / Math.max(activeMembers, 1)) * 6) ? 'bg-iron-lime' : 'bg-border/40'}`} 
+                style={{ boxShadow: i < Math.round((checkinsTodayVal / Math.max(activeMembers, 1)) * 6) && !isLight ? '0 0 8px rgba(223,255,0,0.3)' : 'none' }}
+              />
             ))}
           </div>
         </div>
@@ -223,9 +228,9 @@ export default function Dashboard() {
             <span>{fullyBooked} fully booked</span>
           </div>
           <div className="mt-4 flex -space-x-2">
-            <div className="w-6 h-6 rounded-full bg-amber-400 border-2 border-surface flex items-center justify-center text-xs font-bold text-dark">H</div>
-            <div className="w-6 h-6 rounded-full bg-iron-blue border-2 border-surface flex items-center justify-center text-xs font-bold text-white">C</div>
-            <div className="w-6 h-6 rounded-full bg-border border-2 border-surface flex items-center justify-center text-xs font-bold text-white">+{Math.max(0, classesToday - 2)}</div>
+            <div className={`w-6 h-6 rounded-full bg-amber-400 border-2 border-surface flex items-center justify-center text-[10px] font-bold ${isLight ? 'text-white' : 'text-dark'}`}>H</div>
+            <div className="w-6 h-6 rounded-full bg-iron-blue border-2 border-surface flex items-center justify-center text-[10px] font-bold text-white">C</div>
+            <div className="w-6 h-6 rounded-full bg-border border-2 border-surface flex items-center justify-center text-[10px] font-bold text-iron-text-secondary">+{Math.max(0, classesToday - 2)}</div>
           </div>
         </div>
       </div>
@@ -343,7 +348,7 @@ export default function Dashboard() {
                   <tr key={member.member_id}>
                     <td>
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center font-bold text-xs border border-white/10">
+                        <div className="w-8 h-8 rounded-lg bg-iron-lime/10 flex items-center justify-center font-bold text-xs border border-iron-lime/20 text-iron-lime">
                           {getInitials(member.member_name || member.name)}
                         </div>
                         <span className="font-semibold">{member.member_name || member.name}</span>
@@ -379,9 +384,9 @@ export default function Dashboard() {
                   {i < attendanceLog.length - 1 && (
                     <div className="absolute left-5 top-10 bottom-[-20px] w-px bg-border/50" />
                   )}
-                  <div className="w-10 h-10 rounded-full border-2 border-border overflow-hidden relative z-10 shrink-0">
+                  <div className="w-10 h-10 rounded-full border-2 border-border/50 overflow-hidden relative z-10 shrink-0">
                     <img
-                      src={`https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=111116&color=FFFFFF`}
+                      src={`https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=${isLight ? 'E4E4EB' : '1F1F26'}&color=${isLight ? '52525B' : 'FFFFFF'}`}
                       alt={name}
                     />
                   </div>
