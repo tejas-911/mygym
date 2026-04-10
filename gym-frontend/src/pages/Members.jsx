@@ -157,8 +157,8 @@ export default function Members() {
       email: member.email || '',
       phone: member.phone || '',
       gender: member.gender || 'Male',
-      date_of_birth: member.date_of_birth ? String(member.date_of_birth).split('T')[0] : '',
-      join_date: member.join_date ? String(member.join_date).split('T')[0] : '',
+      date_of_birth: member.date_of_birth ? new Date(member.date_of_birth).toISOString().split('T')[0] : '',
+      join_date: member.join_date ? new Date(member.join_date).toISOString().split('T')[0] : '',
       status: member.member_status || member.status || 'Active'
     });
     setModalError('');

@@ -92,12 +92,6 @@ function MaintenanceItem({ item }) {
       {item.description && (
         <p className="text-iron-text-secondary text-xs leading-relaxed line-clamp-2">{item.description}</p>
       )}
-      <p className="text-xs uppercase tracking-widest font-bold">
-        <span className="text-iron-text-secondary">Assigned: </span>
-        <span className={isPast ? 'text-red-400' : isSoon ? 'text-iron-lime' : 'text-iron-text-secondary'}>
-          Unassigned
-        </span>
-      </p>
     </div>
   );
 }
@@ -177,7 +171,7 @@ export default function Equipment() {
 
   const handleRepair = async (id) => {
     try {
-      await axios.put(`${API}/${id}/repair`, {}, { headers: getHeaders() });
+      await axios.post(`${API}/${id}/repair`, {}, { headers: getHeaders() });
       fetchStats();
       fetchEquipment(search);
       fetchMaintenance();
@@ -198,7 +192,7 @@ export default function Equipment() {
     e.preventDefault();
     setRepairSubmitting(true);
     try {
-      await axios.put(`${API}/${repairItemId}/send-repair`, 
+      await axios.post(`${API}/${repairItemId}/send-repair`, 
         { description: repairDesc, cost: parseFloat(repairCost) }, 
         { headers: getHeaders() }
       );
@@ -224,54 +218,75 @@ export default function Equipment() {
     <div className="space-y-6 pb-10 font-manrope">
 
       {/* ── Stats Row ─────────────────────────────────────────── */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-
-        {/* Total Assets */}
-        <div className="stat-card">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+        {/* Total Equipment */}
+        <div className="stat-card group">
           <div className="flex items-start justify-between mb-4">
-            <p className="text-xs font-space font-bold uppercase tracking-[0.2em] text-iron-text-secondary">Total Assets</p>
-            <div className="w-9 h-9 rounded-lg bg-iron-lime/10 flex items-center justify-center text-iron-lime">
-              <Package size={16} />
+            <p className="text-[10px] font-space font-black uppercase tracking-[0.2em] text-iron-text-secondary">Total Equipment</p>
+            <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-iron-text-secondary group-hover:bg-iron-lime/10 group-hover:text-iron-lime transition-colors">
+              <Package size={14} />
             </div>
           </div>
-          <div className="flex items-end gap-3">
-            <p className="text-5xl font-space font-black text-white tracking-tighter">
-              {stats?.total ?? '—'}
+          <div className="flex items-end justify-between">
+            <p className="text-4xl font-space font-black text-white tracking-tighter">
+              {stats?.total ?? '00'}
             </p>
-            {stats?.this_month > 0 && (
-              <span className="text-emerald-400 text-xs font-bold mb-2">+{stats.this_month} this month</span>
-            )}
+            <div className="text-right">
+              <p className="text-[10px] font-black uppercase tracking-widest text-iron-lime">Reliability</p>
+              <p className="text-sm font-space font-black text-white tracking-tight">{stats?.reliability_score ?? '000'}</p>
+            </div>
           </div>
         </div>
 
-        {/* Active / In-Use */}
-        <div className="stat-card border-iron-blue/20">
+        {/* Active Equipment */}
+        <div className="stat-card group">
           <div className="flex items-start justify-between mb-4">
-            <p className="text-xs font-space font-bold uppercase tracking-[0.2em] text-iron-text-secondary">Active / In-Use</p>
-            <div className="w-9 h-9 rounded-lg bg-iron-blue/10 flex items-center justify-center text-iron-blue">
-              <Zap size={16} />
+            <p className="text-[10px] font-space font-black uppercase tracking-[0.2em] text-iron-text-secondary">Active Assets</p>
+            <div className="w-8 h-8 rounded-lg bg-iron-lime/10 flex items-center justify-center text-iron-lime">
+              <Zap size={14} />
             </div>
           </div>
-          <p className="text-5xl font-space font-black text-white tracking-tighter mb-2">
-            {stats?.active ?? '—'}
+          <p className="text-4xl font-space font-black text-white tracking-tighter">
+            {stats?.active ?? '00'}
           </p>
-          <p className="text-iron-text-secondary text-xs italic">
-            <span className="text-white font-semibold">{stats?.utilization ?? '—'}%</span> Utilization
-          </p>
+          <div className="mt-2 h-1 w-full bg-white/5 rounded-full overflow-hidden">
+            <div className="h-full bg-iron-lime rounded-full" style={{ width: `${Math.min((stats?.active / (stats?.total || 1)) * 100, 100)}%` }} />
+          </div>
+        </div>
+
+        {/* Utilization % */}
+        <div className="stat-card group">
+          <div className="flex items-start justify-between mb-4">
+            <p className="text-[10px] font-space font-black uppercase tracking-[0.2em] text-iron-text-secondary">Utilization %</p>
+            <div className="w-8 h-8 rounded-lg bg-iron-blue/10 flex items-center justify-center text-iron-blue">
+              <LayoutGrid size={14} />
+            </div>
+          </div>
+          <div className="flex items-end gap-2">
+            <p className="text-4xl font-space font-black text-white tracking-tighter">
+              {stats?.utilization ?? '0.0'}%
+            </p>
+            <span className="text-emerald-400 text-[10px] font-black mb-1.5 uppercase">Optimal</span>
+          </div>
         </div>
 
         {/* Maintenance Due */}
-        <div className="stat-card border-red-500/20">
+        <div className="stat-card group border-red-500/20">
           <div className="flex items-start justify-between mb-4">
-            <p className="text-xs font-space font-bold uppercase tracking-[0.2em] text-iron-text-secondary">Maintenance Due</p>
-            <div className="w-9 h-9 rounded-lg bg-red-500/10 flex items-center justify-center text-red-400">
-              <AlertTriangle size={16} />
+            <p className="text-[10px] font-space font-black uppercase tracking-[0.2em] text-iron-text-secondary">Maintenance Due</p>
+            <div className="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center text-red-400">
+              <AlertTriangle size={14} />
             </div>
           </div>
-          <p className="text-5xl font-space font-black text-red-400 tracking-tighter mb-2">
-            {stats?.maintenance_due !== undefined ? String(stats.maintenance_due).padStart(2, '0') : '—'}
-          </p>
-          <p className="text-red-400/70 text-xs font-bold uppercase tracking-wider">Critical priority</p>
+          <div className="flex items-end justify-between">
+            <p className="text-4xl font-space font-black text-red-500 tracking-tighter">
+              {stats?.maintenance_due !== undefined ? String(stats.maintenance_due).padStart(2, '0') : '00'}
+            </p>
+            <div className="animate-pulse flex items-center gap-1">
+              <ShieldAlert size={12} className="text-red-500" />
+              <span className="text-[10px] font-black uppercase tracking-widest text-red-500">Urgent</span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -426,30 +441,12 @@ export default function Equipment() {
               )}
             </div>
 
-            {/* Equipment Health */}
-            <div className="mx-5 mb-4 bg-white/[0.03] border border-white/5 rounded-xl px-4 py-3 space-y-2">
-              <div className="flex items-center gap-2 mb-2">
-                <ShieldAlert size={13} className="text-iron-lime" />
-                <p className="text-xs font-black uppercase tracking-widest text-white font-space">Equipment Health</p>
-              </div>
-              <div className="flex justify-between items-center">
-                <p className="text-xs uppercase tracking-widest text-iron-text-secondary font-bold">Reliability Score</p>
-                <p className="text-iron-lime font-black font-space text-sm">{stats?.reliability_score ?? '—'}</p>
-              </div>
-              <div className="w-full bg-white/5 rounded-full h-1.5 overflow-hidden">
-                <div
-                  className="h-full bg-iron-lime rounded-full transition-all duration-700"
-                  style={{ width: `${Math.min((stats?.reliability_score ?? 0) / 10, 100)}%` }}
-                />
-              </div>
-            </div>
-
             {/* View full schedule */}
             <button
               onClick={() => setShowMaintenanceModal(true)}
-              className="mx-5 mb-5 flex items-center justify-center gap-2 py-2.5 bg-white/[0.03] border border-white/5 rounded-xl text-xs font-black uppercase tracking-widest text-iron-text-secondary hover:text-white hover:border-white/20 transition-all"
+              className="mx-5 mb-5 mt-auto flex items-center justify-center gap-2 py-3 bg-white/[0.03] border border-white/5 rounded-xl text-[11px] font-black uppercase tracking-[0.2em] text-iron-text-secondary hover:text-white hover:border-white/20 transition-all"
             >
-              <Clock size={12} /> View Full Schedule
+              <Clock size={12} /> Full Log
             </button>
           </div>
 

@@ -213,7 +213,13 @@ export default function Reports() {
         <KpiCard label={`${year} Total Revenue`}   value={fmt(revTotals.total_revenue)}   icon={DollarSign}  color="lime"    sub="Paid payments only" />
         <KpiCard label="Best Month"                value={bestMonth ? fmt(bestMonth.total_revenue) : '—'} icon={TrendingUp} color="emerald" sub={bestMonth?.label || '—'} />
         <KpiCard label="Monthly Average"           value={fmt(avgMonthly)}                icon={BarChart3}   color="blue"    sub="Non-zero months only" />
-        <KpiCard label="Total Transactions"        value={revTotals.total_transactions ?? '—'} icon={CreditCard} color="purple" sub={`${revTotals.pending_count ?? 0} pending · ${revTotals.refunded_count ?? 0} refunded`} />
+        <KpiCard 
+          label="Total Transactions" 
+          value={revTotals.total_transactions ?? '—'} 
+          icon={CreditCard} 
+          color="purple" 
+          sub={`${((revTotals.total_transactions - (revTotals.pending_count || 0) - (revTotals.refunded_count || 0)) / (revTotals.total_transactions || 1) * 100).toFixed(0)}% success rate`} 
+        />
       </div>
 
       {/* ── MEMBERSHIP + SUBSCRIPTION STATUS ──────────────────────────── */}

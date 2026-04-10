@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
+import { useTheme } from '../context/ThemeContext';
 import {
   CalendarDays, TrendingUp, Gauge, ChevronLeft, ChevronRight,
   Plus, X, Loader2, AlertCircle, CheckCircle, MoreHorizontal,
@@ -32,6 +33,8 @@ const STATUS_CFG = {
   'Full':         'bg-red-500/15 text-red-400 border-red-500/20',
   'Waitlist':     'bg-orange-500/15 text-orange-400 border-orange-500/20',
   'Cancelled':    'bg-white/5 text-iron-text-secondary border-white/10',
+  'Completed':    'bg-white/5 text-iron-text-secondary/50 border-white/5 grayscale',
+  'In Progress':  'bg-blue-500/15 text-blue-400 border-blue-500/20 animate-pulse-slow',
 };
 
 function StatusBadge({ status }) {
@@ -93,9 +96,8 @@ function CapBar({ registered, capacity, color }) {
   return (
     <div className="mt-2 space-y-1">
       <div className="w-full bg-white/5 rounded-full h-1 overflow-hidden">
-        <div className={`h-full rounded-full transition-all duration-500 ${
-          pct >= 100 ? 'bg-red-500' : pct >= 90 ? 'bg-orange-400' : `bg-[${p.hex}]`
-        }`} style={{ width: `${pct}%`, backgroundColor: pct < 90 ? p.hex : undefined }} />
+        <div className="h-full rounded-full transition-all duration-500"
+          style={{ width: `${pct}%`, backgroundColor: pct >= 100 ? '#EF4444' : pct >= 90 ? '#FB923C' : p.hex }} />
       </div>
       <div className="flex justify-between">
         <span className={`text-[11px] font-black ${p.text}`}>{registered}/{capacity}</span>
@@ -111,6 +113,9 @@ const initForm = {
 };
 
 export default function Plans() {
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
+
   const [stats, setStats]           = useState({ classes_today: 0, total_bookings: 0, avg_capacity: 0 });
   const [weekClasses, setWeekClasses] = useState([]);
   const [upcoming, setUpcoming]     = useState([]);
@@ -121,13 +126,21 @@ export default function Plans() {
 
   // Modal
   const [showModal, setShowModal]   = useState(false);
+  const [isEditing, setIsEditing]   = useState(false);
   const [formData, setFormData]     = useState(initForm);
   const [submitting, setSubmitting] = useState(false);
   const [formErr, setFormErr]       = useState('');
   const [formOk, setFormOk]         = useState(false);
 
-  // Actions dropdown
   const [openAction, setOpenAction] = useState(null);
+
+  // Registration Modal
+  const [showRegModal, setShowRegModal] = useState(false);
+  const [selectedClass, setSelectedClass] = useState(null);
+  const [regCount, setRegCount] = useState(1);
+  const [regSubmitting, setRegSubmitting] = useState(false);
+  const [regMsg, setRegMsg] = useState('');
+  const [regErr, setRegErr] = useState('');
 
   const [trainers, setTrainers] = useState([]);
   const fetchTrainers = useCallback(async () => {
@@ -186,8 +199,19 @@ export default function Plans() {
     return weekClasses.filter(c => toISO(parseDBDate(c.scheduled_date)) === dayDate);
   });
 
-  const openModal = () => {
-    setFormData(initForm); setFormErr(''); setFormOk(false);
+  const openModal = (cls = null) => {
+    if (cls) {
+      setIsEditing(true);
+      setFormData({
+        ...cls,
+        // Ensure registered is present for editing
+        registered: cls.registered || 0 
+      });
+    } else {
+      setIsEditing(false);
+      setFormData(initForm);
+    }
+    setFormErr(''); setFormOk(false);
     setShowModal(true);
   };
 
@@ -195,12 +219,16 @@ export default function Plans() {
     e.preventDefault();
     setSubmitting(true); setFormErr('');
     try {
-      await axios.post(API, formData, { headers: getHeaders() });
+      if (isEditing) {
+        await axios.put(`${API}/${formData.class_id}`, formData, { headers: getHeaders() });
+      } else {
+        await axios.post(API, formData, { headers: getHeaders() });
+      }
       setFormOk(true);
       fetchStats(); fetchWeek(weekStart); fetchUpcoming(upFilter);
       setTimeout(() => { setShowModal(false); setFormOk(false); }, 1000);
     } catch(err) {
-      setFormErr(err.response?.data?.message || 'Failed to create class.');
+      setFormErr(err.response?.data?.message || 'Failed to save class.');
     } finally { setSubmitting(false); }
   };
 
@@ -211,6 +239,40 @@ export default function Plans() {
       fetchStats(); fetchWeek(weekStart); fetchUpcoming(upFilter);
     } catch(e) { console.error(e); }
     setOpenAction(null);
+  };
+
+  const handleOpenRegistration = (cls) => {
+    setSelectedClass(cls);
+    setRegCount(1);
+    setRegErr('');
+    setRegMsg('');
+    setShowRegModal(true);
+  };
+
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    if (!selectedClass) return;
+    setRegSubmitting(true);
+    setRegErr('');
+    try {
+      const newReg = (selectedClass.registered || 0) + Number(regCount);
+      if (newReg > selectedClass.capacity) {
+         throw new Error('Requested seats exceed class capacity.');
+      }
+
+      await axios.put(`${API}/${selectedClass.class_id}`, {
+        ...selectedClass,
+        registered: newReg
+      }, { headers: getHeaders() });
+
+      setRegMsg('Booking successful!');
+      fetchStats(); fetchWeek(weekStart); fetchUpcoming(upFilter);
+      setTimeout(() => setShowRegModal(false), 1200);
+    } catch (err) {
+      setRegErr(err.response?.data?.message || err.message || 'Booking failed.');
+    } finally {
+      setRegSubmitting(false);
+    }
   };
 
   const FILTER_OPTS = [
@@ -320,10 +382,12 @@ export default function Plans() {
                   ) : (
                     classes.map(cls => {
                       const p = pal(cls.color);
+                      const isDone = cls.status === 'Completed';
                       return (
                         <div key={cls.class_id}
-                          className={`rounded-lg p-2 bg-white/[0.03] border-l-2 ${p.border} hover:bg-white/[0.05] transition-colors cursor-pointer group`}>
-                          <p className={`text-[11px] font-black uppercase tracking-wider ${p.text}`}>
+                          onClick={() => !isDone && handleOpenRegistration(cls)}
+                          className={`rounded-lg p-2 bg-white/[0.03] border-l-2 ${p.border} hover:bg-white/[0.05] transition-colors cursor-pointer group ${isDone ? 'opacity-40 grayscale-[0.5]' : ''}`}>
+                          <p className={`text-[11px] font-black uppercase tracking-wider ${isDone ? 'text-iron-text-secondary' : p.text}`}>
                             {cls.time_display}
                           </p>
                           <p className="text-white text-[11px] font-bold leading-tight mt-0.5 group-hover:text-white/90 truncate">
@@ -333,6 +397,11 @@ export default function Plans() {
                             {cls.trainer_name}
                           </p>
                           <CapBar registered={cls.registered} capacity={cls.capacity} color={cls.color} />
+                          {!isDone && (
+                            <div className="mt-2 pt-3 border-t border-white/5 opacity-0 group-hover:opacity-100 transition-all transform translate-y-1 group-hover:translate-y-0">
+                              <span className={`text-[9px] font-black uppercase tracking-[0.1em] px-2 py-0.5 rounded-full bg-white/5 ${p.text}`}>Book Spot</span>
+                            </div>
+                          )}
                         </div>
                       );
                     })
@@ -427,7 +496,16 @@ export default function Plans() {
                   </div>
                   {/* Status */}
                   <div className="px-2 py-4">
-                    <StatusBadge status={cls.status} />
+                    <div className="flex items-center gap-3">
+                      <StatusBadge status={cls.status} />
+                      {cls.status === 'Booking Open' && (
+                        <button
+                          onClick={() => handleOpenRegistration(cls)}
+                          className="px-3 py-1 bg-iron-lime text-dark text-[10px] font-black uppercase tracking-widest rounded-lg hover:shadow-[0_0_15px_rgba(223,255,0,0.3)] transition-all">
+                          Register
+                        </button>
+                      )}
+                    </div>
                   </div>
                   {/* Actions */}
                   <div className="px-4 py-4 flex justify-center" onClick={e => e.stopPropagation()}>
@@ -439,6 +517,10 @@ export default function Plans() {
                       </button>
                       {openAction === cls.class_id && (
                         <div className="absolute right-0 top-full mt-1 w-36 bg-[#18181A] border border-border rounded-xl shadow-xl z-20 overflow-hidden py-1">
+                          <button onClick={() => openModal(cls)}
+                            className="w-full text-left px-4 py-2.5 text-xs font-bold uppercase tracking-widest text-white hover:bg-white/5 transition-colors flex items-center gap-2 border-b border-white/5">
+                            <Plus size={12} className="rotate-45" /> Edit
+                          </button>
                           <button onClick={() => handleDelete(cls.class_id)}
                             className="w-full text-left px-4 py-2.5 text-xs font-bold uppercase tracking-widest text-red-400 hover:bg-red-500/10 transition-colors flex items-center gap-2">
                             <Trash2 size={12} /> Delete
@@ -463,8 +545,8 @@ export default function Plans() {
             {/* Modal header */}
             <div className="flex items-center justify-between px-6 py-5 border-b border-border">
               <div>
-                <h2 className="text-white font-space font-bold text-base tracking-wide">Add New Class</h2>
-                <p className="text-iron-text-secondary text-xs italic mt-0.5">Schedule a new fitness session</p>
+                <h2 className="text-white font-space font-bold text-base tracking-wide">{isEditing ? 'Edit Class' : 'Add New Class'}</h2>
+                <p className="text-iron-text-secondary text-xs italic mt-0.5">{isEditing ? 'Update existing class details' : 'Schedule a new fitness session'}</p>
               </div>
               <button onClick={() => setShowModal(false)}
                 className="w-8 h-8 rounded-lg bg-white/[0.03] border border-white/5 flex items-center justify-center text-iron-text-secondary hover:text-white transition-colors">
@@ -549,6 +631,23 @@ export default function Plans() {
                 </div>
               </div>
 
+              {/* Registration Count (Only for Edit) */}
+              {isEditing && (
+                <div className="space-y-1">
+                  <label className="text-iron-text-secondary text-xs uppercase tracking-widest font-space font-bold">
+                    Registered Members {formData.status === 'Completed' && <span className="text-red-400 text-[10px] ml-1">(LOCKED)</span>}
+                  </label>
+                  <div className="flex items-center gap-4">
+                    <input type="range" min="0" max={formData.capacity}
+                      disabled={formData.status === 'Completed'}
+                      value={formData.registered}
+                      onChange={e => setFormData({ ...formData, registered: Number(e.target.value) })}
+                      className="flex-1 accent-iron-lime" />
+                    <span className="text-white font-bold text-sm w-12 text-right">{formData.registered}/{formData.capacity}</span>
+                  </div>
+                </div>
+              )}
+
               {/* Color picker */}
               <div className="space-y-2">
                 <label className="text-iron-text-secondary text-xs uppercase tracking-widest font-space font-bold">Accent Colour</label>
@@ -574,6 +673,71 @@ export default function Plans() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {/* ── Registration Modal ───────────────────────────────────── */}
+      {showRegModal && selectedClass && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowRegModal(false)} />
+          <div className="relative w-full max-w-md shadow-2xl rounded-3xl overflow-hidden animate-in fade-in zoom-in duration-300"
+               style={{ backgroundColor: isLight ? '#FFFFFF' : '#0A0A0E', border: isLight ? '1px solid #E4E4EB' : '1px solid var(--color-border)' }}>
+            <div className={`h-2 w-full`} style={{ backgroundColor: pal(selectedClass.color).hex }} />
+            
+            <div className="p-8">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h3 className="font-space font-bold text-2xl tracking-tight" style={{ color: isLight ? '#0A0A0E' : '#FFFFFF' }}>Register for Class</h3>
+                  <p className="text-xs italic mt-1" style={{ color: isLight ? '#71717A' : 'rgba(255,255,255,0.6)' }}>{selectedClass.class_name} with {selectedClass.trainer_name}</p>
+                </div>
+                <button onClick={() => setShowRegModal(false)} className="w-10 h-10 rounded-xl flex items-center justify-center transition-colors"
+                        style={{ backgroundColor: isLight ? '#F4F4F9' : 'rgba(255,255,255,0.1)', color: isLight ? '#71717A' : 'rgba(255,255,255,0.5)' }}>
+                  <X size={18} />
+                </button>
+              </div>
+
+              {regErr && (
+                <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl text-xs mb-6 flex items-center gap-3">
+                  <AlertCircle size={14} className="shrink-0" /> {regErr}
+                </div>
+              )}
+              {regMsg && (
+                <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 p-4 rounded-xl text-xs mb-6 flex items-center gap-3">
+                  <CheckCircle size={14} className="shrink-0" /> Booking confirmed!
+                </div>
+              )}
+
+              <form onSubmit={handleRegister} className="space-y-6">
+                <div className="space-y-2">
+                  <label className="font-black uppercase tracking-[0.2em] text-[10px] pl-1 opacity-60" style={{ color: isLight ? '#0A0A0E' : '#FFFFFF' }}>Number of Seats</label>
+                  <div className="flex items-center gap-4 rounded-2xl p-4 border"
+                       style={{ backgroundColor: isLight ? '#F8F8FB' : 'rgba(255,255,255,0.05)', borderColor: isLight ? '#E4E4EB' : 'rgba(255,255,255,0.1)' }}>
+                    <button type="button" onClick={() => setRegCount(c => Math.max(1, c - 1))} 
+                            className="w-10 h-10 rounded-xl flex items-center justify-center transition-colors border"
+                            style={{ backgroundColor: isLight ? '#FFF' : 'rgba(255,255,255,0.05)', borderColor: isLight ? '#E4E4EB' : 'transparent', color: isLight ? '#0A0A0E' : 'white' }}>
+                      <ChevronDown size={14} />
+                    </button>
+                    <span className="flex-1 text-center text-3xl font-space font-black tracking-tighter" style={{ color: isLight ? '#0A0A0E' : '#FFFFFF' }}>{regCount}</span>
+                    <button type="button" onClick={() => setRegCount(c => Math.min(selectedClass.capacity - (selectedClass.registered || 0), c + 1))} 
+                            className="w-10 h-10 rounded-xl flex items-center justify-center transition-colors border"
+                            style={{ backgroundColor: isLight ? '#FFF' : 'rgba(255,255,255,0.05)', borderColor: isLight ? '#E4E4EB' : 'transparent', color: isLight ? '#0A0A0E' : 'white' }}>
+                      <Plus size={14} className="rotate-0" />
+                    </button>
+                  </div>
+                  <p className="text-[10px] italic px-1 font-medium" style={{ color: isLight ? '#71717A' : 'rgba(255,255,255,0.4)' }}>
+                    Available: {selectedClass.capacity - (selectedClass.registered || 0)} seats left
+                  </p>
+                </div>
+
+                <div className="pt-2">
+                  <button type="submit" disabled={regSubmitting || regMsg} 
+                    className="w-full py-4 font-space font-bold uppercase tracking-[0.2em] text-xs rounded-2xl shadow-xl hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 disabled:scale-100"
+                    style={{ backgroundColor: isLight ? '#2563EB' : 'var(--color-iron-lime)', color: isLight ? '#FFFFFF' : '#0A0A0E' }}>
+                    {regSubmitting ? 'Processing...' : regMsg ? 'Subscription Recorded' : 'Confirm Registration'}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       )}
