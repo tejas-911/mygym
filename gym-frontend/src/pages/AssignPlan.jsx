@@ -15,6 +15,7 @@ function getHeaders() {
 const initialFormState = { 
   member_id: '', 
   plan_id: '', 
+  trainer_id: '',
   type: 'workout', 
   start_date: new Date().toISOString().split('T')[0], 
   end_date: '' 
@@ -39,6 +40,7 @@ export default function AssignPlan() {
   const [members, setMembers] = useState([]);
   const [workouts, setWorkouts] = useState([]);
   const [diets, setDiets] = useState([]);
+  const [trainers, setTrainers] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // Exercise panel state
@@ -56,14 +58,16 @@ export default function AssignPlan() {
   useEffect(() => {
     const fetchOptions = async () => {
       try {
-        const [mRes, wRes, dRes] = await Promise.all([
+        const [mRes, wRes, dRes, tRes] = await Promise.all([
           axios.get(`${API}/members`, { headers: getHeaders() }),
           axios.get(`${API}/workouts/plans`, { headers: getHeaders() }),
-          axios.get(`${API}/diets/plans`, { headers: getHeaders() })
+          axios.get(`${API}/diets/plans`, { headers: getHeaders() }),
+          axios.get(`${API}/trainers`, { headers: getHeaders() })
         ]);
         setMembers(Array.isArray(mRes.data) ? mRes.data : []);
         setWorkouts(Array.isArray(wRes.data) ? wRes.data : []);
         setDiets(Array.isArray(dRes.data) ? dRes.data : []);
+        setTrainers(Array.isArray(tRes.data.trainers) ? tRes.data.trainers : []);
       } catch (err) { console.error(err); }
       finally { setLoading(false); }
     };
@@ -111,7 +115,7 @@ export default function AssignPlan() {
         member_id: formData.member_id,
         workout_id: formData.type === 'workout' ? formData.plan_id : null,
         diet_id: formData.type === 'diet' ? formData.plan_id : null,
-        trainer_id: 1,
+        trainer_id: formData.trainer_id,
         start_date: formData.start_date,
         end_date: formData.end_date
       }, { headers: getHeaders() });
@@ -255,6 +259,20 @@ export default function AssignPlan() {
                   </select>
                 </div>
 
+                {/* Trainer Selection */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">
+                    <Users size={10} className="inline mr-1.5" />Assign Trainer <span className="text-red-400">*</span>
+                  </label>
+                  <select required value={formData.trainer_id} onChange={e => setFormData({ ...formData, trainer_id: e.target.value })}
+                    className="w-full bg-[#18181A] border border-white/5 rounded-xl py-3 px-4 text-sm text-white focus:outline-none focus:border-iron-lime/30">
+                    <option value="">Choose trainer...</option>
+                    {trainers.map(t => (
+                      <option key={t.trainer_id} value={t.trainer_id}>{t.name} ({t.specialization})</option>
+                    ))}
+                  </select>
+                </div>
+
                 {/* Date Range Selection */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
@@ -386,6 +404,12 @@ export default function AssignPlan() {
               <div className="flex items-center justify-between">
                 <span className="text-iron-text-secondary text-xs">Plan</span>
                 <span className="text-white text-xs font-bold">{selectedPlan ? selectedPlan.plan_name : '—'}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-iron-text-secondary text-xs">Trainer</span>
+                <span className="text-iron-lime text-xs font-bold">
+                  {trainers.find(t => t.trainer_id === parseInt(formData.trainer_id))?.name || '—'}
+                </span>
               </div>
               {selectedPlan && formData.type === 'workout' && (
                 <>
