@@ -13,16 +13,16 @@ import {
 } from 'lucide-react';
 
 const API = 'http://localhost:5000/api/reports';
-const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const METHOD_COLORS = { Card: '#3B82F6', UPI: '#DFFF00', Cash: '#10B981', 'Bank Transfer': '#A855F7' };
 const METHOD_COLORS_LIGHT = { Card: '#2563EB', UPI: '#D97706', Cash: '#059669', 'Bank Transfer': '#7C3AED' };
-const PLAN_COLORS = ['#3B82F6','#DFFF00','#10B981','#F59E0B','#A855F7'];
-const PLAN_COLORS_LIGHT = ['#2563EB','#D97706','#059669','#B45309','#7C3AED'];
+const PLAN_COLORS = ['#3B82F6', '#DFFF00', '#10B981', '#F59E0B', '#A855F7'];
+const PLAN_COLORS_LIGHT = ['#2563EB', '#D97706', '#059669', '#B45309', '#7C3AED'];
 
 function fmt(n) {
   const v = parseFloat(n) || 0;
   if (v >= 100000) return `₹${(v / 100000).toFixed(1)}L`;
-  if (v >= 1000)   return `₹${(v / 1000).toFixed(1)}k`;
+  if (v >= 1000) return `₹${(v / 1000).toFixed(1)}k`;
   return `₹${v.toFixed(0)}`;
 }
 
@@ -78,13 +78,13 @@ function KpiCard({ label, value, sub, icon: Icon, color = 'lime', border }) {
   const { theme } = useTheme();
   const isLight = theme === 'light';
   const colors = {
-    lime:    'text-iron-lime bg-iron-lime/10',
+    lime: 'text-iron-lime bg-iron-lime/10',
     emerald: 'text-emerald-400 bg-emerald-500/10',
-    blue:    'text-blue-400 bg-blue-500/10',
-    amber:   'text-amber-400 bg-amber-500/10',
-    purple:  'text-purple-400 bg-purple-500/10',
-    red:     'text-red-400 bg-red-500/10',
-    zinc:    'text-zinc-400 bg-white/5',
+    blue: 'text-blue-400 bg-blue-500/10',
+    amber: 'text-amber-400 bg-amber-500/10',
+    purple: 'text-purple-400 bg-purple-500/10',
+    red: 'text-red-400 bg-red-500/10',
+    zinc: 'text-zinc-400 bg-white/5',
   };
   return (
     <div className={`stat-card ${border || ''}`}>
@@ -103,11 +103,11 @@ function KpiCard({ label, value, sub, icon: Icon, color = 'lime', border }) {
 // ── Badge ────────────────────────────────────────────────────────────────────
 function DbBadge({ label, icon: Icon, color }) {
   const styles = {
-    blue:   'bg-blue-500/10 border-blue-500/20 text-blue-400',
+    blue: 'bg-blue-500/10 border-blue-500/20 text-blue-400',
     purple: 'bg-purple-500/10 border-purple-500/20 text-purple-400',
-    amber:  'bg-amber-500/10 border-amber-500/20 text-amber-400',
-    red:    'bg-red-500/10 border-red-500/20 text-red-400',
-    emerald:'bg-emerald-500/10 border-emerald-500/20 text-emerald-400',
+    amber: 'bg-amber-500/10 border-amber-500/20 text-amber-400',
+    red: 'bg-red-500/10 border-red-500/20 text-red-400',
+    emerald: 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400',
   };
   return (
     <span className={`flex items-center gap-1.5 px-3 py-1.5 border rounded-lg text-[11px] font-black uppercase tracking-widest ${styles[color]}`}>
@@ -120,10 +120,10 @@ function DbBadge({ label, icon: Icon, color }) {
 export default function Reports() {
   const { theme } = useTheme();
   const isLight = theme === 'light';
-  const [data, setData]   = useState(null);
+  const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [month, setMonth] = useState(new Date().getMonth() + 1);
-  const [year,  setYear]  = useState(new Date().getFullYear());
+  const [year, setYear] = useState(new Date().getFullYear());
 
   const fetchReports = useCallback(async () => {
     setLoading(true);
@@ -145,32 +145,32 @@ export default function Reports() {
   if (!data) return <div className="text-iron-text-secondary text-center py-20">Error loading reports.</div>;
 
   // ── Derived values ──────────────────────────────────────────────────────
-  const membership   = data.membership   || {};
-  const attendance   = data.attendance   || {};
-  const subStats     = data.subscriptionStats || {};
-  const revTotals    = data.revenueTotals || {};
+  const membership = data.membership || {};
+  const attendance = data.attendance || {};
+  const subStats = data.subscriptionStats || {};
+  const revTotals = data.revenueTotals || {};
   const methodColors = isLight ? METHOD_COLORS_LIGHT : METHOD_COLORS;
-  const planColors   = isLight ? PLAN_COLORS_LIGHT   : PLAN_COLORS;
+  const planColors = isLight ? PLAN_COLORS_LIGHT : PLAN_COLORS;
 
   const chartRevenue = (data.monthlyRevenue || []).map(r => ({
     ...r,
-    label: r.payment_month?.slice(5) ? `${MONTHS[parseInt(r.payment_month.slice(5)) - 1]} ${r.payment_month.slice(0,4)}` : r.payment_month,
-    total_revenue:     parseFloat(r.total_revenue)     || 0,
-    transaction_count: parseInt(r.transaction_count)   || 0,
+    label: r.payment_month?.slice(5) ? `${MONTHS[parseInt(r.payment_month.slice(5)) - 1]} ${r.payment_month.slice(0, 4)}` : r.payment_month,
+    total_revenue: parseFloat(r.total_revenue) || 0,
+    transaction_count: parseInt(r.transaction_count) || 0,
   }));
 
-  const bestMonth = [...chartRevenue].sort((a,b) => b.total_revenue - a.total_revenue)[0];
+  const bestMonth = [...chartRevenue].sort((a, b) => b.total_revenue - a.total_revenue)[0];
   const avgMonthly = chartRevenue.length
     ? chartRevenue.reduce((s, r) => s + r.total_revenue, 0) / chartRevenue.filter(r => r.total_revenue > 0).length
     : 0;
 
   const pieData = (data.revenueByMethod || []).map(r => ({
-    name:  r.payment_method,
+    name: r.payment_method,
     value: parseFloat(r.total) || 0,
     count: r.count,
   }));
 
-  const hasAudit      = data.auditLog?.length > 0;
+  const hasAudit = data.auditLog?.length > 0;
   const hasEquipHealth = data.equipmentHealth?.length > 0;
   const lineColor = isLight ? '#2563EB' : '#DFFF00';
 
@@ -201,11 +201,11 @@ export default function Reports() {
 
       {/* ── DB FEATURE BADGES ──────────────────────────────────────────── */}
       <div className="flex flex-wrap gap-2">
-        <DbBadge label="sp_gym_performance_report" icon={Cog}        color="blue"   />
-        <DbBadge label="vw_monthly_revenue"         icon={Eye}        color="purple" />
-        <DbBadge label="vw_equipment_health"        icon={Eye}        color="amber"  />
-        <DbBadge label="Audit Log Triggers"         icon={Zap}        color="red"    />
-        <DbBadge label="fn_subscription_status"     icon={Activity}   color="emerald"/>
+        <DbBadge label="sp_gym_performance_report" icon={Cog} color="blue" />
+        <DbBadge label="vw_monthly_revenue" icon={Eye} color="purple" />
+        <DbBadge label="vw_equipment_health" icon={Eye} color="amber" />
+        <DbBadge label="Audit Log Triggers" icon={Zap} color="red" />
+        <DbBadge label="fn_subscription_status" icon={Activity} color="emerald" />
       </div>
 
       {/* ── YEAR REVENUE KPI STRIP ─────────────────────────────────────── */}
@@ -226,10 +226,10 @@ export default function Reports() {
       <div className="grid grid-cols-1 xl:grid-cols-[1fr_300px] gap-4">
         {/* Membership stats from stored procedure */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <KpiCard label="Total Members"   value={membership.total_members  ?? '—'} icon={Users}        color="lime"    />
-          <KpiCard label="Active Members"  value={membership.active_members ?? '—'} icon={CheckCircle2} color="emerald" />
-          <KpiCard label="Absent 7 Days"   value={data.absentMembers        ?? '—'} icon={Clock}        color="amber"   sub="Active, not visited" />
-          <KpiCard label="New This Month"  value={membership.new_this_month ?? '—'} icon={TrendingUp}   color="blue"    />
+          <KpiCard label="Total Members" value={membership.total_members ?? '—'} icon={Users} color="lime" />
+          <KpiCard label="Active Members" value={membership.active_members ?? '—'} icon={CheckCircle2} color="emerald" />
+          <KpiCard label="Absent 7 Days" value={data.absentMembers ?? '—'} icon={Clock} color="amber" sub="Active, not visited" />
+          <KpiCard label="New This Month" value={membership.new_this_month ?? '—'} icon={TrendingUp} color="blue" />
         </div>
 
         {/* Subscription Status Breakdown */}
@@ -237,9 +237,9 @@ export default function Reports() {
           <p className="text-[11px] font-space font-bold uppercase tracking-[0.18em] text-iron-text-secondary">Subscription Status</p>
           <div className="space-y-2.5">
             {[
-              { label: 'Active',    val: subStats.active_subs,    color: 'text-emerald-400', bg: 'bg-emerald-500/10', icon: CheckCircle2 },
-              { label: 'Expired',   val: subStats.expired_subs,   color: 'text-amber-400',   bg: 'bg-amber-500/10',   icon: Clock },
-              { label: 'Cancelled', val: subStats.cancelled_subs, color: 'text-red-400',     bg: 'bg-red-500/10',     icon: XCircle },
+              { label: 'Active', val: subStats.active_subs, color: 'text-emerald-400', bg: 'bg-emerald-500/10', icon: CheckCircle2 },
+              { label: 'Expired', val: subStats.expired_subs, color: 'text-amber-400', bg: 'bg-amber-500/10', icon: Clock },
+              { label: 'Cancelled', val: subStats.cancelled_subs, color: 'text-red-400', bg: 'bg-red-500/10', icon: XCircle },
             ].map(({ label, val, color, bg, icon: Icon }) => {
               const pct = subStats.total_subs > 0 ? ((val || 0) / subStats.total_subs * 100).toFixed(0) : 0;
               return (
@@ -286,8 +286,8 @@ export default function Reports() {
               <AreaChart data={chartRevenue} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%"  stopColor={lineColor} stopOpacity={0.25} />
-                    <stop offset="95%" stopColor={lineColor} stopOpacity={0}    />
+                    <stop offset="5%" stopColor={lineColor} stopOpacity={0.25} />
+                    <stop offset="95%" stopColor={lineColor} stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke={isLight ? '#E4E4EB' : '#1F1F26'} vertical={false} />
@@ -420,7 +420,7 @@ export default function Reports() {
           <div className="flex items-center justify-between mb-5">
             <div>
               <h3 className="text-white font-space font-bold text-sm uppercase tracking-widest">
-                Attendance — {MONTHS[month-1]} {year}
+                Attendance — {MONTHS[month - 1]} {year}
               </h3>
               <p className="text-iron-text-secondary text-xs italic mt-0.5">Source: sp_gym_performance_report</p>
             </div>
@@ -446,7 +446,7 @@ export default function Reports() {
             </div>
           ) : (
             <p className="text-iron-text-secondary text-sm italic text-center py-8">
-              No attendance data for {MONTHS[month-1]} {year}.
+              No attendance data for {MONTHS[month - 1]} {year}.
             </p>
           )}
         </div>
@@ -483,9 +483,9 @@ export default function Reports() {
               <TrendingUp size={12} className="text-iron-lime" /> Top Assets
             </h4>
             {[
-              { icon: Dumbbell,   label: 'Workout', value: data.popularWorkout ? `${data.popularWorkout.plan_name} (${data.popularWorkout.count})` : null },
-              { icon: Users,      label: 'Trainer', value: data.topTrainer     ? `${data.topTrainer.name} (${data.topTrainer.count})`              : null },
-              { icon: ShoppingBag,label: 'Supplement', value: data.topSupplement ? `${data.topSupplement.name} (${data.topSupplement.sold} sold)`  : null },
+              { icon: Dumbbell, label: 'Workout', value: data.popularWorkout ? `${data.popularWorkout.plan_name} (${data.popularWorkout.count})` : null },
+              { icon: Users, label: 'Trainer', value: data.topTrainer ? `${data.topTrainer.name} (${data.topTrainer.count})` : null },
+              { icon: ShoppingBag, label: 'Supplement', value: data.topSupplement ? `${data.topSupplement.name} (${data.topSupplement.sold} sold)` : null },
             ].map(({ icon: Icon, label, value }) => value ? (
               <div key={label} className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2 shrink-0">
@@ -516,7 +516,7 @@ export default function Reports() {
             <table className="w-full text-left">
               <thead>
                 <tr className="border-b border-border">
-                  {['Equipment','Condition','Location','Last Service','Days Since','Flag'].map(h => (
+                  {['Equipment', 'Condition', 'Location', 'Last Service', 'Days Since', 'Flag'].map(h => (
                     <th key={h} className="px-6 py-3 text-xs font-space font-bold uppercase tracking-widest text-iron-text-secondary">{h}</th>
                   ))}
                 </tr>
@@ -526,9 +526,8 @@ export default function Reports() {
                   <tr key={eq.equipment_id} className="hover:bg-iron-lime/5 transition-colors">
                     <td className="px-6 py-3 text-sm font-medium" style={{ color: isLight ? '#0A0A0E' : '#FFFFFF' }}>{eq.equipment_name}</td>
                     <td className="px-6 py-3">
-                      <span className={`text-xs font-bold ${
-                        eq.condition_status === 'New' || eq.condition_status === 'Good' ? 'text-emerald-400' :
-                        eq.condition_status === 'Needs Repair' ? 'text-amber-400' : 'text-red-400'}`}>
+                      <span className={`text-xs font-bold ${eq.condition_status === 'New' || eq.condition_status === 'Good' ? 'text-emerald-400' :
+                          eq.condition_status === 'Needs Repair' ? 'text-amber-400' : 'text-red-400'}`}>
                         {eq.condition_status}
                       </span>
                     </td>
@@ -540,10 +539,9 @@ export default function Reports() {
                     </td>
                     <td className="px-6 py-3 text-xs font-space font-bold" style={{ color: isLight ? '#0A0A0E' : '#FFFFFF' }}>{eq.days_since_service ?? '—'}</td>
                     <td className="px-6 py-3">
-                      <span className={`px-2.5 py-1 rounded text-[11px] font-black uppercase tracking-widest ${
-                        eq.maintenance_flag === 'Overdue'  ? 'bg-red-500/10 text-red-400 border border-red-500/20' :
-                        eq.maintenance_flag === 'Due Soon' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
-                        'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'}`}>
+                      <span className={`px-2.5 py-1 rounded text-[11px] font-black uppercase tracking-widest ${eq.maintenance_flag === 'Overdue' ? 'bg-red-500/10 text-red-400 border border-red-500/20' :
+                          eq.maintenance_flag === 'Due Soon' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
+                            'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'}`}>
                         {eq.maintenance_flag || '—'}
                       </span>
                     </td>
@@ -592,7 +590,7 @@ export default function Reports() {
             <table className="w-full text-left">
               <thead className="sticky top-0 bg-surface z-10">
                 <tr className="border-b border-border">
-                  {['ID','Table','Action','Record ID','Values','Timestamp'].map(h => (
+                  {['ID', 'Table', 'Action', 'Record ID', 'Values', 'Timestamp'].map(h => (
                     <th key={h} className="px-6 py-3 text-xs font-space font-bold uppercase tracking-widest text-iron-text-secondary">{h}</th>
                   ))}
                 </tr>
@@ -607,9 +605,8 @@ export default function Reports() {
                       </span>
                     </td>
                     <td className="px-6 py-3">
-                      <span className={`text-xs font-black uppercase tracking-widest ${
-                        log.action_type === 'INSERT' ? 'text-emerald-400' :
-                        log.action_type === 'UPDATE' ? 'text-amber-400'   : 'text-red-400'}`}>
+                      <span className={`text-xs font-black uppercase tracking-widest ${log.action_type === 'INSERT' ? 'text-emerald-400' :
+                          log.action_type === 'UPDATE' ? 'text-amber-400' : 'text-red-400'}`}>
                         {log.action_type}
                       </span>
                     </td>

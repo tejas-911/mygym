@@ -66,7 +66,6 @@ export default function Attendance() {
   const [loadingRecords, setLoadingRecords] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [filterStatus, setFilterStatus] = useState('all'); // 'all' | 'inside' | 'completed'
-  const [showFilter, setShowFilter] = useState(false);
 
   const PAGE_SIZE = 10;
 
@@ -363,7 +362,7 @@ export default function Attendance() {
                   </td>
                 </tr>
               ) : (
-                filteredRecords.map((record, idx) => {
+                filteredRecords.map((record) => {
                   const isInside = !record.check_out_time;
                   return (
                     <tr key={record.attendance_id} className="group hover:bg-white/[0.02] transition-colors">

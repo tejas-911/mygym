@@ -97,7 +97,6 @@ export default function Dashboard() {
   const activeMembers   = data.membership?.active_members ?? 0;
   const totalMembers    = data.membership?.total_members ?? 0;
   const newThisMonth    = data.membership?.new_this_month ?? 0;
-  const absentMembers   = data.absentMembers ?? 0;
   const checkinsTodayVal = attStats?.checked_in_today ?? attStats?.total_checkins ?? 0;
   const classesToday    = classStats?.classes_today ?? 0;
   const fullyBooked     = classStats?.full_today ?? 0;

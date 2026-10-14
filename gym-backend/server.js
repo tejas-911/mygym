@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 const { errorMiddleware } = require('./middleware/errorMiddleware');
+const { verifyToken } = require('./middleware/authMiddleware');
 
 const app = express();
 
@@ -25,13 +26,16 @@ const reportsRoutes = require('./routes/reportsRoutes');
 const classRoutes  = require('./routes/classRoutes');
 const dbFeaturesRoutes = require('./routes/dbFeaturesRoutes');
 
+// Login is public; every other /api route needs a valid JWT
+app.use('/api/auth', authRoutes);
+app.use('/api', verifyToken);
+
 app.use('/api/members', memberRoutes);
 app.use('/api/trainers', trainerRoutes);
 app.use('/api/plans', planRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/attendance', attendanceRoutes);
-app.use('/api/auth', authRoutes);
 app.use('/api/workouts', workoutRoutes);
 app.use('/api/diets', dietRoutes);
 app.use('/api/equipment', equipmentRoutes);

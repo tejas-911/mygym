@@ -72,7 +72,7 @@ export default function Members() {
     try {
       const { data: planData } = await axios.get(PLANS_API, { headers: getHeaders() });
       setPlans(Array.isArray(planData) ? planData : []);
-    } catch (e) {
+    } catch {
       setPlans([]);
     } finally {
       setPlansLoading(false);
