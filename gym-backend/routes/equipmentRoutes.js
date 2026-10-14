@@ -1,12 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const equipmentController = require('../controllers/equipmentController');
+const ec = require('../controllers/equipmentController');
 
-router.get('/stats', equipmentController.getStats);
-router.get('/maintenance', equipmentController.getMaintenance);
-router.get('/', equipmentController.getEquipment);
-router.post('/', equipmentController.addEquipment);
-router.put('/:id/repair', equipmentController.repairEquipment);
-router.put('/:id/send-repair', equipmentController.sendToRepair);
+router.get('/stats', ec.getStats);
+router.get('/maintenance', ec.getMaintenance);
+router.get('/', ec.getEquipment);
+router.post('/', ec.addEquipment);
+router.post('/:id/repair', ec.repairEquipment);
+router.post('/:id/send-repair', ec.sendToRepair);
 
 module.exports = router;

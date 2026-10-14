@@ -12,7 +12,8 @@ import {
   LogOut,
   Activity,
   ShoppingBag,
-  ClipboardList
+  ClipboardList,
+  Database
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 
@@ -39,6 +40,7 @@ export default function Sidebar() {
     { path: '/supplements', icon: <ShoppingBag size={18} />, label: 'Supplements' },
     { path: '/assign', icon: <ClipboardList size={18} />, label: 'Assign Plans' },
     { path: '/reports', icon: <BarChart3 size={18} />, label: 'Metrics' },
+    { path: '/db', icon: <Database size={18} />, label: 'DB Features' },
   ];
 
   return (

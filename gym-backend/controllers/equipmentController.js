@@ -100,14 +100,7 @@ exports.getStats = async (req, res) => {
         const utilization = total > 0 ? ((active / total) * 100).toFixed(1) : 0;
         const reliability_score = total > 0 ? Math.round((good / total) * 1000) : 0;
 
-        // Try vw_equipment_health VIEW for enriched health data
-        let equipmentHealth = [];
-        try {
-            const [rows] = await db.query('SELECT * FROM vw_equipment_health ORDER BY maintenance_flag DESC');
-            equipmentHealth = rows;
-        } catch (e) { /* view not yet created */ }
-
-        res.json({ total, active, utilization, maintenance_due, this_month, reliability_score, equipmentHealth });
+        res.json({ total, active, utilization, maintenance_due, this_month, reliability_score });
     } catch (error) { res.status(500).json({ error: error.message }); }
 };
 
@@ -131,13 +124,11 @@ exports.sendToRepair = async (req, res) => {
         const { id } = req.params;
         const { description, cost } = req.body;
         
-        // 1. Update status to Needs Repair
         await db.query(
             "UPDATE Equipment SET condition_status = 'Needs Repair' WHERE equipment_id = ?",
             [id]
         );
 
-        // 2. Log Maintenance entry if provided (or default)
         await db.query(
             "INSERT INTO Maintenance (equipment_id, maintenance_date, description, cost) VALUES (?, CURDATE(), ?, ?)",
             [id, description || 'Equipment sent to repair for maintenance.', cost || 0]

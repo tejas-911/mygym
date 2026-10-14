@@ -16,17 +16,15 @@ export default function TopBar({ title }) {
           <button
             onClick={toggle}
             title={isLight ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
-            className={`relative w-14 h-7 rounded-full transition-all duration-300 flex items-center border ${
-              isLight
-                ? 'bg-blue-600 border-blue-500'
+            className={`relative w-14 h-7 rounded-full transition-all duration-300 flex items-center border ${isLight
+                ? 'bg-blue-601 border-blue-500'
                 : 'bg-white/10 border-white/10 hover:border-white/20'
-            }`}
+              }`}
           >
-            <span className={`absolute w-5 h-5 rounded-full flex items-center justify-center transition-all duration-300 shadow-md ${
-              isLight
+            <span className={`absolute w-5 h-5 rounded-full flex items-center justify-center transition-all duration-300 shadow-md ${isLight
                 ? 'translate-x-7 bg-white'
                 : 'translate-x-1 bg-white/80'
-            }`}>
+              }`}>
               {isLight
                 ? <Moon size={11} className="text-blue-600" />
                 : <Sun size={11} className="text-dark" />
@@ -38,14 +36,13 @@ export default function TopBar({ title }) {
         <div className="flex items-center gap-3 pl-6 border-l border-border">
           <div className="w-9 h-9 rounded-full bg-surface border-2 border-iron-lime/20 p-0.5 overflow-hidden hover:border-iron-lime transition-all">
             <img
-              src="https://ui-avatars.com/api/?name=Alex+Thorne&background=DFFF00&color=0A0A0E"
-              alt="Alex Thorne"
+              src={`https://ui-avatars.com/api/?name=Admin&background=${isLight ? '2563EB' : 'DFFF00'}&color=${isLight ? 'FFFFFF' : '0A0A0E'}`}
+              alt="Admin"
               className="w-full h-full rounded-full object-cover"
             />
           </div>
           <div className="flex flex-col">
-            <span className="font-space font-bold text-sm tracking-tighter" style={{ color: isLight ? '#0A0A0E' : '#FFFFFF' }}>Alex Thorne</span>
-            <span className="text-xs font-bold text-iron-lime uppercase tracking-widest mt-0.5">Master Trainer</span>
+            <span className="text-xs font-bold text-iron-lime uppercase tracking-widest cursor-default">Admin</span>
           </div>
         </div>
       </div>

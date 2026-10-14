@@ -6,6 +6,7 @@ import {
   UserCheck, Pencil, CreditCard, Banknote, Smartphone,
   Building2, CheckCircle, AlertCircle, BadgeCheck, CalendarDays
 } from 'lucide-react';
+import { useTheme } from '../context/ThemeContext';
 
 const API = 'http://localhost:5000/api/members';
 const PLANS_API = 'http://localhost:5000/api/plans';
@@ -34,6 +35,8 @@ const initialFormState = {
 };
 
 export default function Members() {
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -69,7 +72,7 @@ export default function Members() {
     try {
       const { data: planData } = await axios.get(PLANS_API, { headers: getHeaders() });
       setPlans(Array.isArray(planData) ? planData : []);
-    } catch (e) {
+    } catch {
       setPlans([]);
     } finally {
       setPlansLoading(false);
@@ -154,8 +157,8 @@ export default function Members() {
       email: member.email || '',
       phone: member.phone || '',
       gender: member.gender || 'Male',
-      date_of_birth: member.date_of_birth ? String(member.date_of_birth).split('T')[0] : '',
-      join_date: member.join_date ? String(member.join_date).split('T')[0] : '',
+      date_of_birth: member.date_of_birth ? new Date(member.date_of_birth).toISOString().split('T')[0] : '',
+      join_date: member.join_date ? new Date(member.join_date).toISOString().split('T')[0] : '',
       status: member.member_status || member.status || 'Active'
     });
     setModalError('');
@@ -209,7 +212,7 @@ export default function Members() {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-4xl font-space font-bold tracking-tighter text-white mb-2">Members</h1>
+          <h1 className="text-4xl font-space font-bold tracking-tighter mb-2" style={{ color: isLight ? '#0A0A0E' : '#FFFFFF' }}>Members</h1>
           <p className="text-iron-text-secondary font-medium italic text-sm">
             {data.length} total · {activeCount} active
             {hasEnrichedData && <span className="ml-2 px-2 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded text-[11px] font-black uppercase tracking-widest">View + Functions Active</span>}
@@ -228,11 +231,11 @@ export default function Members() {
             <Search size={18} />
           </div>
           <input type="text" placeholder="Search by name or email..."
-            className="w-full bg-white/[0.03] border border-white/5 rounded-xl py-3 pl-12 pr-4 text-sm text-white focus:outline-none focus:border-iron-lime/20 focus:bg-white/[0.05] transition-all"
+            className="w-full bg-surface border border-border rounded-xl py-3 pl-12 pr-4 text-sm focus:outline-none focus:border-iron-lime transition-all"
             value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
         </div>
         <div className="flex gap-4">
-          <select className="bg-white/[0.03] border border-white/5 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-iron-lime/20 appearance-none min-w-[140px] cursor-pointer"
+          <select className="bg-surface border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-iron-lime appearance-none min-w-[140px] cursor-pointer"
             value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
             <option value="all">All Status</option>
             <option value="active">Active</option>
@@ -278,14 +281,14 @@ export default function Members() {
                   const isActive = status === 'active';
 
                   return (
-                    <tr key={member.member_id} className="group hover:bg-white/[0.02] transition-colors">
+                    <tr key={member.member_id} className="group hover:bg-iron-lime/[0.02] transition-colors">
                       <td>
                         <div className="flex items-center gap-4">
-                          <div className="w-10 h-10 rounded-xl bg-white/[0.03] border border-white/5 flex items-center justify-center font-bold text-xs text-iron-lime group-hover:border-iron-lime/30 transition-all">
+                          <div className="w-10 h-10 rounded-xl bg-iron-lime/10 border border-iron-lime/20 flex items-center justify-center font-bold text-xs text-iron-lime group-hover:border-iron-lime/40 transition-all">
                             {getInitials(name)}
                           </div>
                           <div className="flex flex-col">
-                            <span className="font-bold text-white group-hover:text-iron-lime transition-colors">{name}</span>
+                            <span className="font-bold group-hover:text-iron-lime transition-colors" style={{ color: isLight ? '#0A0A0E' : '#FFFFFF' }}>{name}</span>
                             <span className="text-xs font-bold text-iron-text-secondary uppercase tracking-tighter">ID: IC-{member.member_id}</span>
                           </div>
                         </div>
@@ -302,7 +305,7 @@ export default function Members() {
                         <>
                           {/* fn_member_age() */}
                           <td>
-                            <span className="text-sm text-white font-space font-bold">
+                            <span className="text-sm font-space font-bold" style={{ color: isLight ? '#0A0A0E' : '#FFFFFF' }}>
                               {member.age != null ? member.age : '—'}
                             </span>
                             {member.age != null && <span className="text-iron-text-secondary text-xs ml-1">yrs</span>}
@@ -337,8 +340,8 @@ export default function Members() {
                           {/* fn_total_revenue_by_member() */}
                           <td>
                             <div className="flex items-center gap-1.5">
-                              <IndianRupee size={12} className="text-emerald-400" />
-                              <span className="text-white font-space font-bold text-sm">
+                              <IndianRupee size={12} className="text-emerald-500" />
+                              <span className="font-space font-bold text-sm" style={{ color: isLight ? '#0A0A0E' : '#FFFFFF' }}>
                                 {member.lifetime_revenue != null ? parseFloat(member.lifetime_revenue).toFixed(2) : '0.00'}
                               </span>
                             </div>
@@ -346,7 +349,7 @@ export default function Members() {
 
                           {/* vw_member_dashboard total_visits */}
                           <td>
-                            <span className="px-2.5 py-1 bg-white/[0.03] border border-white/5 rounded text-xs font-black text-white font-space">
+                            <span className="px-2.5 py-1 bg-surface border border-border rounded text-xs font-bold text-iron-text-secondary font-space">
                               {member.total_visits || 0}
                             </span>
                           </td>
@@ -409,7 +412,7 @@ export default function Members() {
           <div className="bg-surface border border-border rounded-xl w-full max-w-[640px] relative z-[210] shadow-[0_30px_100px_rgba(0,0,0,0.5)] overflow-hidden">
             <div className="p-6 pb-4 flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-bold text-white">{editingId ? 'Edit Member' : 'Register Member'}</h2>
+                <h2 className="text-xl font-bold" style={{ color: isLight ? '#0A0A0E' : '#FFFFFF' }}>{editingId ? 'Edit Member' : 'Register Member'}</h2>
                 <p className="text-iron-text-secondary text-xs italic mt-1">
                   {editingId ? 'Update profile details and membership status' : 'Uses sp_register_member stored procedure'}
                 </p>
@@ -438,31 +441,31 @@ export default function Members() {
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">Full Name <span className="text-red-400">*</span></label>
                   <input required type="text" placeholder="e.g. Arjun Sharma"
-                    className="w-full bg-[#18181A] border border-white/5 rounded py-3 px-4 text-sm text-white focus:outline-none focus:border-iron-lime/30 transition-all placeholder:text-iron-text-secondary"
+                    className="w-full bg-surface border border-border rounded py-3 px-4 text-sm focus:outline-none focus:border-iron-lime transition-all placeholder:text-iron-text-secondary"
                     value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} />
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">Email Address <span className="text-red-400">*</span></label>
                   <input required type="email" placeholder="email@example.com"
-                    className="w-full bg-[#18181A] border border-white/5 rounded py-3 px-4 text-sm text-white focus:outline-none focus:border-iron-lime/30 transition-all placeholder:text-iron-text-secondary"
+                    className="w-full bg-surface border border-border rounded py-3 px-4 text-sm focus:outline-none focus:border-iron-lime transition-all placeholder:text-iron-text-secondary"
                     value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} />
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">Phone Number</label>
                   <input type="text" placeholder="+91 00000 00000"
-                    className="w-full bg-[#18181A] border border-white/5 rounded py-3 px-4 text-sm text-white focus:outline-none focus:border-iron-lime/30 transition-all placeholder:text-iron-text-secondary"
+                    className="w-full bg-surface border border-border rounded py-3 px-4 text-sm focus:outline-none focus:border-iron-lime transition-all placeholder:text-iron-text-secondary"
                     value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label className="text-xs font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">DOB</label>
                     <input type="date"
-                      className="w-full bg-[#18181A] border border-white/5 rounded py-3 px-4 text-sm text-white focus:outline-none focus:border-iron-lime/30 transition-all [color-scheme:dark]"
+                      className="w-full bg-surface border border-border rounded py-3 px-4 text-sm focus:outline-none focus:border-iron-lime transition-all [color-scheme:light]"
                       value={formData.date_of_birth} onChange={e => setFormData({ ...formData, date_of_birth: e.target.value })} />
                   </div>
                   <div className="space-y-2">
                     <label className="text-xs font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">Gender</label>
-                    <select className="w-full bg-[#18181A] border border-white/5 rounded py-3 px-4 text-sm text-white focus:outline-none focus:border-iron-lime/30 cursor-pointer"
+                    <select className="w-full bg-surface border border-border rounded py-3 px-4 text-sm focus:outline-none focus:border-iron-lime cursor-pointer"
                       value={formData.gender} onChange={e => setFormData({ ...formData, gender: e.target.value })}>
                       <option value="Male">Male</option>
                       <option value="Female">Female</option>
@@ -475,12 +478,12 @@ export default function Members() {
                     <div className="space-y-2">
                       <label className="text-xs font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">Join Date</label>
                       <input type="date"
-                        className="w-full bg-[#18181A] border border-white/5 rounded py-3 px-4 text-sm text-white focus:outline-none focus:border-iron-lime/30 transition-all [color-scheme:dark]"
+                        className="w-full bg-surface border border-border rounded py-3 px-4 text-sm focus:outline-none focus:border-iron-lime transition-all [color-scheme:light]"
                         value={formData.join_date || ''} onChange={e => setFormData({ ...formData, join_date: e.target.value })} />
                     </div>
                     <div className="space-y-2">
                       <label className="text-xs font-bold text-iron-text-secondary uppercase tracking-[0.2em] block">Status</label>
-                      <select className="w-full bg-[#18181A] border border-white/5 rounded py-3 px-4 text-sm text-white focus:outline-none focus:border-iron-lime/30 cursor-pointer"
+                      <select className="w-full bg-surface border border-border rounded py-3 px-4 text-sm focus:outline-none focus:border-iron-lime cursor-pointer"
                         value={formData.status || 'Active'} onChange={e => setFormData({ ...formData, status: e.target.value })}>
                         <option value="Active">Active</option>
                         <option value="Inactive">Inactive</option>
@@ -492,7 +495,7 @@ export default function Members() {
 
               <div className="flex justify-end gap-3 pt-4 border-t border-white/5">
                 <button type="button" onClick={() => setShowModal(false)}
-                  className="px-6 py-3 rounded-lg border border-white/10 text-xs font-bold tracking-widest uppercase text-white hover:bg-white/5 transition-all">
+                  className="px-6 py-3 rounded-lg border border-border text-xs font-bold tracking-widest uppercase hover:bg-black/5 transition-all" style={{ color: isLight ? '#0A0A0E' : '#FFFFFF' }}>
                   Cancel
                 </button>
                 <button type="submit" disabled={isSubmitting}

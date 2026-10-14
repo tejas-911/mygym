@@ -29,6 +29,15 @@ exports.recordSale = async (req, res) => {
         await connection.beginTransaction();
 
         try {
+            const [[member]] = await connection.query(
+                'SELECT member_id FROM Member WHERE member_id = ?',
+                [member_id]
+            );
+
+            if (!member) {
+                throw new Error('Selected member does not exist.');
+            }
+
             const [[supplement]] = await connection.query(
                 'SELECT stock_quantity, price FROM Supplement WHERE supplement_id = ?',
                 [supplement_id]
@@ -51,10 +60,10 @@ exports.recordSale = async (req, res) => {
                 [member_id, supplement_id, quantity, sale_date, computedTotal]
             );
 
-            // Record transaction in Payment DB (dynamic payment_method)
+            // Record transaction in Payment DB (including member_id now)
             await connection.query(
-                'INSERT INTO Payment (subscription_id, amount, payment_date, payment_method) VALUES (?, ?, ?, ?)',
-                [null, computedTotal, sale_date, payment_method || 'Cash']
+                'INSERT INTO Payment (subscription_id, member_id, amount, payment_date, payment_method) VALUES (?, ?, ?, ?, ?)',
+                [null, member_id, computedTotal, sale_date, payment_method || 'Cash']
             );
 
             await connection.commit();

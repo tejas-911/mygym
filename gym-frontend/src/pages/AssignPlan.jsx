@@ -12,7 +12,13 @@ function getHeaders() {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-const initialFormState = { member_id: '', plan_id: '', type: 'workout', start_date: '', end_date: '' };
+const initialFormState = { 
+  member_id: '', 
+  plan_id: '', 
+  type: 'workout', 
+  start_date: new Date().toISOString().split('T')[0], 
+  end_date: '' 
+};
 
 const MUSCLE_COLORS = {
   Chest: 'text-red-400 bg-red-500/10 border-red-500/20',

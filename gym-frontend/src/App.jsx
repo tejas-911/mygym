@@ -12,17 +12,18 @@ import AssignPlan from './pages/AssignPlan';
 import Equipment from './pages/Equipment';
 import Supplements from './pages/Supplements';
 import Reports from './pages/Reports';
+import DBFeatures from './pages/DBFeatures';
 import './index.css';
 
 import TopBar from './components/TopBar';
 import { ThemeProvider } from './context/ThemeContext';
 
 const ProtectedRoute = ({ children }) => {
+  const location = useLocation();
   const token = localStorage.getItem('token');
   if (!token) return <Navigate to="/login" replace />;
-  
+
   // Simple titles based on path
-  const location = useLocation();
   const getTitle = () => {
     switch(location.pathname) {
       case '/': return 'Performance Overview';
@@ -35,6 +36,7 @@ const ProtectedRoute = ({ children }) => {
       case '/reports': return 'Detailed Metrics';
       case '/supplements': return 'Supplement Shop';
       case '/assign': return 'Assign Plans';
+      case '/db': return 'Database Features';
       default: return 'Gym Ecosystem';
     }
   };
@@ -68,6 +70,7 @@ function App() {
         <Route path="/equipment" element={<ProtectedRoute><Equipment /></ProtectedRoute>} />
         <Route path="/supplements" element={<ProtectedRoute><Supplements /></ProtectedRoute>} />
         <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
+        <Route path="/db" element={<ProtectedRoute><DBFeatures /></ProtectedRoute>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>

@@ -75,6 +75,8 @@ const MethodPieLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent })
 
 // ── Stat Card ────────────────────────────────────────────────────────────────
 function KpiCard({ label, value, sub, icon: Icon, color = 'lime', border }) {
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
   const colors = {
     lime: 'text-iron-lime bg-iron-lime/10',
     emerald: 'text-emerald-400 bg-emerald-500/10',
@@ -92,7 +94,7 @@ function KpiCard({ label, value, sub, icon: Icon, color = 'lime', border }) {
           <Icon size={14} />
         </div>
       </div>
-      <p className="text-3xl font-space font-black text-white leading-none">{value ?? '—'}</p>
+      <p className="text-3xl font-space font-black leading-none" style={{ color: isLight ? '#0A0A0E' : '#FFFFFF' }}>{value ?? '—'}</p>
       {sub && <p className="text-iron-text-secondary text-xs mt-1.5 font-medium">{sub}</p>}
     </div>
   );
@@ -178,18 +180,18 @@ export default function Reports() {
       {/* ── HEADER ─────────────────────────────────────────────────────── */}
       <div className="flex items-start justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-4xl font-space font-bold tracking-tighter text-white mb-1">Analytics & Reports</h1>
+          <h1 className="text-4xl font-space font-bold tracking-tighter mb-1" style={{ color: isLight ? '#0A0A0E' : '#FFFFFF' }}>Analytics & Reports</h1>
           <p className="text-iron-text-secondary font-medium italic text-sm">
             Powered by stored procedures, views, functions &amp; triggers
           </p>
         </div>
         <div className="flex items-center gap-2">
           <select value={month} onChange={e => setMonth(parseInt(e.target.value))}
-            className="bg-surface border border-border rounded-xl px-3 py-2.5 text-xs text-white font-space outline-none focus:border-iron-lime/40 cursor-pointer">
-            {MONTHS.map((m, i) => <option key={i} value={i + 1}>{m}</option>)}
+            className="bg-surface border border-border rounded-xl px-3 py-2.5 text-xs font-space outline-none focus:border-iron-lime/40 cursor-pointer" style={{ color: isLight ? '#0A0A0E' : '#FFFFFF' }}>
+            {MONTHS.map((m, i) => <option key={i} value={i+1}>{m}</option>)}
           </select>
           <input type="number" value={year} onChange={e => setYear(parseInt(e.target.value))}
-            className="bg-surface border border-border rounded-xl px-3 py-2.5 text-xs text-white font-space outline-none focus:border-iron-lime/40 w-20" />
+            className="bg-surface border border-border rounded-xl px-3 py-2.5 text-xs font-space outline-none focus:border-iron-lime/40 w-20" style={{ color: isLight ? '#0A0A0E' : '#FFFFFF' }} />
           <button onClick={fetchReports}
             className="flex items-center gap-2 px-4 py-2.5 bg-iron-lime text-dark rounded-xl font-space font-bold text-xs uppercase tracking-widest hover:shadow-[0_0_20px_rgba(223,255,0,0.3)] transition-all">
             <RefreshCw size={12} /> Generate
@@ -208,10 +210,16 @@ export default function Reports() {
 
       {/* ── YEAR REVENUE KPI STRIP ─────────────────────────────────────── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard label={`${year} Total Revenue`} value={fmt(revTotals.total_revenue)} icon={DollarSign} color="lime" sub="Paid payments only" />
-        <KpiCard label="Best Month" value={bestMonth ? fmt(bestMonth.total_revenue) : '—'} icon={TrendingUp} color="emerald" sub={bestMonth?.label || '—'} />
-        <KpiCard label="Monthly Average" value={fmt(avgMonthly)} icon={BarChart3} color="blue" sub="Non-zero months only" />
-        <KpiCard label="Total Transactions" value={revTotals.total_transactions ?? '—'} icon={CreditCard} color="purple" sub={`${revTotals.refunded_count ?? 0} refunded`} />
+        <KpiCard label={`${year} Total Revenue`}   value={fmt(revTotals.total_revenue)}   icon={DollarSign}  color="lime"    sub="Paid payments only" />
+        <KpiCard label="Best Month"                value={bestMonth ? fmt(bestMonth.total_revenue) : '—'} icon={TrendingUp} color="emerald" sub={bestMonth?.label || '—'} />
+        <KpiCard label="Monthly Average"           value={fmt(avgMonthly)}                icon={BarChart3}   color="blue"    sub="Non-zero months only" />
+        <KpiCard 
+          label="Total Transactions" 
+          value={revTotals.total_transactions ?? '—'} 
+          icon={CreditCard} 
+          color="purple" 
+          sub={`${((revTotals.total_transactions - (revTotals.pending_count || 0) - (revTotals.refunded_count || 0)) / (revTotals.total_transactions || 1) * 100).toFixed(0)}% success rate`} 
+        />
       </div>
 
       {/* ── MEMBERSHIP + SUBSCRIPTION STATUS ──────────────────────────── */}
@@ -241,12 +249,13 @@ export default function Reports() {
                   </div>
                   <div className="flex-1">
                     <div className="flex justify-between text-xs mb-1">
-                      <span className="text-white font-medium">{label}</span>
-                      <span className={`font-space font-black ${color}`}>{val ?? 0}</span>
+                      <span className="font-medium" style={{ color: isLight ? '#0A0A0E' : '#FFFFFF' }}>{label}</span>
+                      <span className={`font-space font-black ${color.replace('400', '500')}`}>{val ?? 0}</span>
                     </div>
-                    <div className="h-1 bg-white/5 rounded-full overflow-hidden">
-                      <div className={`h-full rounded-full transition-all ${label === 'Active' ? 'bg-emerald-400' : label === 'Expired' ? 'bg-amber-400' : 'bg-red-400'
-                        }`} style={{ width: `${pct}%` }} />
+                    <div className="h-1 bg-border/40 rounded-full overflow-hidden">
+                      <div className={`h-full rounded-full transition-all ${
+                        label === 'Active' ? 'bg-emerald-500' : label === 'Expired' ? 'bg-amber-500' : 'bg-red-500'
+                      }`} style={{ width: `${pct}%` }} />
                     </div>
                   </div>
                   <span className="text-iron-text-secondary text-[10px] font-space w-7 text-right">{pct}%</span>
@@ -267,7 +276,7 @@ export default function Reports() {
         <div className="card">
           <div className="flex items-center justify-between mb-5">
             <div>
-              <h3 className="text-white font-space font-bold text-sm uppercase tracking-widest">Monthly Revenue</h3>
+              <h3 className="font-space font-bold text-sm uppercase tracking-widest" style={{ color: isLight ? '#0A0A0E' : '#FFFFFF' }}>Monthly Revenue</h3>
               <p className="text-iron-text-secondary text-xs italic mt-0.5">Source: vw_monthly_revenue · 12-month rolling</p>
             </div>
             <span className="px-2 py-1 bg-purple-500/10 text-purple-400 border border-purple-500/20 rounded text-[11px] font-black uppercase tracking-widest">View</span>
@@ -300,7 +309,7 @@ export default function Reports() {
         <div className="card">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h3 className="text-white font-space font-bold text-sm uppercase tracking-widest">By Method</h3>
+              <h3 className="font-space font-bold text-sm uppercase tracking-widest" style={{ color: isLight ? '#0A0A0E' : '#FFFFFF' }}>By Method</h3>
               <p className="text-iron-text-secondary text-xs italic mt-0.5">{year} revenue split</p>
             </div>
             <span className="px-2 py-1 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded text-[11px] font-black uppercase tracking-widest">Proc</span>
@@ -346,7 +355,7 @@ export default function Reports() {
         <div className="card">
           <div className="flex items-center justify-between mb-5">
             <div>
-              <h3 className="text-white font-space font-bold text-sm uppercase tracking-widest">Revenue by Plan</h3>
+              <h3 className="font-space font-bold text-sm uppercase tracking-widest" style={{ color: isLight ? '#0A0A0E' : '#FFFFFF' }}>Revenue by Plan</h3>
               <p className="text-iron-text-secondary text-xs italic mt-0.5">{year} · Paid transactions only</p>
             </div>
             <span className="px-2 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded text-[11px] font-black uppercase tracking-widest">Query</span>
@@ -376,7 +385,7 @@ export default function Reports() {
         <div className="card">
           <div className="flex items-center justify-between mb-5">
             <div>
-              <h3 className="text-white font-space font-bold text-sm uppercase tracking-widest">Member Growth</h3>
+              <h3 className="font-space font-bold text-sm uppercase tracking-widest" style={{ color: isLight ? '#0A0A0E' : '#FFFFFF' }}>Member Growth</h3>
               <p className="text-iron-text-secondary text-xs italic mt-0.5">New sign-ups over time</p>
             </div>
             <span className="px-2 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded text-[11px] font-black uppercase tracking-widest">Query</span>
@@ -419,18 +428,18 @@ export default function Reports() {
           </div>
           {attendance && (attendance.unique_visitors || attendance.total_check_ins) ? (
             <div className="grid grid-cols-3 gap-4">
-              <div className="p-4 bg-white/[0.03] rounded-xl border border-white/[0.05]">
+              <div className="p-4 bg-border/20 rounded-xl border border-border/40">
                 <p className="text-[11px] font-space font-bold uppercase tracking-widest text-iron-text-secondary mb-2">Unique Visitors</p>
-                <p className="text-3xl font-space font-black text-white">{attendance.unique_visitors ?? '—'}</p>
+                <p className="text-3xl font-space font-black" style={{ color: isLight ? '#0A0A0E' : '#FFFFFF' }}>{attendance.unique_visitors ?? '—'}</p>
               </div>
-              <div className="p-4 bg-white/[0.03] rounded-xl border border-white/[0.05]">
+              <div className="p-4 bg-border/20 rounded-xl border border-border/40">
                 <p className="text-[11px] font-space font-bold uppercase tracking-widest text-iron-text-secondary mb-2">Total Check-Ins</p>
-                <p className="text-3xl font-space font-black text-white">{attendance.total_check_ins ?? '—'}</p>
+                <p className="text-3xl font-space font-black" style={{ color: isLight ? '#0A0A0E' : '#FFFFFF' }}>{attendance.total_check_ins ?? '—'}</p>
               </div>
-              <div className="p-4 bg-white/[0.03] rounded-xl border border-white/[0.05]">
+              <div className="p-4 bg-border/20 rounded-xl border border-border/40">
                 <p className="text-[11px] font-space font-bold uppercase tracking-widest text-iron-text-secondary mb-2">Avg Session</p>
                 <div className="flex items-baseline gap-1">
-                  <p className="text-3xl font-space font-black text-white">{attendance.avg_session_minutes ?? '—'}</p>
+                  <p className="text-3xl font-space font-black" style={{ color: isLight ? '#0A0A0E' : '#FFFFFF' }}>{attendance.avg_session_minutes ?? '—'}</p>
                   <span className="text-iron-text-secondary text-sm font-bold">min</span>
                 </div>
               </div>
@@ -449,10 +458,10 @@ export default function Reports() {
             <div className="card">
               <div className="flex items-center gap-2 mb-4">
                 <Award size={13} className="text-iron-lime" />
-                <h4 className="text-white font-space font-bold text-xs uppercase tracking-widest flex-1">
-                  Top Members — {MONTHS[month - 1]}
+                <h4 className="font-space font-bold text-xs uppercase tracking-widest flex-1" style={{ color: isLight ? '#0A0A0E' : '#FFFFFF' }}>
+                  Top Members — {MONTHS[month-1]}
                 </h4>
-                <span className="px-2 py-0.5 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded text-[10px] font-black uppercase">Procedure</span>
+                <span className="px-2 py-0.5 bg-blue-500/10 text-blue-500 border border-blue-500/20 rounded text-[10px] font-black uppercase">Procedure</span>
               </div>
               <div className="space-y-2.5">
                 {data.topMembers.map((m, i) => (
@@ -460,7 +469,7 @@ export default function Reports() {
                     <span className="w-5 h-5 rounded-full bg-iron-lime/10 flex items-center justify-center text-[10px] font-black text-iron-lime font-space shrink-0">
                       {i + 1}
                     </span>
-                    <span className="text-white text-sm font-medium flex-1 truncate">{m.name}</span>
+                    <span className="text-sm font-medium flex-1 truncate" style={{ color: isLight ? '#0A0A0E' : '#FFFFFF' }}>{m.name}</span>
                     <span className="text-iron-text-secondary text-xs font-space font-bold shrink-0">{m.visits}v</span>
                   </div>
                 ))}
@@ -483,7 +492,7 @@ export default function Reports() {
                   <Icon size={11} className="text-iron-text-secondary" />
                   <span className="text-[11px] text-iron-text-secondary uppercase tracking-widest font-bold">{label}</span>
                 </div>
-                <span className="text-white text-xs font-bold text-right truncate">{value}</span>
+                <span className="text-xs font-bold text-right truncate" style={{ color: isLight ? '#0A0A0E' : '#FFFFFF' }}>{value}</span>
               </div>
             ) : null)}
           </div>
@@ -495,9 +504,9 @@ export default function Reports() {
         <div className="card !p-0 overflow-hidden">
           <div className="px-6 py-4 border-b border-border flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Shield size={14} className="text-amber-400" />
+              <Shield size={14} className="text-amber-500" />
               <div>
-                <h3 className="text-white font-space font-bold text-sm uppercase tracking-widest">Equipment Health</h3>
+                <h3 className="font-space font-bold text-sm uppercase tracking-widest" style={{ color: isLight ? '#0A0A0E' : '#FFFFFF' }}>Equipment Health</h3>
                 <p className="text-iron-text-secondary text-xs italic">Source: vw_equipment_health</p>
               </div>
             </div>
@@ -512,10 +521,10 @@ export default function Reports() {
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/[0.03]">
+              <tbody className="divide-y divide-border/40">
                 {data.equipmentHealth.map(eq => (
-                  <tr key={eq.equipment_id} className="hover:bg-white/[0.02] transition-colors">
-                    <td className="px-6 py-3 text-white text-sm font-medium">{eq.equipment_name}</td>
+                  <tr key={eq.equipment_id} className="hover:bg-iron-lime/5 transition-colors">
+                    <td className="px-6 py-3 text-sm font-medium" style={{ color: isLight ? '#0A0A0E' : '#FFFFFF' }}>{eq.equipment_name}</td>
                     <td className="px-6 py-3">
                       <span className={`text-xs font-bold ${eq.condition_status === 'New' || eq.condition_status === 'Good' ? 'text-emerald-400' :
                           eq.condition_status === 'Needs Repair' ? 'text-amber-400' : 'text-red-400'}`}>
@@ -528,7 +537,7 @@ export default function Reports() {
                         ? new Date(eq.last_service_date).toLocaleDateString('en-IN', { month: 'short', day: '2-digit', year: 'numeric' })
                         : '—'}
                     </td>
-                    <td className="px-6 py-3 text-white text-xs font-space font-bold">{eq.days_since_service ?? '—'}</td>
+                    <td className="px-6 py-3 text-xs font-space font-bold" style={{ color: isLight ? '#0A0A0E' : '#FFFFFF' }}>{eq.days_since_service ?? '—'}</td>
                     <td className="px-6 py-3">
                       <span className={`px-2.5 py-1 rounded text-[11px] font-black uppercase tracking-widest ${eq.maintenance_flag === 'Overdue' ? 'bg-red-500/10 text-red-400 border border-red-500/20' :
                           eq.maintenance_flag === 'Due Soon' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
@@ -548,15 +557,15 @@ export default function Reports() {
       {data.equipmentAlerts?.length > 0 && (
         <div className="card">
           <div className="flex items-center gap-2 mb-4">
-            <AlertTriangle size={13} className="text-red-400" />
-            <h3 className="text-white font-space font-bold text-xs uppercase tracking-widest flex-1">Equipment Alerts</h3>
-            <span className="px-2 py-0.5 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded text-[10px] font-black uppercase">Procedure</span>
+            <AlertTriangle size={13} className="text-red-500" />
+            <h3 className="font-space font-bold text-xs uppercase tracking-widest flex-1" style={{ color: isLight ? '#0A0A0E' : '#FFFFFF' }}>Equipment Alerts</h3>
+            <span className="px-2 py-0.5 bg-blue-500/10 text-blue-500 border border-blue-500/20 rounded text-[10px] font-black uppercase">Procedure</span>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {data.equipmentAlerts.map((eq, i) => (
               <div key={i} className="flex items-center justify-between p-3 bg-red-500/5 border border-red-500/10 rounded-xl">
-                <span className="text-white text-sm font-medium">{eq.equipment_name}</span>
-                <span className="text-red-400 text-xs font-black uppercase tracking-widest">{eq.condition_status}</span>
+                <span className="text-sm font-medium" style={{ color: isLight ? '#0A0A0E' : '#FFFFFF' }}>{eq.equipment_name}</span>
+                <span className="text-red-500 text-xs font-black uppercase tracking-widest">{eq.condition_status}</span>
               </div>
             ))}
           </div>
@@ -566,13 +575,13 @@ export default function Reports() {
       {/* ── AUDIT LOG (populated by TRIGGERS) ─────────────────────────── */}
       <div className="card !p-0 overflow-hidden">
         <div className="px-6 py-4 border-b border-border flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <ScrollText size={14} className="text-red-400" />
-            <div>
-              <h3 className="text-white font-space font-bold text-sm uppercase tracking-widest">Audit Log</h3>
-              <p className="text-iron-text-secondary text-xs italic">Auto-populated by AFTER INSERT / AFTER UPDATE triggers</p>
+            <div className="flex items-center gap-3">
+              <ScrollText size={14} className="text-red-500" />
+              <div>
+                <h3 className="font-space font-bold text-sm uppercase tracking-widest" style={{ color: isLight ? '#0A0A0E' : '#FFFFFF' }}>Audit Log</h3>
+                <p className="text-iron-text-secondary text-xs italic">Auto-populated by AFTER INSERT / AFTER UPDATE triggers</p>
+              </div>
             </div>
-          </div>
           <span className="px-2 py-1 bg-red-500/10 text-red-400 border border-red-500/20 rounded text-[11px] font-black uppercase tracking-widest">Triggers</span>
         </div>
 
@@ -586,12 +595,12 @@ export default function Reports() {
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/[0.03]">
+              <tbody className="divide-y divide-border/40">
                 {data.auditLog.map(log => (
-                  <tr key={log.log_id} className="hover:bg-white/[0.02] transition-colors">
+                  <tr key={log.log_id} className={`transition-colors ${isLight ? 'hover:bg-black/5' : 'hover:bg-white/[0.02]'}`}>
                     <td className="px-6 py-3 text-iron-text-secondary text-xs font-space">#{log.log_id}</td>
                     <td className="px-6 py-3">
-                      <span className="px-2 py-0.5 bg-white/5 border border-white/10 rounded text-[11px] font-black uppercase tracking-widest text-white">
+                      <span className="px-2 py-0.5 bg-border/20 border border-border/40 rounded text-[11px] font-black uppercase tracking-widest" style={{ color: isLight ? '#0A0A0E' : '#FFFFFF' }}>
                         {log.table_name}
                       </span>
                     </td>
@@ -601,9 +610,9 @@ export default function Reports() {
                         {log.action_type}
                       </span>
                     </td>
-                    <td className="px-6 py-3 text-white text-xs font-space font-bold">{log.record_id}</td>
+                    <td className="px-6 py-3 text-xs font-space font-bold" style={{ color: isLight ? '#0A0A0E' : '#FFFFFF' }}>{log.record_id}</td>
                     <td className="px-6 py-3">
-                      <pre className="text-xs text-iron-lime/70 font-mono max-w-[280px] truncate">
+                      <pre className="text-xs font-mono max-w-[280px] truncate" style={{ color: isLight ? '#2563EB' : 'rgba(223, 255, 0, 0.7)' }}>
                         {typeof log.new_values === 'string' ? log.new_values : JSON.stringify(log.new_values)}
                       </pre>
                     </td>

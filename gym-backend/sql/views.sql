@@ -15,6 +15,7 @@ SELECT
     m.phone,
     m.email,
     m.status         AS member_status,
+    m.date_of_birth,
     m.join_date,
     -- Active subscription info (most recent)
     sub.subscription_id,
